@@ -1,0 +1,23 @@
+.row > sp-action-button {
+  flex-grow: 1;
+}
+.row > sp-action-button:not(:last-child) {
+  margin-right: 10px;
+} 
+.row  {
+  margin-bottom: 10px;
+}
+
+.column > sp-action-button {
+  margin-bottom: 10px;
+}
+
+sp-heading {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+sp-body {
+  margin-top: 10px;
+  text-align: center;
+} 
