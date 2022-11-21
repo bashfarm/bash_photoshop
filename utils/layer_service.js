@@ -16,13 +16,14 @@ export async function Main() {
 
 ;
     const res = await executeAsModal(async () => { 
-      GetVisibleLayers()[0].selected = true
+      var visibleLayers = GetVisibleLayers();
+      console.log(visibleLayers);
+      visibleLayers[0].selected = true
     
     })
     await mergeVisibleLyrs()
     await MakeLayersInvisible()
     
-    console.log("after exectue")
 
   } catch (e) {
     console.log(e);
@@ -32,20 +33,26 @@ export async function Main() {
 /**
  * @returns {Array} the visible layers in the active document
  */
-function GetVisibleLayers() {
+export function GetVisibleLayers() {
   var visibleLayers = app.activeDocument.layers.map((layer) => {
     if (layer.visible) return layer;
+  }).filter((layer) => {
+    return layer ? true : false
   });
-  console.log("after visible layers")
   return visibleLayers
 }
 
 /**
- * Turns all visible layers invisible
+ * Turns all visible layers invisible except the first one that was merged.
+ * After this we typically need to send this to the API to generate new details.
  */
 async function MakeLayersInvisible() {
   await executeAsModal(async () => { 
-    for (var visibleLayer of GetVisibleLayers().slice(1)) visibleLayer.visible = false;
+    for (var visibleLayer of GetVisibleLayers().slice(1)){
+      // Might not be defined.  Thats cool 👍
+      if (visibleLayer)
+        visibleLayer.visible = false;
+    } 
   })
 }
 
@@ -53,7 +60,7 @@ async function MakeLayersInvisible() {
  *
  * @returns {Boolean} true if there are more than one visible layers in the active document
  */
-function IsMoreThanOneVisibleLayer() {
+export function IsMoreThanOneVisibleLayer() {
   return GetVisibleLayers().length > 1;
 }
 
