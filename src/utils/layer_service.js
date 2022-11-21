@@ -2,12 +2,13 @@ const photoshop = require('photoshop');
 const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
+import { SaveMergedLayersImgPNGToDataFolder } from './io_service';
 
 /**
  * The entry point to the service.  For now...
  * @returns null if there is not more than one visible layer
  */
-export async function Main() {
+export async function MergeAndSaveAllVisibleLayersIntoImage() {
     try {
         if (!IsMoreThanOneVisibleLayer()) {
             console.log(
@@ -23,6 +24,7 @@ export async function Main() {
         });
         await mergeVisibleLyrs();
         await MakeLayersInvisible();
+        SaveMergedLayersImgPNGToDataFolder()
     } catch (e) {
         console.log(e);
     }
@@ -80,3 +82,31 @@ async function mergeVisibleLyrs() {
     });
     console.log('finished Merging Layers');
 }
+
+
+const PlaceImageFromDataOnLayer = async (imageName) => {
+    try {
+        const dataFolder = await fs.getDataFolder();
+        var placedDocument = await dataFolder.getEntry(imageName);
+        if (!placedDocument) return;
+        let tkn = fs.createSessionToken(placedDocument);
+        const res = await executeAsModal(
+            async () => {
+                await bp(
+                    [
+                        {
+                            _obj: 'placeEvent',
+                            target: { _path: tkn, _kind: 'local' },
+                            linked: true,
+                        },
+                    ],
+                    {}
+                );
+                app.activeDocument.activeLayers[0].rasterize();
+            },
+            { commandName: 'open File' }
+        );
+    } catch (e) {
+        console.log(e);
+    }
+};
