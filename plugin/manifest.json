@@ -1,0 +1,121 @@
+{
+    "id": "react-hostappapi",
+    "name": "UXP React Host App API",
+    "version": "1.0.0",
+    "main": "main.js",
+    "manifestVersion": 5,
+    "host": [
+        {
+            "app": "PS",
+            "minVersion": "22.5.0",
+            "data": {
+                "apiVersion": 2
+            }
+        }
+    ],
+    "requiredPermissions": {
+        "clipboard": "readAndWrite",
+        "network": {
+            "domains": "all"
+        },
+        "allowCodeGenerationFromStrings": true,
+        "ipc": {
+            "enableHostCommunication": true,
+            "enablePluginCommunication": true
+        },
+        "localFileSystem": "request"
+    },
+    "entrypoints": [
+        {
+            "type": "panel",
+            "id": "uxpstorage",
+            "label": {
+                "default": "UXP React Host App API"
+            },
+            "minimumSize": {
+                "width": 100,
+                "height": 100
+            },
+            "maximumSize": {
+                "width": 1340,
+                "height": 1516
+            },
+            "preferredDockedSize": {
+                "width": 340,
+                "height": 516
+            },
+            "preferredFloatingSize": {
+                "width": 340,
+                "height": 315
+            },
+            "icons": [
+                {
+                    "width": 23,
+                    "height": 23,
+                    "path": "icons/DarkTheme.png",
+                    "scale": [
+                        1,
+                        2
+                    ],
+                    "theme": [
+                        "dark",
+                        "darkest"
+                    ],
+                    "species": [
+                        "chrome"
+                    ]
+                },
+                {
+                    "width": 23,
+                    "height": 23,
+                    "path": "icons/LightTheme.png",
+                    "scale": [
+                        1,
+                        2
+                    ],
+                    "theme": [
+                        "lightest",
+                        "light"
+                    ],
+                    "species": [
+                        "chrome"
+                    ]
+                }
+            ]
+        }
+    ],
+    "icons": [
+        {
+            "width": 48,
+            "height": 48,
+            "path": "icons/DarkTheme_plugins.png",
+            "scale": [
+                1,
+                2
+            ],
+            "theme": [
+                "dark",
+                "darkest"
+            ],
+            "species": [
+                "pluginList"
+            ]
+        },
+        {
+            "width": 48,
+            "height": 48,
+            "path": "icons/LightTheme_plugins.png",
+            "scale": [
+                1,
+                2
+            ],
+            "theme": [
+                "lightest",
+                "light"
+            ],
+            "species": [
+                "pluginList"
+            ]
+        }
+    ]
+}

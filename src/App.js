@@ -6,12 +6,20 @@ const executeAsModal = photoshop.core.executeAsModal;
 import "./style.css"
 import { Main, IsMoreThanOneVisibleLayer} from "./utils/layer_service";
 import { SaveMergedLayersImgPNGToDataFolder, GetDataFolderImageBase64ImgStr } from "./utils/io_service";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Img2Img } from "./utils/ai_service";
 
 const App = () => {
 
+
+
     var [base64MergedImgStr, SetBase64MergedImgStr] = useState("m");
     const SetMergedImageBase64 = () => GetDataFolderImageBase64ImgStr("mergedLayersImg.png").then((b64str) => {SetBase64MergedImgStr(b64str["base64Data"])})
+
+    useEffect(() => {
+        Img2Img(base64MergedImgStr).then((data)=>{console.log(newImageData)})
+    }, [base64MergedImgStr])
+    
     const PlaceImageFromDataOnLayer = async (imageName) => {
         try{
             const dataFolder = await fs.getDataFolder()
@@ -33,15 +41,17 @@ const App = () => {
 
     }
 
+
     return (
         <>
             <div className="column">
                 <sp-action-button onClick={() => {
                     try {
                         if (IsMoreThanOneVisibleLayer()){
-                            Main()
-                            SaveMergedLayersImgPNGToDataFolder()
-                            PlaceImageFromDataOnLayer("mergedLayersImg.png")
+                            // Main()
+                            // SaveMergedLayersImgPNGToDataFolder()
+                            // PlaceImageFromDataOnLayer("mergedLayersImg.png")
+                            SetMergedImageBase64()
                         }else{
                             console.log("not enough layers")
                         }
