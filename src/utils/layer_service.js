@@ -1,4 +1,5 @@
 const photoshop = require('photoshop');
+const fs = require('uxp').storage.localFileSystem;
 const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
@@ -24,7 +25,7 @@ export async function MergeAndSaveAllVisibleLayersIntoImage() {
         });
         await mergeVisibleLyrs();
         await MakeLayersInvisible();
-        SaveMergedLayersImgPNGToDataFolder()
+        SaveMergedLayersImgPNGToDataFolder();
     } catch (e) {
         console.log(e);
     }
@@ -83,14 +84,13 @@ async function mergeVisibleLyrs() {
     console.log('finished Merging Layers');
 }
 
-
-const PlaceImageFromDataOnLayer = async (imageName) => {
+export const PlaceImageFromDataOnLayer = async (imageName) => {
     try {
         const dataFolder = await fs.getDataFolder();
         var placedDocument = await dataFolder.getEntry(imageName);
         if (!placedDocument) return;
         let tkn = fs.createSessionToken(placedDocument);
-        const res = await executeAsModal(
+        await executeAsModal(
             async () => {
                 await bp(
                     [
