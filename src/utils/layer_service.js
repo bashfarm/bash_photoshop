@@ -4,13 +4,14 @@ const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 const lfs = require('uxp').storage.localFileSystem;
-
+const base64js = require('base64-js');
 import { SaveMergedLayersImgPNGToDataFolder } from './io_service';
+import { GetDataFolderImageBase64ImgStr  } from './io_service';
 /**
  * The entry point to the service.  For now...
  * @returns null if there is not more than one visible layer
  */
-export async function MergeAndSaveAllVisibleLayersIntoImage() {
+export async function MergeAndSaveAllVisibleLayersIntoImage(fileName) {
     try {
         if (!IsMoreThanOneVisibleLayer()) {
             console.log(
@@ -21,7 +22,14 @@ export async function MergeAndSaveAllVisibleLayersIntoImage() {
 
         await mergeVisibleLyrs();
         await MakeLayersInvisible();
-        SaveMergedLayersImgPNGToDataFolder();
+        SaveMergedLayersImgPNGToDataFolder(fileName);
+		var fileB64Obj = await GetDataFolderImageBase64ImgStr(fileName)
+
+		console.log("setting merged b64")
+		console.log(fileB64Obj['imageHeader'] + fileB64Obj['base64Data'])
+		console.log("done setting merged b64")
+		return fileB64Obj['imageHeader'] + fileB64Obj['base64Data']
+		 
     } catch (e) {
         console.log(e);
     }
