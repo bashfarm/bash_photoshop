@@ -4,7 +4,7 @@
     "scripts": {
         "preinstall": "npx npm-force-resolutions",
         "build": "webpack --config webpack.dev.js",
-        "watch": "nodemon -w src -e js,json,css,html -w plugin -x \"npm run build\"",
+        "watch": "nodemon -w src -e js,json,jsx,css,html -w plugin -x \"npm run build\"",
         "prod": "webpack --config webpack.prod.js"
     },
     "license": "none",
@@ -25,9 +25,12 @@
         "css-loader": "^5.2.3",
         "eslint": "^8.28.0",
         "eslint-config-prettier": "^8.5.0",
+        "eslint-import-resolver-webpack": "^0.13.2",
+        "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-react": "^7.31.11",
         "file-loader": "^6.2.0",
         "json-loader": "^0.5.7",
+        "nodemon": "^2.0.20",
         "path-browserify": "^1.0.1",
         "prettier": "^2.7.1",
         "prettierrc": "^0.0.0-5",

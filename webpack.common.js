@@ -4,10 +4,10 @@ const CopyPlugin = require('copy-webpack-plugin');
 // SEE: https://webpack.js.org/guides/production/#specify-the-mode
 
 module.exports = {
-    entry: './src/main.js',
+    entry: './src/main.jsx',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'main.js',
+        filename: 'main.jsx',
         clean: true,
         publicPath: '',
     },
@@ -20,6 +20,12 @@ module.exports = {
         extensions: ['.js', '.jsx'],
         // Webpack 5, see:
         // https://stackoverflow.com/questions/64557638/how-to-polyfill-node-core-modules-in-webpack-5
+        modules: [path.resolve(__dirname, './src'), 'node_modules'],
+        alias: {
+            panels: path.resolve(__dirname, './src/panels'),
+            components: path.resolve(__dirname, './src/panels/components'),
+            utils: path.resolve(__dirname, './src/utils'),
+        },
         fallback: {
             fs: false,
             tls: false,
@@ -36,7 +42,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js?$/,
+                test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 options: {

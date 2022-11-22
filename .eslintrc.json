@@ -3,6 +3,7 @@
         "browser": true,
         "es2021": true
     },
+    "ignorePatterns": ["webpack.*.js"],
     "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
     "overrides": [],
     "parserOptions": {
@@ -16,5 +17,12 @@
         "quotes": ["error", "single"],
         "semi": ["error", "always"],
         "no-restricted-modules": ["warn"]
+    },
+    "settings": {
+        "import/resolver": {
+            "webpack": {
+                "config": "webpack.common.js"
+            }
+        }
     }
 }

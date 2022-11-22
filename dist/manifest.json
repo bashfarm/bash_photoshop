@@ -2,7 +2,7 @@
     "id": "react-hostappapi",
     "name": "UXP React Host App API",
     "version": "1.0.0",
-    "main": "main.js",
+    "main": "main.jsx",
     "manifestVersion": 5,
     "host": [
         {
