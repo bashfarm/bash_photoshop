@@ -88,11 +88,11 @@ export async function GetDataFolderImageBase64ImgStr(fileName) {
     }
 }
 
-export async function SaveMergedLayersImgPNGToDataFolder() {
+export async function SaveMergedLayersImgPNGToDataFolder(fileName) {
     try {
         console.log('trying to save image');
         const dataFolder = await lfs.getDataFolder();
-        let entry = dataFolder.createEntry('mergedLayersImg.png', {
+        let entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
@@ -121,7 +121,7 @@ export async function SaveMergedLayersImgPNGToDataFolder() {
                 { commandName: 'Save File to Plugin Folder' }
             );
         });
-        console.log('image saved');
+        console.log(`image saved: '${fileName}'`);
     } catch (e) {
         console.log(e);
     }

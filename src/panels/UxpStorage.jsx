@@ -11,56 +11,80 @@ import {
     SaveTextFileToDataFolder,
     SaveB64ImageToBinaryFileToDataFolder
 } from '../utils/io_service';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Img2Img } from '../utils/ai_service';
 import { alert } from '../utils/general_utils';
 import { FormatBase64Image } from '../utils/ai_service';
 
+/**
+ * 
+ * @param {String} b64str 
+ * @returns 
+ */
 function IsBase64(b64str){
-    return b64str.includes("=")
+    return b64str.length > 20
 }
 export const UxpStorage = () => {
     
 
-    var [base64MergedImgStr, SetBase64MergedImgStr] = useState('m');
-    var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('m');
-
-    const SetMergedImageBase64 = () =>
-        GetDataFolderImageBase64ImgStr('mergedLayersImg.png').then((b64str) => {
-            SetBase64MergedImgStr(b64str['imageHeader'] + b64str['base64Data']);
-        });
+    var [base64MergedImgStr, SetBase64MergedImgStr] = useState('');
+    var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('');
+	const hasGenb64ToBinMounted = useRef(true);
+	const hasMergedb64ToBinMounted = useRef(true);
 
 
-    const GenerateImage = async () => {
+
+
+	useEffect(()=> {
+		if (hasGenb64ToBinMounted.current) {
+			hasGenb64ToBinMounted.current = false;
+			return;
+		  }
+
+		if (!IsBase64(base64GeneratedImgStr))
+		{
+			console.log(`Generated file is not in the correct base64 format cause it is '${base64GeneratedImgStr}'🙄`)
+
+		}
+		else
+			SaveB64ImageToBinaryFileToDataFolder("generatedFile.png", base64GeneratedImgStr)
+
+
+	}, [base64GeneratedImgStr])
+
+    useEffect(()=> {
+
+		if (hasMergedb64ToBinMounted.current) {
+			hasMergedb64ToBinMounted.current = false;
+			return;
+		  }
+
+        if (!IsBase64(base64MergedImgStr))
+        {
+            console.log(`Also merged file is not in the correct base64 format cause it is '${base64MergedImgStr}'🙄`)
+
+        }
+        else
+            SaveB64ImageToBinaryFileToDataFolder("mergedLayersImg.png", base64MergedImgStr)
+
+    }, [base64GeneratedImgStr])
+
+	const GenerateImage = async (mergeStr) => {
         try{
-            if(!IsBase64(base64GeneratedImgStr))
-            {
-                console.log(`We are trying to generate an image in the AI using this b64 string => '${base64GeneratedImgStr}.'🤦‍♂️`)
-                console.log(`Also generated file is not in the correct base64 format '${base64GeneratedImgStr}'🙄`)
-            }
-            var generatedImageResponse = await Img2Img(base64MergedImgStr);
-            console.log("🔥🔥 Generated image form app.js 🔥🔥")
+			if(!IsBase64(mergeStr))
+			{
+				console.log(`Merged file we are trying to generate from is not in the correct base64 format '${mergeStr}'🙄`)
+				return
+			}
+
+			var generatedImageResponse = await Img2Img(mergeStr);
+			console.log("🔥🔥 Generated image form UspxStorage.jsx 🔥🔥")
+            SetBase64GeneratedImgStr(FormatBase64Image(generatedImageResponse["images"][0]))
         } catch(e){
             console.log(e)
         }
             // Set the first generated image to the generated image string
-            SetBase64GeneratedImgStr(FormatBase64Image(generatedImageResponse["images"][0]))
-
-
-    
     }
-
-    useEffect(()=> {
-        if (!IsBase64(base64GeneratedImgStr))
-        {
-            console.log(`we are trying to set the generated image b64 string in the beginning component lifecycle when it is just '${base64GeneratedImgStr}'🙄`)
-            console.log(`Also generated file is not in the correct base64 format cause it is '${base64GeneratedImgStr}'🙄`)
-
-        }
-        else
-            SaveB64ImageToBinaryFileToDataFolder("generatedFile.png", base64GeneratedImgStr)
-
-    }, [base64GeneratedImgStr])
 
     return (
         <>
@@ -70,15 +94,18 @@ export const UxpStorage = () => {
                         try {
                             // SaveTextFileToDataFolder("yolo.txt", "yolo")
                             if (IsMoreThanOneVisibleLayer()) {
-                                MergeAndSaveAllVisibleLayersIntoImage()
-                                var delayInMilliseconds = 2000; //1 second
+								var mergedValue = await MergeAndSaveAllVisibleLayersIntoImage("mergedLayersImg.png")
+								console.log("🔥🔥🔥🔥🔥🔥🔥")
+								console.log(mergedValue)
+                                SetBase64MergedImgStr(mergedValue)
+                                var delayInMilliseconds = 10000; //1 second
 
                                 setTimeout(function() {
                                 //your code to be executed after 1 second
                                 }, delayInMilliseconds);
-                                SetMergedImageBase64()
-                                await SetNewestLayerOnTop()
-                                await GenerateImage()
+                                // await SetNewestLayerOnTop()
+								console.log("about to generate image")
+                                await GenerateImage(mergedValue)
                                 PlaceImageFromDataOnLayer("generatedFile.png")
 
                             } else {
