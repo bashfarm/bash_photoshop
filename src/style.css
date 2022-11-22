@@ -1,54 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .row > sp-action-button {
     flex-grow: 1;
-  }
-  .row > sp-action-button:not(:last-child) {
+}
+.row > sp-action-button:not(:last-child) {
     margin-right: 10px;
-  } 
-  .row  {
+}
+.row {
     margin-bottom: 10px;
-  }
-  
-  .column {
+}
+
+.column {
     justify-content: space-between;
-  }
-  
-  sp-heading {
+}
+
+sp-heading {
     text-align: center;
     margin-bottom: 15px;
-  }
-  
-  sp-textfield {
+}
+
+sp-textfield {
     width: 60px;
     margin-right: 10px;
-  }
-  sp-textfield:last-child {
+}
+sp-textfield:last-child {
     margin-right: 0;
-  }
-  
-  .image-container {
+}
+
+.image-container {
     border: 1px solid #888;
     border-radius: 8px;
     padding: 10px;
     width: 170px;
-    height: 170px;
+    /* height: 170px; */
     display: flex;
     justify-content: center;
     align-items: center;
     min-width: 170px;
     margin-right: 20px;
-  }
-  
-  img {
+}
+
+img {
     max-width: 150px;
     max-height: 150px;
     border-radius: 4px;
-  }
-  
-  sp-textfield.email {
+}
+
+sp-textfield.email {
     flex-grow: 1;
-  }
-  
-  sp-action-button.send {
+}
+
+sp-action-button.send {
     max-width: 70px;
     align-self: flex-end;
-  }
+}
