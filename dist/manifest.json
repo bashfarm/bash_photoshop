@@ -53,33 +53,17 @@
                     "width": 23,
                     "height": 23,
                     "path": "icons/DarkTheme.png",
-                    "scale": [
-                        1,
-                        2
-                    ],
-                    "theme": [
-                        "dark",
-                        "darkest"
-                    ],
-                    "species": [
-                        "chrome"
-                    ]
+                    "scale": [1, 2],
+                    "theme": ["dark", "darkest"],
+                    "species": ["chrome"]
                 },
                 {
                     "width": 23,
                     "height": 23,
                     "path": "icons/LightTheme.png",
-                    "scale": [
-                        1,
-                        2
-                    ],
-                    "theme": [
-                        "lightest",
-                        "light"
-                    ],
-                    "species": [
-                        "chrome"
-                    ]
+                    "scale": [1, 2],
+                    "theme": ["lightest", "light"],
+                    "species": ["chrome"]
                 }
             ]
         }
@@ -89,33 +73,17 @@
             "width": 48,
             "height": 48,
             "path": "icons/DarkTheme_plugins.png",
-            "scale": [
-                1,
-                2
-            ],
-            "theme": [
-                "dark",
-                "darkest"
-            ],
-            "species": [
-                "pluginList"
-            ]
+            "scale": [1, 2],
+            "theme": ["dark", "darkest"],
+            "species": ["pluginList"]
         },
         {
             "width": 48,
             "height": 48,
             "path": "icons/LightTheme_plugins.png",
-            "scale": [
-                1,
-                2
-            ],
-            "theme": [
-                "lightest",
-                "light"
-            ],
-            "species": [
-                "pluginList"
-            ]
+            "scale": [1, 2],
+            "theme": ["lightest", "light"],
+            "species": ["pluginList"]
         }
     ]
 }

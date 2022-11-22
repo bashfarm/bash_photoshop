@@ -4,77 +4,78 @@ const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 import './style.css';
-import { Main, IsMoreThanOneVisibleLayer } from './utils/layer_service';
+import { MergeAndSaveAllVisibleLayersIntoImage, IsMoreThanOneVisibleLayer } from './utils/layer_service';
 import {
     SaveMergedLayersImgPNGToDataFolder,
     GetDataFolderImageBase64ImgStr,
+    SaveTextFileToDataFolder,
+    SaveB64ImageToBinaryFileToDataFolder
 } from './utils/io_service';
 import { useState, useEffect } from 'react';
 import { Img2Img } from './utils/ai_service';
+import { alert } from './utils/general_utils';
+import { FormatBase64Image } from './utils/ai_service';
 
 const App = () => {
+
+
     var [base64MergedImgStr, SetBase64MergedImgStr] = useState('m');
+    var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('m');
+
     const SetMergedImageBase64 = () =>
         GetDataFolderImageBase64ImgStr('mergedLayersImg.png').then((b64str) => {
-            SetBase64MergedImgStr(b64str['base64Data']);
+            SetBase64MergedImgStr(b64str['imageHeader'] + b64str['base64Data']);
         });
 
-    useEffect(() => {
-        Img2Img(base64MergedImgStr).then((data) => {
-            console.log(newImageData);
-        });
-    }, [base64MergedImgStr]);
 
-    const PlaceImageFromDataOnLayer = async (imageName) => {
-        try {
-            const dataFolder = await fs.getDataFolder();
-            var placedDocument = await dataFolder.getEntry(imageName);
-            if (!placedDocument) return;
-            let tkn = fs.createSessionToken(placedDocument);
-            const res = await executeAsModal(
-                async () => {
-                    await bp(
-                        [
-                            {
-                                _obj: 'placeEvent',
-                                target: { _path: tkn, _kind: 'local' },
-                                linked: true,
-                            },
-                        ],
-                        {}
-                    );
-                    app.activeDocument.activeLayers[0].rasterize();
-                },
-                { commandName: 'open File' }
-            );
-        } catch (e) {
-            console.log(e);
-        }
-    };
+    const GenerateImage = async () => {
+        var generatedImageResponse = await Img2Img(base64MergedImgStr);
+        // Set the first generated image to the generated image string
+        SetBase64GeneratedImgStr(FormatBase64Image(generatedImageResponse["images"][0]))
+    
+    }
+
+    useEffect(()=> {
+        SaveB64ImageToBinaryFileToDataFolder("generatedFile.png", base64GeneratedImgStr)
+    }, [base64GeneratedImgStr])
 
     return (
         <>
             <div className="column">
                 <sp-action-button
-                    onClick={() => {
+                    onClick={async () => {
                         try {
+                            // SaveTextFileToDataFolder("yolo.txt", "yolo")
                             if (IsMoreThanOneVisibleLayer()) {
-                                // Main()
-                                // SaveMergedLayersImgPNGToDataFolder()
-                                // PlaceImageFromDataOnLayer("mergedLayersImg.png")
-                                SetMergedImageBase64();
+                                MergeAndSaveAllVisibleLayersIntoImage()
+                                SetMergedImageBase64()
+                                await GenerateImage()
+                                await SaveB64ImageToBinaryFileToDataFolder("generatedImg.png", base64MergedImgStr)
+                                
+                                PlaceImageFromDataOnLayer("generatedFile.png")
+
                             } else {
+                                alert("Not enough layers!")
                                 console.log('not enough layers');
                             }
                         } catch (e) {
+                            console.log(e)
                             console.log('couldnt run visible merge');
                         }
                     }}
                 >
-                    Generate New Image Layer
+                    CombineLayers
                 </sp-action-button>
                 {/* <sp-action-button onClick={SetMergedImageBase64}>Get Base 64 </sp-action-button> */}
                 <sp-label>{JSON.stringify(base64MergedImgStr)}</sp-label>
+                {/* This below can work */}
+                {/* <sp-action-button onClick={GenerateImage}>Generate New Image</sp-action-button> */}
+                <div className="row" style={{ alignItems: "stretch" }}/>
+                {/* Just rendering the newly generated image */}
+                <div className="image-container">
+                    <img src={base64GeneratedImgStr} alt="preview-image" />
+                </div>
+
             </div>
         </>
     );
