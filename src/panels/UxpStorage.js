@@ -1,24 +1,18 @@
-const fs = require('uxp').storage.localFileSystem;
-const photoshop = require('photoshop');
-const app = photoshop.app;
-const bp = photoshop.action.batchPlay;
-const executeAsModal = photoshop.core.executeAsModal;
-import './style.css';
-import { MergeAndSaveAllVisibleLayersIntoImage, IsMoreThanOneVisibleLayer } from './utils/layer_service';
+import React, { useState, useEffect } from 'react';
 import {
-    SaveMergedLayersImgPNGToDataFolder,
+    PlaceImageFromDataOnLayer,
+    MergeAndSaveAllVisibleLayersIntoImage,
+    IsMoreThanOneVisibleLayer,
+} from 'utils/layer_service';
+import {
     GetDataFolderImageBase64ImgStr,
-    SaveTextFileToDataFolder,
-    SaveB64ImageToBinaryFileToDataFolder
-} from './utils/io_service';
-import { useState, useEffect } from 'react';
-import { Img2Img } from './utils/ai_service';
-import { alert } from './utils/general_utils';
-import { FormatBase64Image } from './utils/ai_service';
+    SaveB64ImageToBinaryFileToDataFolder,
+} from 'utils/io_service';
+import { Img2Img, FormatBase64Image } from 'utils/ai_service';
+import { alert } from 'utils/general_utils';
+import '../style.css';
 
-const App = () => {
-
-
+export const UxpStorage = () => {
     var [base64MergedImgStr, SetBase64MergedImgStr] = useState('m');
     var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('m');
 
@@ -27,17 +21,20 @@ const App = () => {
             SetBase64MergedImgStr(b64str['imageHeader'] + b64str['base64Data']);
         });
 
-
     const GenerateImage = async () => {
         var generatedImageResponse = await Img2Img(base64MergedImgStr);
         // Set the first generated image to the generated image string
-        SetBase64GeneratedImgStr(FormatBase64Image(generatedImageResponse["images"][0]))
-    
-    }
+        SetBase64GeneratedImgStr(
+            FormatBase64Image(generatedImageResponse['images'][0])
+        );
+    };
 
-    useEffect(()=> {
-        SaveB64ImageToBinaryFileToDataFolder("generatedFile.png", base64GeneratedImgStr)
-    }, [base64GeneratedImgStr])
+    useEffect(() => {
+        SaveB64ImageToBinaryFileToDataFolder(
+            'generatedFile.png',
+            base64GeneratedImgStr
+        );
+    }, [base64GeneratedImgStr]);
 
     return (
         <>
@@ -47,19 +44,21 @@ const App = () => {
                         try {
                             // SaveTextFileToDataFolder("yolo.txt", "yolo")
                             if (IsMoreThanOneVisibleLayer()) {
-                                MergeAndSaveAllVisibleLayersIntoImage()
-                                SetMergedImageBase64()
-                                await GenerateImage()
-                                await SaveB64ImageToBinaryFileToDataFolder("generatedImg.png", base64MergedImgStr)
-                                
-                                PlaceImageFromDataOnLayer("generatedFile.png")
+                                MergeAndSaveAllVisibleLayersIntoImage();
+                                SetMergedImageBase64();
+                                await GenerateImage();
+                                await SaveB64ImageToBinaryFileToDataFolder(
+                                    'generatedImg.png',
+                                    base64MergedImgStr
+                                );
 
+                                PlaceImageFromDataOnLayer('generatedFile.png');
                             } else {
-                                alert("Not enough layers!")
+                                alert('Not enough layers!');
                                 console.log('not enough layers');
                             }
                         } catch (e) {
-                            console.log(e)
+                            console.log(e);
                             console.log('couldnt run visible merge');
                         }
                     }}
@@ -70,15 +69,12 @@ const App = () => {
                 <sp-label>{JSON.stringify(base64MergedImgStr)}</sp-label>
                 {/* This below can work */}
                 {/* <sp-action-button onClick={GenerateImage}>Generate New Image</sp-action-button> */}
-                <div className="row" style={{ alignItems: "stretch" }}/>
+                <div className="row" style={{ alignItems: 'stretch' }} />
                 {/* Just rendering the newly generated image */}
                 <div className="image-container">
                     <img src={base64GeneratedImgStr} alt="preview-image" />
                 </div>
-
             </div>
         </>
     );
 };
-
-export default App;

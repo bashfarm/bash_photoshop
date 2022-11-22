@@ -1,11 +1,11 @@
-import App from './App';
-const manifest = require('../plugin/manifest.json');
-
+import React from 'react';
+import PanelController from './controllers/PanelController';
 import { entrypoints } from 'uxp';
 
-import PanelController from './controllers/PanelController';
+import { UxpStorage } from './panels/UxpStorage.js';
+
 entrypoints.setup({
     panels: {
-        [manifest.entrypoints[0].id]: PanelController(<App />, {}),
+        uxpstorage: PanelController(<UxpStorage />, {}),
     },
 });

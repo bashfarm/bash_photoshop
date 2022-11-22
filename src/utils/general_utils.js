@@ -1,5 +1,7 @@
-import photoshop from "photoshop"
+import photoshop from 'photoshop';
 
-const alert = (s) => { return photoshop.app.showAlert(s) }
+const alert = (s) => {
+    return photoshop.app.showAlert(s);
+};
 
-export { alert }
+export { alert };

@@ -3,6 +3,7 @@
         "browser": true,
         "es2021": true
     },
+    "ignorePatterns": ["webpack.*.js"],
     "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
     "overrides": [],
     "parserOptions": {
