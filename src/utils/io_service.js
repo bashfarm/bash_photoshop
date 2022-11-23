@@ -47,7 +47,6 @@ export async function SaveB64ImageToBinaryFileToDataFolder(fileName, data) {
         console.log(UnformatBase64Image(data));
         data = base64js.toByteArray(UnformatBase64Image(data));
         console.log('converting with base64-js');
-        console.log(data);
         return await SaveBinaryFileToDataFolder(fileName, data);
     } catch (e) {
         console.log(e);

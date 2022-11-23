@@ -1,4 +1,4 @@
-export async function Img2Img(imgb64Str) {
+export async function Img2Img(imgb64Str, height, width, prompt) {
     try {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
@@ -12,7 +12,7 @@ export async function Img2Img(imgb64Str) {
             inpaint_full_res: true,
             inpaint_full_res_padding: 0,
             inpainting_mask_invert: 0,
-            prompt: 'A doodle of colored knife cuts leaving colored blood on the illustration 8k ',
+            prompt: prompt,
             seed: -1,
             subseed: -1,
             subseed_strength: 0,
@@ -22,8 +22,8 @@ export async function Img2Img(imgb64Str) {
             n_iter: 1,
             steps: 20,
             cfg_scale: 20,
-            width: 512,
-            height: 512,
+            width: width,
+            height: height,
             restore_faces: false,
             tiling: false,
             negative_prompt: '',
@@ -48,7 +48,13 @@ export async function Img2Img(imgb64Str) {
             'http://127.0.0.1:7860/sdapi/v1/img2img',
             requestOptions
         );
-        return response.json();
+		var data = response.json()
+		console.log(
+			data
+		)
+		console.log("yolo")
+
+        return data;
     } catch (e) {
         console.log(e);
     }

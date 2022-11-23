@@ -145,6 +145,10 @@ function removeItem(arr, value) {
     return arr;
   }
 
+  /**
+   * https://developer.adobe.com/photoshop/uxp/2022/ps_reference/classes/layer/
+   * @param {*} layer 
+   */
 async function SelectLayer(layer){
     const res = await executeAsModal(
         async () => {
@@ -152,8 +156,8 @@ async function SelectLayer(layer){
                 [
                     {
                       "_obj": "select",
-                      "_target": [{ "_name": layer._name, "_ref": "layer" }],
-                      "layerID": [layer._id],
+                      "_target": [{ "_name": layer.name, "_ref": "layer" }],
+                      "layerID": [layer.id],
                       "makeVisible": true
                     }
                   ]
