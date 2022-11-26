@@ -1,3 +1,5 @@
+const GENERATEDFILENAME = "generatedFile.png"
+
 export async function Img2Img(imgb64Str, height, width, prompt) {
     try {
         var myHeaders = new Headers();

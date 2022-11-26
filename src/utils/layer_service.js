@@ -1,11 +1,8 @@
 const photoshop = require('photoshop');
-const fs = require('uxp').storage.localFileSystem;
 const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 const lfs = require('uxp').storage.localFileSystem;
-const base64js = require('base64-js');
-import { GetDataFolderImageBase64ImgStr, SaveB64ImageToBinaryFileToDataFolder  } from './io_service';
 
 /**
  * @returns {Array} the visible layers in the active document
