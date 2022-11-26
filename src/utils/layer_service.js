@@ -5,35 +5,7 @@ const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 const lfs = require('uxp').storage.localFileSystem;
 const base64js = require('base64-js');
-import { SaveMergedLayersImgPNGToDataFolder } from './io_service';
-import { GetDataFolderImageBase64ImgStr  } from './io_service';
-/**
- * The entry point to the service.  For now...
- * @returns null if there is not more than one visible layer
- */
-export async function MergeAndSaveAllVisibleLayersIntoImage(fileName) {
-    try {
-        if (!IsMoreThanOneVisibleLayer()) {
-            console.log(
-                'Could not merge visible layers as only one was available'
-            );
-            return;
-        }
-
-        await mergeVisibleLyrs();
-        await MakeLayersInvisible();
-        SaveMergedLayersImgPNGToDataFolder(fileName);
-		var fileB64Obj = await GetDataFolderImageBase64ImgStr(fileName)
-
-		console.log("setting merged b64")
-		console.log(fileB64Obj['imageHeader'] + fileB64Obj['base64Data'])
-		console.log("done setting merged b64")
-		return fileB64Obj['imageHeader'] + fileB64Obj['base64Data']
-		 
-    } catch (e) {
-        console.log(e);
-    }
-}
+import { GetDataFolderImageBase64ImgStr, SaveB64ImageToBinaryFileToDataFolder  } from './io_service';
 
 /**
  * @returns {Array} the visible layers in the active document
@@ -49,18 +21,6 @@ export function GetVisibleLayers() {
     return visibleLayers;
 }
 
-/**
- * Turns all visible layers invisible except the first one that was merged.
- * After this we typically need to send this to the API to generate new details.
- */
-async function MakeLayersInvisible() {
-    await executeAsModal(async () => {
-        for (var visibleLayer of GetVisibleLayers().slice(1)) {
-            // Might not be defined.  Thats cool 👍
-            if (visibleLayer) visibleLayer.visible = false;
-        }
-    });
-}
 
 /**
  *
@@ -68,31 +28,6 @@ async function MakeLayersInvisible() {
  */
 export function IsMoreThanOneVisibleLayer() {
     return GetVisibleLayers().length > 1;
-}
-
-async function mergeVisibleLyrs() {
-    try{
-        const res = await executeAsModal(async () => {
-            var visibleLayers = GetVisibleLayers();
-            visibleLayers[0].selected = true;
-            await bp(
-                [
-                    {
-                        _obj: 'mergeVisible',
-                        duplicate: true,
-                        _options: {
-                            dialogOptions: 'dontDisplay',
-                        },
-                    },
-                ],
-                { commandName: 'Generate Combined Layers' }
-            );
-        });
-        console.log('finished Merging Layers');
-    } catch(e){
-        console.log(e)
-    }
-
 }
 
 export const PlaceImageFromDataOnLayer = async (imageName) => {
@@ -123,49 +58,126 @@ export const PlaceImageFromDataOnLayer = async (imageName) => {
 };
 
 
-/***
- * Not working
- */
-export async function SetNewestLayerOnTop(){
-    var layers = GetVisibleLayers();
-    var maxLayer = Math.max(...layers.map(o => o._id))
-    const res = await executeAsModal(
-        async () => {
-    removeItem(app.activeDocument.activeLayers, maxLayer)
-    app.activeDocument.activeLayers.push(maxLayer)
-        })
-    
-}
+async function SelectAllVisibleLayers(verbose = true) {
+    try {
+        const res = await executeAsModal(async () => {
+            app.activeDocument.layers.forEach((layer) => {
+                if (layer.visible == true) layer.selected = true;
+            });
+        });
 
-function removeItem(arr, value) {
-    var index = arr.indexOf(value);
-    if (index > -1) {
-      arr.splice(index, 1);
+        if (verbose) console.log(`Selecting all visible layers`);
+    } catch (e) {
+        console.error(e);
     }
-    return arr;
-  }
-
-  /**
-   * https://developer.adobe.com/photoshop/uxp/2022/ps_reference/classes/layer/
-   * @param {*} layer 
-   */
-async function SelectLayer(layer){
-    const res = await executeAsModal(
-        async () => {
-            await bp(
-                [
-                    {
-                      "_obj": "select",
-                      "_target": [{ "_name": layer.name, "_ref": "layer" }],
-                      "layerID": [layer.id],
-                      "makeVisible": true
-                    }
-                  ]
-                  ,
-                {}
-            );
-        },
-        { commandName: 'Select Layer' }
-    );
-      
 }
+
+export function GetSelectedLayers() {
+    return app.activeDocument.layers.filter((layer) => layer.selected);
+}
+
+
+export function GetTopLayer(selected=false, active=false){
+	if (selected)
+    	return GetSelectedLayers()[0];
+	
+	if (active)
+		return photoshop.app.activeDocument.activeLayers[0]
+	return photoshop.app.activeDocument.layers[0]
+}
+
+export function MoveLayerToTop(layer){
+	try{
+		var topLayer = GetTopLayer()
+		layer.move(
+			topLayer,
+			photoshop.constants.ElementPlacement.PLACEBEFORE
+		);
+	}catch(e){
+		console.log(e)
+	}
+
+}
+
+
+export async function CreateMergedLayer() {
+    try {
+        console.log('we in create merged layer');
+
+        const res = await executeAsModal(async () => {
+            await SelectAllVisibleLayers();
+            var selectedLayers = GetSelectedLayers();
+            selectedLayers.forEach(async (layer) => {
+                if (layer.visible) {
+                    var newLayer = await layer.duplicate({
+                        insertionLocation:
+                            photoshop.constants.ElementPlacement.PLACEBEFORE,
+                    });
+                    newLayer.selected = false;
+                    newLayer.visible = true;
+                    return newLayer;
+                }
+            });
+            selectedLayers.forEach((layer) => {
+                layer.visible = false;
+                layer.selected = false;
+            });
+
+            // Merge all visible layers
+            await photoshop.app.activeDocument.mergeVisibleLayers();
+
+            // Get reference to layers
+            var mergedLayer = GetTopLayer({active: true})
+
+			if (mergedLayer){
+				MoveLayerToTop(mergedLayer)
+				mergedLayer.name = `Merged Layered: ${randomlyPickLayerName()}`
+				return mergedLayer;
+			}
+
+        });
+
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function randomlyPickLayerName(){
+	var items = ["Banana", "Kratos", "Goku", "Geralt", "All Might", "Midoriya", "Vegeta", "Botan", "Kuwabara"]
+	var item = items[Math.floor(Math.random()*items.length)];
+	return item
+}
+
+
+export async function DeselectLayers(){
+	await executeAsModal(() => {
+		GetSelectedLayers().forEach((layer) => {
+			layer.selected = false
+		})
+	})
+}
+
+export async function CreateTopLayerMask(){
+	var topLayer = GetTopLayer();
+	// Can't find a check if there is a layer mask on the layer before running batchplay. 
+	await CreateLayerMask(topLayer)
+}
+
+export async function CreateLayerMask(layer){
+	await executeAsModal(async () => {
+		await DeselectLayers()
+		layer.selected = true
+		await app.batchPlay([
+			{
+				"_obj": "make",
+				"at": { "_enum": "channel", "_ref": "channel", "_value": "mask" },
+				"new": { "_class": "channel" },
+				"using": { "_enum": "userMaskEnabled", "_value": "revealAll" }
+			}
+		]
+		)
+	})
+
+}
+
+
