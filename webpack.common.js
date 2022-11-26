@@ -22,9 +22,9 @@ module.exports = {
         // https://stackoverflow.com/questions/64557638/how-to-polyfill-node-core-modules-in-webpack-5
         modules: [path.resolve(__dirname, './src'), 'node_modules'],
         alias: {
-            panels: path.resolve(__dirname, './src/panels'),
-            components: path.resolve(__dirname, './src/panels/components'),
-            utils: path.resolve(__dirname, './src/utils'),
+            '@panels': path.resolve(__dirname, './src/panels'),
+            '@components': path.resolve(__dirname, './src/components'),
+            '@utils': path.resolve(__dirname, './src/utils'),
         },
         fallback: {
             fs: false,

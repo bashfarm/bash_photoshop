@@ -16,7 +16,8 @@
         "linebreak-style": ["error", "unix"],
         "quotes": ["error", "single"],
         "semi": ["error", "always"],
-        "no-restricted-modules": ["warn"]
+        "no-restricted-modules": ["warn"],
+        "react/prop-types": "off"
     },
     "settings": {
         "import/resolver": {
