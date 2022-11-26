@@ -48,6 +48,7 @@
     "dependencies": {
         "classnames": "^2.3.1",
         "cross-env": "^7.0.3",
+        "dotenv-webpack": "^8.0.1",
         "email-validator": "^2.0.4",
         "history": "^5.0.0",
         "react": "^17.0.2",

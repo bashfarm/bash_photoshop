@@ -58,7 +58,7 @@ export async function SaveB64ImageToBinaryFileToDataFolder(fileName, data) {
  * @param {*} base64Data
  * @returns
  */
-function IsBase64Str(base64Data) {
+export function IsBase64Str(base64Data) {
     var base64Rejex =
         /^(?:[A-Z0-9+\/]{4})*(?:[A-Z0-9+\/]{2}==|[A-Z0-9+\/]{3}=|[A-Z0-9+\/]{4})$/i;
     var isBase64Valid = base64Rejex.test(base64Data); // base64Data is the base64 string
@@ -104,7 +104,9 @@ export async function SaveDocumentToPluginData(fileName) {
             );
         });
 
-        console.log('Saved Document as PNG binary data to image in plugin folder');
+        console.log(
+            'Saved Document as PNG binary data to image in plugin folder'
+        );
     } catch (e) {
         console.log('something not write');
         console.log(e);

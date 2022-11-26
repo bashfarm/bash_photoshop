@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 // SEE: https://webpack.js.org/guides/production/#specify-the-mode
 
@@ -92,5 +93,6 @@ module.exports = {
         new CopyPlugin({
             patterns: [path.resolve(__dirname, 'plugin')],
         }),
+        new Dotenv(),
     ],
 };
