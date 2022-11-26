@@ -1,3 +1,5 @@
+const GENERATEDFILENAME = "generatedFile.png"
+
 export async function Img2Img(imgb64Str, height, width, prompt) {
     try {
         var myHeaders = new Headers();
@@ -80,4 +82,34 @@ export function UnformatBase64Image(b64imgStr) {
     if (b64imgStr.includes('data:image'))
         return b64imgStr.replace(b64header, '');
     return b64imgStr;
+}
+
+export async function GenerateImage (mergeStr, height, width, prompt) {
+	try {
+		if (!IsBase64(mergeStr)) {
+			console.log(
+				`Merged file we are trying to generate from is not in the correct base64 format '${mergeStr}'🙄`
+			);
+			return;
+		}
+		var generatedImageResponse = await Img2Img(
+			mergeStr,
+			height,
+			width,
+			prompt
+		);
+		console.log('🔥🔥 Generated image form UspxStorage.jsx 🔥🔥');
+		return FormatBase64Image(generatedImageResponse['images'][0])
+	} catch (e) {
+		console.log(e);
+	}
+	// Set the first generated image to the generated image string
+};
+
+
+export async function GenerateAILayer(imgB64, width, height, prompt) {
+    console.log('Generate AI layer');
+	var genb64Str = await GenerateImage(imgB64, height, width, prompt)
+	await SaveB64ImageToBinaryFileToDataFolder(GENERATEDFILENAME, genb64Str)
+	await PlaceImageFromDataOnLayer(GENERATEDFILENAME)
 }

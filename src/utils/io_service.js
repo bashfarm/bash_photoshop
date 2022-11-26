@@ -87,41 +87,26 @@ export async function GetDataFolderImageBase64ImgStr(fileName) {
     }
 }
 
-export async function SaveMergedLayersImgPNGToDataFolder(fileName) {
+export async function SaveDocumentToPluginData(fileName) {
+    const dataFolder = await lfs.getDataFolder();
     try {
-        console.log('trying to save image');
-        const dataFolder = await lfs.getDataFolder();
         let entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
-        let res = await entry;
-        let tkn = lfs.createSessionToken(res);
-        console.log('after token');
-        // let res = await entry;
-        console.log(res.toString());
+        var fileRef = await entry;
+        console.log(fileRef.nativePath.replace('\\\\', '\\'));
         await executeAsModal(async () => {
-            await bp(
-                [
-                    {
-                        _obj: 'save',
-                        as: {
-                            _obj: 'PNGFormat',
-                            method: { _enum: 'PNGMethod', _value: 'thorough' },
-                        },
-                        in: { _path: tkn, _kind: 'local' }, // <= using the token here to save w/ different name
-                        lowerCase: true,
-                        saveStage: {
-                            _enum: 'saveStageType',
-                            _value: 'saveBegin',
-                        },
-                    },
-                ],
-                { commandName: 'Save File to Plugin Folder' }
+            await photoshop.app.activeDocument.saveAs.png(
+                fileRef,
+                { quality: 12 },
+                true
             );
         });
-        console.log(`image saved: '${fileName}'`);
+
+        console.log('Saved Document as PNG binary data to image in plugin folder');
     } catch (e) {
+        console.log('something not write');
         console.log(e);
     }
 }
