@@ -41,8 +41,8 @@ export const SmallUiDetail = () => {
     const [prompt, setPrompt] = useState('');
     const [images, setImages] = useState([]);
     const [loadingImages, setLoadingImages] = useState(false);
-    // const bears = useAppStore((state) => state.bears);
-    // const increasePopulation = useAppStore((state) => state.increasePopulation);
+    // var bears = useAppStore((state) => state.bears);
+    // var increasePopulation = useAppStore((state) => state.increasePopulation);
     // let newimg = FormatBase64Image(image[0]);
 
     const generateImages = async (prompt) => {
@@ -65,6 +65,7 @@ export const SmallUiDetail = () => {
     };
     return (
         <div className="flex flex-col">
+			
             <Heading size="XS" weight="light">
                 Generated Prompt
             </Heading>

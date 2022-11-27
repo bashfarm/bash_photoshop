@@ -5,23 +5,20 @@ const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 import '../style.css';
 import {
-    MergeAndSaveAllVisibleLayersIntoImage,
-    IsMoreThanOneVisibleLayer,
-    PlaceImageFromDataOnLayer,
-    SetNewestLayerOnTop,
-    GetVisibleLayers,
+	CreateMergedLayer, DeselectLayers, GetTopLayer, PlaceImageFromDataOnLayer
 } from '../utils/layer_service';
 import {
-    SaveMergedLayersImgPNGToDataFolder,
     GetDataFolderImageBase64ImgStr,
-    SaveTextFileToDataFolder,
     SaveB64ImageToBinaryFileToDataFolder,
 } from '../utils/io_service';
 import { useState, useEffect, useRef } from 'react';
-import { Img2Img } from '../utils/ai_service';
-import { alert } from '../utils/general_utils';
-import { FormatBase64Image } from '../utils/ai_service';
-import merge from 'webpack-merge';
+import { GenerateAILayer, Img2Img } from '../utils/ai_service';
+import { SaveDocumentToPluginData } from '../utils/io_service';
+import { HidingTool, UnHidingTool } from '../utils/tools_service';
+
+
+const MERGEDFILENAME = "mergedFile.png"
+const GENERATEDFILENAME = "generatedFile.png"
 
 /**
  *
@@ -71,78 +68,33 @@ export const UxpStorage = () => {
             );
     }, [base64GeneratedImgStr]);
 
-    const GenerateImage = async (mergeStr, height, width, prompt) => {
-        try {
-            if (!IsBase64(mergeStr)) {
-                console.log(
-                    `Merged file we are trying to generate from is not in the correct base64 format '${mergeStr}'🙄`
-                );
-                return;
-            }
-            var generatedImageResponse = await Img2Img(
-                mergeStr,
-                height,
-                width,
-                prompt
-            );
-            console.log('🔥🔥 Generated image form UspxStorage.jsx 🔥🔥');
-            SetBase64GeneratedImgStr(
-                FormatBase64Image(generatedImageResponse['images'][0])
-            );
-        } catch (e) {
-            console.log(e);
-        }
-        // Set the first generated image to the generated image string
-    };
+
 
     return (
         <>
-            <div className="column">
-                <sp-action-button
-                    onClick={async () => {
-                        try {
-                            // SaveTextFileToDataFolder("yolo.txt", "yolo")
-                            if (IsMoreThanOneVisibleLayer()) {
-                                var mergedValue =
-                                    await MergeAndSaveAllVisibleLayersIntoImage(
-                                        'mergedLayersImg.png'
-                                    );
-                                console.log('🔥🔥🔥🔥🔥🔥🔥');
-                                console.log(mergedValue);
-                                SetBase64MergedImgStr(mergedValue);
-                                console.log('about to generate image');
-                                var theBounds = app.activeDocument.layers[0].bounds;
-								console.log(theBounds.width)
-								console.log(theBounds.height)
-                                await GenerateImage(
-                                    mergedValue,
-                                    theBounds.width,
-                                    theBounds.height,
-                                    'A doodle of colored knife cuts leaving colored blood on the illustration 8k '
-                                );
-                                PlaceImageFromDataOnLayer('generatedFile.png');
-                            } else {
-                                alert('Not enough layers Selected 😅!');
-                                console.log('not enough layers');
-                            }
-                        } catch (e) {
-                            console.log(e);
-                            console.log('couldnt run visible merge');
-                        }
-                    }}
-                >
-                    CombineLayers
-                </sp-action-button>
-                {/* <sp-action-button onClick={SetMergedImageBase64}>Get Base 64 </sp-action-button> */}
-                <sp-label>{JSON.stringify(base64MergedImgStr)}</sp-label>
-                {/* This below can work */}
-                {/* <sp-action-button onClick={GenerateImage}>Generate New Image</sp-action-button> */}
-                <div className="row" style={{ alignItems: 'stretch' }} />
-                {/* Just rendering the newly generated image */}
-                <div className="image-container">
-                    <img src={base64GeneratedImgStr} alt="preview-image" />
-                </div>
-            </div>
+            <sp-button
+                onClick={async () => {
+					await CreateMergedLayer();
+					await SaveDocumentToPluginData(MERGEDFILENAME)
+				}}
+            >
+                Merge Layers
+            </sp-button>
+            <sp-button
+                onClick={() => GenerateAILayer('New AI Generated Layer Name', SetBase64GeneratedImgStr, GetTopLayer({active: true}))}
+            >
+                Generate AI layer
+            </sp-button>
+            <sp-button onClick={async () => {
+				await HidingTool()
+				}}>Hiding Tool</sp-button>
+            <sp-button onClick={() => UnHidingTool()}>UnHiding Tool</sp-button>
         </>
     );
 };
+
+
+
+
+
+
