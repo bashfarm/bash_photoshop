@@ -5,7 +5,8 @@
         "preinstall": "npx npm-force-resolutions",
         "build": "webpack --config webpack.dev.js",
         "watch": "nodemon -w src -e js,json,jsx,css,html -w plugin -x \"npm run build\"",
-        "prod": "webpack --config webpack.prod.js"
+        "prod": "webpack --config webpack.prod.js",
+        "prepare": "husky install"
     },
     "license": "none",
     "private": true,
@@ -30,7 +31,9 @@
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-react": "^7.31.11",
         "file-loader": "^6.2.0",
+        "husky": ">=6",
         "json-loader": "^0.5.7",
+        "lint-staged": ">=10",
         "nodemon": "^2.0.20",
         "path-browserify": "^1.0.1",
         "postcss": "^8.4.19",
@@ -57,5 +60,9 @@
         "react-uxp-spectrum": "^0.1.10",
         "zustand": "^4.1.4"
     },
-    "resolutions": {}
+    "resolutions": {},
+    "lint-staged": {
+        "*.{js, jsx}": "eslint --cache --fix",
+        "*.{js,jsx,ts,tsx,md,html,css}": "prettier --write"
+    }
 }
