@@ -55,23 +55,12 @@ export async function SaveB64ImageToBinaryFileToDataFolder(fileName, data) {
 
 /**
  * BROKEN NOT WORKING
- * @param {*} base64Data
+ * @param {String} base64Data
  * @returns
  */
 export function IsBase64Str(base64Data) {
-    var base64Rejex =
-        /^(?:[A-Z0-9+\/]{4})*(?:[A-Z0-9+\/]{2}==|[A-Z0-9+\/]{3}=|[A-Z0-9+\/]{4})$/i;
-    var isBase64Valid = base64Rejex.test(base64Data); // base64Data is the base64 string
-
-    if (isBase64Valid) {
-        // true if base64 formate
-        console.log('It is base64');
-        return true;
-    } else {
-        // false if not in base64 formate
-        console.log('it is not in base64');
-        return false;
-    }
+	// Not a good test
+	return base64Data.length > 200
 }
 
 export async function GetDataFolderImageBase64ImgStr(fileName) {

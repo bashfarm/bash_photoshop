@@ -5,20 +5,28 @@ const bp = photoshop.action.batchPlay;
 const executeAsModal = photoshop.core.executeAsModal;
 import '../style.css';
 import {
-	CreateMergedLayer, DeselectLayers, GetTopLayer, PlaceImageFromDataOnLayer
+    CreateMergedLayer,
+    DeselectLayers,
+    GetTopLayer,
+    PlaceImageFromDataOnLayer,
 } from '../utils/layer_service';
 import {
     GetDataFolderImageBase64ImgStr,
     SaveB64ImageToBinaryFileToDataFolder,
 } from '../utils/io_service';
 import { useState, useEffect, useRef } from 'react';
-import { GenerateAILayer, Img2Img } from '../utils/ai_service';
+import {
+    GenerateAILayer,
+    GetImageProcessingProgress,
+    Img2Img,
+} from '../utils/ai_service';
 import { SaveDocumentToPluginData } from '../utils/io_service';
 import { HidingTool, UnHidingTool } from '../utils/tools_service';
+import { Progressbar } from 'react-uxp-spectrum';
+import { ProgressButton } from '../components/ProgressButton';
 
-
-const MERGEDFILENAME = "mergedFile.png"
-const GENERATEDFILENAME = "generatedFile.png"
+const MERGEDFILENAME = 'mergedFile.png';
+const GENERATEDFILENAME = 'generatedFile.png';
 
 /**
  *
@@ -31,70 +39,63 @@ function IsBase64(b64str) {
 export const UxpStorage = () => {
     var [base64MergedImgStr, SetBase64MergedImgStr] = useState('');
     var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('');
-    const hasGenb64ToBinMounted = useRef(true);
-    const hasMergedb64ToBinMounted = useRef(true);
+
+    var [imageProgress, SetImageProgress] = useState(0);
+    var [timer, SetTimer] = useState({});
 
     useEffect(() => {
-        if (hasGenb64ToBinMounted.current) {
-            hasGenb64ToBinMounted.current = false;
-            return;
+        if (imageProgress == 1) {
+            clearInterval(timer);
         }
-
-        if (!IsBase64(base64GeneratedImgStr)) {
-            console.log(
-                `Generated file is not in the correct base64 format cause it is '${base64GeneratedImgStr}'🙄`
-            );
-        } else
-            SaveB64ImageToBinaryFileToDataFolder(
-                'generatedFile.png',
-                base64GeneratedImgStr
-            );
-    }, [base64GeneratedImgStr]);
-
-    useEffect(() => {
-        if (hasMergedb64ToBinMounted.current) {
-            hasMergedb64ToBinMounted.current = false;
-            return;
-        }
-
-        if (!IsBase64(base64MergedImgStr)) {
-            console.log(
-                `Also merged file is not in the correct base64 format cause it is '${base64MergedImgStr}'🙄`
-            );
-        } else
-            SaveB64ImageToBinaryFileToDataFolder(
-                'mergedLayersImg.png',
-                base64MergedImgStr
-            );
-    }, [base64GeneratedImgStr]);
-
-
+    }, [imageProgress]);
 
     return (
         <>
             <sp-button
                 onClick={async () => {
-					await CreateMergedLayer();
-					await SaveDocumentToPluginData(MERGEDFILENAME)
-				}}
+                    await CreateMergedLayer();
+                    await SaveDocumentToPluginData(MERGEDFILENAME);
+                    SetBase64MergedImgStr(
+                        (await GetDataFolderImageBase64ImgStr(MERGEDFILENAME))
+                            .base64Data
+                    );
+                }}
             >
                 Merge Layers
             </sp-button>
-            <sp-button
-                onClick={() => GenerateAILayer('New AI Generated Layer Name', SetBase64GeneratedImgStr, GetTopLayer({active: true}))}
+            <ProgressButton
+                // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
+                //  512x512 is the cheapest.  We will have to have a final step of upscaling
+                longRunningFunction={() =>
+                    GenerateAILayer(
+                        base64MergedImgStr,
+                        512,
+                        512,
+                        'Colorful illustrated anime knifes sloped to the right in the illustration'
+                    )
+                }
+                progressQueryFunction={GetImageProcessingProgress}
+                queryResponseParser={(response) => response['progress']}
+                progressSetter={SetImageProgress}
+                pollingSeconds={1}
             >
-                Generate AI layer
+                Generate AI Layer
+            </ProgressButton>
+            <Progressbar
+                min={0}
+                max={1}
+                value={imageProgress}
+                id={1}
+                className="w-1/3 py-2 mr-2"
+            ></Progressbar>
+            <sp-button
+                onClick={async () => {
+                    await HidingTool();
+                }}
+            >
+                Hiding Tool
             </sp-button>
-            <sp-button onClick={async () => {
-				await HidingTool()
-				}}>Hiding Tool</sp-button>
             <sp-button onClick={() => UnHidingTool()}>UnHiding Tool</sp-button>
         </>
     );
 };
-
-
-
-
-
-

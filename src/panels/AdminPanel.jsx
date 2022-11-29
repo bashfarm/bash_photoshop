@@ -1,5 +1,9 @@
 import { useState } from 'react';
 
+// Deprecated, lets just train in Automatics GUI.  It is better suited, we will just leverage that for figuring out settings and then just.
+// Though if we did make the admin panel here, we could save directly in the settings folders and ship more easily.  No, lets use a low code tool that 
+// that has access to local files. <- didn't see anything...maybe building a way to figure out settings and upload them to a google drive folder, then
+// this plugin checks for the settings and if it has changed then make an update.
 export const AdminPanel = () => {
     const [denoisingStrength, SetDenoisingStrength] = useState(0.01);
     const [resizeMode, SetResizeMode] = useState(0);
