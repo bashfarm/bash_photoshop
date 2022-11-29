@@ -95,7 +95,26 @@ export const UxpStorage = () => {
             >
                 Hiding Tool
             </sp-button>
-            <sp-button onClick={() => UnHidingTool()}>UnHiding Tool</sp-button>
+            <sp-button onClick={UnHidingTool}>UnHiding Tool</sp-button>
+            <sp-dropdown placeholder="Make a selection...">
+                <sp-menu slot="options">
+                    <sp-menu-item> 512x512 </sp-menu-item>
+                    <sp-menu-item disabled> 1024x1024 </sp-menu-item>
+                </sp-menu>
+            </sp-dropdown>
+            <sp-button
+                onClick={() => {
+                    try {
+                        executeAsModal(() => {
+                            app.createDocument({ height: 512, width: 512 });
+                        });
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }}
+            >
+                Create AI Optimized Document
+            </sp-button>
         </>
     );
 };

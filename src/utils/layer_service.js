@@ -5,6 +5,43 @@ const executeAsModal = photoshop.core.executeAsModal;
 const lfs = require('uxp').storage.localFileSystem;
 
 /**
+ * This did not work.  Keeping it here as an exmaple.  Looks like christian cantrell also faced this issue when generating
+ * images. https://www.youtube.com/watch?v=n9VZ97rT_Zs&ab_channel=ChristianCantrell
+ * I am just going to create options for the AI workflow
+ */
+// function FitLayerToCanvas(keepAspect) {// keepAspect:Boolean - optional. Default to false
+// 	let doc = app.activeDocument;
+// 	let layer = doc.activeLayers[0];
+
+// 	var width = doc.width;
+// 	var height = doc.height;
+// 	var bounds = layer.bounds;
+// 	var layerWidth = bounds[2] - bounds[0];
+// 	var layerHeight = bounds[3] - bounds[1];
+// 	try {
+// 		// move the layer so top left corner matches canvas top left corner
+// 		layer.translate(0 - layer.bounds[0], 0 - layer.bounds[1]);
+// 		if (!keepAspect) {
+// 			// scale the layer to match canvas
+// 			layer.scale((width / layerWidth) * 100, (height / layerHeight) * 100, photoshop.constants.AnchorPosition.TOPLEFT);
+// 		} else {
+// 			let layerRatio = layerWidth / layerHeight;
+// 			let newWidth = width;
+// 			let newHeight = ((1.0 * width) / layerRatio);
+// 			if (newHeight >= height) {
+// 				newWidth = layerRatio * height;
+// 				newHeight = height;
+// 			}
+// 			let resizePercent = newWidth / layerWidth * 100;
+// 			app.activeDocument.activeLayer.scale(resizePercent, resizePercent, AnchorPosition.TOPLEFT);
+// 		}
+// 	} catch (e) {
+// 		console.error(e)
+// 	}
+
+// }
+
+/**
  * @returns {Array} the visible layers in the active document
  */
 export function GetVisibleLayers() {
@@ -17,7 +54,6 @@ export function GetVisibleLayers() {
         });
     return visibleLayers;
 }
-
 
 /**
  *
@@ -33,7 +69,7 @@ export const PlaceImageFromDataOnLayer = async (imageName) => {
         var placedDocument = await dataFolder.getEntry(imageName);
         if (!placedDocument) return;
         let tkn = lfs.createSessionToken(placedDocument);
-        const res = await executeAsModal(
+        await executeAsModal(
             async () => {
                 await bp(
                     [
@@ -45,6 +81,7 @@ export const PlaceImageFromDataOnLayer = async (imageName) => {
                     ],
                     {}
                 );
+
                 app.activeDocument.activeLayers[0].rasterize();
             },
             { commandName: 'open File' }
@@ -54,16 +91,15 @@ export const PlaceImageFromDataOnLayer = async (imageName) => {
     }
 };
 
-
 async function SelectAllVisibleLayers(verbose = true) {
     try {
-        const res = await executeAsModal(async () => {
+        await executeAsModal(async () => {
             app.activeDocument.layers.forEach((layer) => {
                 if (layer.visible == true) layer.selected = true;
             });
         });
 
-        if (verbose) console.log(`Selecting all visible layers`);
+        if (verbose) console.log('Selecting all visible layers');
     } catch (e) {
         console.error(e);
     }
@@ -73,35 +109,27 @@ export function GetSelectedLayers() {
     return app.activeDocument.layers.filter((layer) => layer.selected);
 }
 
+export function GetTopLayer(selected = false, active = false) {
+    if (selected) return GetSelectedLayers()[0];
 
-export function GetTopLayer(selected=false, active=false){
-	if (selected)
-    	return GetSelectedLayers()[0];
-	
-	if (active)
-		return photoshop.app.activeDocument.activeLayers[0]
-	return photoshop.app.activeDocument.layers[0]
+    if (active) return photoshop.app.activeDocument.activeLayers[0];
+    return photoshop.app.activeDocument.layers[0];
 }
 
-export function MoveLayerToTop(layer){
-	try{
-		var topLayer = GetTopLayer()
-		layer.move(
-			topLayer,
-			photoshop.constants.ElementPlacement.PLACEBEFORE
-		);
-	}catch(e){
-		console.log(e)
-	}
-
+export function MoveLayerToTop(layer) {
+    try {
+        var topLayer = GetTopLayer();
+        layer.move(topLayer, photoshop.constants.ElementPlacement.PLACEBEFORE);
+    } catch (e) {
+        console.log(e);
+    }
 }
-
 
 export async function CreateMergedLayer() {
     try {
         console.log('we in create merged layer');
 
-        const res = await executeAsModal(async () => {
+        await executeAsModal(async () => {
             await SelectAllVisibleLayers();
             var selectedLayers = GetSelectedLayers();
             selectedLayers.forEach(async (layer) => {
@@ -124,57 +152,60 @@ export async function CreateMergedLayer() {
             await photoshop.app.activeDocument.mergeVisibleLayers();
 
             // Get reference to layers
-            var mergedLayer = GetTopLayer({active: true})
+            var mergedLayer = GetTopLayer({ active: true });
 
-			if (mergedLayer){
-				MoveLayerToTop(mergedLayer)
-				mergedLayer.name = `Merged Layered: ${randomlyPickLayerName()}`
-				return mergedLayer;
-			}
-
+            if (mergedLayer) {
+                MoveLayerToTop(mergedLayer);
+                mergedLayer.name = `Merged Layered: ${randomlyPickLayerName()}`;
+                return mergedLayer;
+            }
         });
-
     } catch (e) {
         console.error(e);
     }
 }
 
-function randomlyPickLayerName(){
-	var items = ["Banana", "Kratos", "Goku", "Geralt", "All Might", "Midoriya", "Vegeta", "Botan", "Kuwabara"]
-	var item = items[Math.floor(Math.random()*items.length)];
-	return item
+function randomlyPickLayerName() {
+    var items = [
+        'Banana',
+        'Kratos',
+        'Goku',
+        'Geralt',
+        'All Might',
+        'Midoriya',
+        'Vegeta',
+        'Botan',
+        'Kuwabara',
+    ];
+    var item = items[Math.floor(Math.random() * items.length)];
+    return item;
 }
 
-
-export async function DeselectLayers(){
-	await executeAsModal(() => {
-		GetSelectedLayers().forEach((layer) => {
-			layer.selected = false
-		})
-	})
+export async function DeselectLayers() {
+    await executeAsModal(() => {
+        GetSelectedLayers().forEach((layer) => {
+            layer.selected = false;
+        });
+    });
 }
 
-export async function CreateTopLayerMask(){
-	var topLayer = GetTopLayer();
-	// Can't find a check if there is a layer mask on the layer before running batchplay. 
-	await CreateLayerMask(topLayer)
+export async function CreateTopLayerMask() {
+    var topLayer = GetTopLayer();
+    // Can't find a check if there is a layer mask on the layer before running batchplay.
+    await CreateLayerMask(topLayer);
 }
 
-export async function CreateLayerMask(layer){
-	await executeAsModal(async () => {
-		await DeselectLayers()
-		layer.selected = true
-		await app.batchPlay([
-			{
-				"_obj": "make",
-				"at": { "_enum": "channel", "_ref": "channel", "_value": "mask" },
-				"new": { "_class": "channel" },
-				"using": { "_enum": "userMaskEnabled", "_value": "revealAll" }
-			}
-		]
-		)
-	})
-
+export async function CreateLayerMask(layer) {
+    await executeAsModal(async () => {
+        await DeselectLayers();
+        layer.selected = true;
+        await app.batchPlay([
+            {
+                _obj: 'make',
+                at: { _enum: 'channel', _ref: 'channel', _value: 'mask' },
+                new: { _class: 'channel' },
+                using: { _enum: 'userMaskEnabled', _value: 'revealAll' },
+            },
+        ]);
+    });
 }
-
-
