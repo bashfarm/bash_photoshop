@@ -11,8 +11,6 @@ import { txt2Img, FormatBase64Image } from '../utils/ai_service';
 import { SaveB64ImageToBinaryFileToDataFolder } from '../utils/io_service';
 import { PlaceImageFromDataOnLayer } from '../utils/layer_service';
 
-// import '../style.css';
-
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
     { id: 2, value: 40, src: 'img/cat.jpg' },
@@ -65,7 +63,6 @@ export const SmallUiDetail = () => {
     };
     return (
         <div className="flex flex-col">
-			
             <Heading size="XS" weight="light">
                 Generated Prompt
             </Heading>

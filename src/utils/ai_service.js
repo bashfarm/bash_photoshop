@@ -59,7 +59,7 @@ export async function Img2Img(imgb64Str, height, width, prompt) {
             body: raw,
             redirect: 'follow',
         };
-		console.log(process.env.API_URL)
+        console.log(process.env.API_URL);
         const response = await fetch(
             `${process.env.API_URL}/sdapi/v1/img2img`,
             requestOptions
@@ -147,7 +147,7 @@ export const txt2Img = async (
 export function FormatBase64Image(b64imgStr) {
     const b64header = 'data:image/png;base64, ';
     if (!b64imgStr.includes('data:image')) return b64header + b64imgStr;
-	return b64imgStr
+    return b64imgStr;
 }
 
 /**
@@ -186,29 +186,32 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
 
 export async function GenerateAILayer(imgB64, width, height, prompt) {
     console.log('Generate AI layer');
-	try{
-		if(!(imgB64)){
-			alert("Cannot Generate an AI Image Layer without Merging first.")
-			return
-		}
-		let formattedB64Str = FormatBase64Image(imgB64)
-		const genb64Str = await GenerateImage(formattedB64Str, height, width, prompt);
-		await SaveB64ImageToBinaryFileToDataFolder(GENERATEDFILENAME, genb64Str);
-		await PlaceImageFromDataOnLayer(GENERATEDFILENAME);
-	} catch(e){
-		console.error(e)
-	}
-
+    try {
+        if (!imgB64) {
+            alert('Cannot Generate an AI Image Layer without Merging first.');
+            return;
+        }
+        let formattedB64Str = FormatBase64Image(imgB64);
+        const genb64Str = await GenerateImage(
+            formattedB64Str,
+            height,
+            width,
+            prompt
+        );
+        await SaveB64ImageToBinaryFileToDataFolder(
+            GENERATEDFILENAME,
+            genb64Str
+        );
+        await PlaceImageFromDataOnLayer(GENERATEDFILENAME);
+    } catch (e) {
+        console.error(e);
+    }
 }
-
 
 /**
  * @returns {Object}
  */
- export const GetImageProcessingProgress = async (
-) => {
-
-
+export const GetImageProcessingProgress = async () => {
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
     myHeaders.append('accept', 'application/json');
