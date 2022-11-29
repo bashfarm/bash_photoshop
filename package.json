@@ -16,7 +16,7 @@
         "@babel/plugin-proposal-object-rest-spread": "^7.13.8",
         "@babel/plugin-transform-computed-properties": "^7.13.0",
         "@babel/plugin-transform-react-jsx": "^7.13.12",
-        "@svgr/webpack": "^5.5.0",
+        "@svgr/webpack": "^6.5.1",
         "acorn": "^8.1.1",
         "autoprefixer": "^10.4.13",
         "babel-loader": "^8.2.2",
@@ -49,6 +49,10 @@
         "webpack-obfuscator": "^3.3.0"
     },
     "dependencies": {
+        "@emotion/react": "^11.10.5",
+        "@emotion/styled": "^11.10.5",
+        "@mui/icons-material": "^5.10.16",
+        "@mui/material": "^5.10.16",
         "classnames": "^2.3.1",
         "cross-env": "^7.0.3",
         "dotenv-webpack": "^8.0.1",
