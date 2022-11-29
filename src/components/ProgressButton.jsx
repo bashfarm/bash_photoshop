@@ -4,7 +4,7 @@ export const ProgressButton = ({ longRunningFunction, progressQueryFunction, pol
 
 	var [timer, SetTimer] = useState({});
 	var [progress, SetProgress] = useState(0);
-    var [timer, SetTimer] = useState({});
+	var [timer, SetTimer] = useState({});
 
 	useEffect(() => {
 		if (progress == 1) {
@@ -19,7 +19,6 @@ export const ProgressButton = ({ longRunningFunction, progressQueryFunction, pol
 				onClick={async () => {
 					// Probably always going to be a wrapped function.  Cause you are gonna wanna use the promise at some point.
 					longRunningFunction()
-					
 					let timeout = (pollingSeconds ? pollingSeconds : 1) * 1000;
 					let prevVal = -1;
 					SetTimer(setInterval(async () => {
@@ -30,7 +29,6 @@ export const ProgressButton = ({ longRunningFunction, progressQueryFunction, pol
 
 							prevVal = progressValue
 
-							console.log(prevVal)
 							if (prevVal == 0) {
 								SetProgress(1)
 								progressSetter(1)
@@ -38,7 +36,7 @@ export const ProgressButton = ({ longRunningFunction, progressQueryFunction, pol
 								return
 							}
 							SetProgress(progressValue)
-							if(progressSetter){
+							if (progressSetter) {
 								progressSetter(progressValue)
 							}
 
