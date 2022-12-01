@@ -21,11 +21,14 @@ export const LayerManager = ({ layers }) => {
 
     return (
         <>
-            <div className="flex flex-col justify-start justify-items-start bg-brand border-b rounded">
-                {layers.map((layer) => {
-                    console.log(layer);
-                    return <Layer layer={layer} />;
-                })}
+            <div className="flex flex-col justify-start justify-items-start bg-brand border-b rounded divide-y-2">
+                {[
+                    <Layer layer={layers[0]} isTopLayer={true} />,
+                    ...layers.slice(1).map((layer) => {
+                        console.log(layer);
+                        return <Layer layer={layer} />;
+                    }),
+                ]}
             </div>
         </>
     );

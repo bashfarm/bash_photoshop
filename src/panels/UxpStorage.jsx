@@ -26,6 +26,7 @@ import { Progressbar, Textarea } from 'react-uxp-spectrum';
 import { ProgressButton } from '../components/ProgressButton';
 import { useAppStore } from '../store/appStore';
 import { LayerManager } from '../components/LayerManager';
+import Example from '../components/tailwindtest';
 
 const MERGEDFILENAME = 'mergedFile.png';
 const GENERATEDFILENAME = 'generatedFile.png';

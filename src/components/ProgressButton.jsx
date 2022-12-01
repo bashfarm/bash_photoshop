@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import BlenderIcon from '@mui/icons-material/Blender';
-
 export const ProgressButton = ({
     longRunningFunction,
     progressQueryFunction,
@@ -9,9 +8,8 @@ export const ProgressButton = ({
     progressSetter,
     children,
 }) => {
-    var [timer, SetTimer] = useState({});
-    var [progress, SetProgress] = useState(0);
-    var [timer, SetTimer] = useState({});
+    let [timer, SetTimer] = useState({});
+    let [progress, SetProgress] = useState(0);
 
     useEffect(() => {
         if (progress == 1) {
