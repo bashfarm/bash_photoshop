@@ -209,3 +209,25 @@ export async function CreateLayerMask(layer) {
         ]);
     });
 }
+
+export async function selectLayerMask(layer) {
+    let command;
+
+    try {
+        // Select mask channel of layer “Merged Layered: Geralt”
+        command = {
+            _obj: 'select',
+            _target: [
+                { _enum: 'channel', _ref: 'channel', _value: 'mask' },
+                { _id: layer.id, _ref: 'layer' },
+            ],
+            makeVisible: false,
+        };
+        executeAsModal(async () => {
+            return await bp([command], {});
+        });
+        console.log(`Selecting mask of layer ${layer.name}, id: ${layer.id}`);
+    } catch (e) {
+        console.error(e);
+    }
+}

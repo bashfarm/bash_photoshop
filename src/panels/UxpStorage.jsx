@@ -22,8 +22,11 @@ import {
 } from '../utils/ai_service';
 import { SaveDocumentToPluginData } from '../utils/io_service';
 import { HidingTool, UnHidingTool } from '../utils/tools_service';
-import { Progressbar } from 'react-uxp-spectrum';
+import { Progressbar, Textarea } from 'react-uxp-spectrum';
 import { ProgressButton } from '../components/ProgressButton';
+import { useAppStore } from '../store/appStore';
+import { LayerManager } from '../components/LayerManager';
+import Example from '../components/tailwindtest';
 
 const MERGEDFILENAME = 'mergedFile.png';
 const GENERATEDFILENAME = 'generatedFile.png';
@@ -38,19 +41,16 @@ function IsBase64(b64str) {
 }
 export const UxpStorage = () => {
     var [base64MergedImgStr, SetBase64MergedImgStr] = useState('');
-    var [base64GeneratedImgStr, SetBase64GeneratedImgStr] = useState('');
 
     var [imageProgress, SetImageProgress] = useState(0);
-    var [timer, SetTimer] = useState({});
-
-    useEffect(() => {
-        if (imageProgress == 1) {
-            clearInterval(timer);
-        }
-    }, [imageProgress]);
+    var finalDocumentPrompt = useAppStore((state) => state.finalDocumentPrompt);
+    var setFinalDocumentPrompt = useAppStore(
+        (state) => state.setFinalDocumentPrompt
+    );
 
     return (
         <>
+            <div>Yo this is the frontend that will talk to the API</div>
             <sp-button
                 onClick={async () => {
                     await CreateMergedLayer();
@@ -71,7 +71,7 @@ export const UxpStorage = () => {
                         base64MergedImgStr,
                         512,
                         512,
-                        'Colorful illustrated anime knifes sloped to the right in the illustration'
+                        finalDocumentPrompt
                     )
                 }
                 progressQueryFunction={GetImageProcessingProgress}
@@ -115,6 +115,14 @@ export const UxpStorage = () => {
             >
                 Create AI Optimized Document
             </sp-button>
+            <Textarea
+                placeholder="Enter your the image prompt"
+                onInput={(event) => setFinalDocumentPrompt(event.target.value)}
+                className="w-full"
+                multiline
+            ></Textarea>
+            <sp-label>{finalDocumentPrompt}</sp-label>
+            <LayerManager layers={app.activeDocument.layers}></LayerManager>
         </>
     );
 };
