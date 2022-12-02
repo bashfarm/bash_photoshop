@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
-
+echo 'Lint and format 👇'
 yarn lint-staged
