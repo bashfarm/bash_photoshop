@@ -1,4 +1,8 @@
 import { CreateAILayerContextId } from '../store/appStore';
+import {
+    GetNextAvailableHistoryFileName,
+    SaveLayerToPluginData,
+} from './io_service';
 
 const photoshop = require('photoshop');
 const app = photoshop.app;
@@ -284,3 +288,16 @@ export function GetLayerAIContext(layer, layerAIContextStore) {
 // function GetNewestLayer(){
 // 	return app.activeDocument.layers.reduce((prev, current) => (+prev.id > +current.id) ? prev : current)
 // }
+
+/**
+ * Save the current layer context to the contexts historical files.  Return the new file name
+ */
+export async function SaveLayerContexttoHistory(layerAIContext) {
+    try {
+        let fileName = await GetNextAvailableHistoryFileName(layerAIContext);
+        await SaveLayerToPluginData(fileName, layerAIContext.currentLayer);
+        return fileName;
+    } catch (e) {
+        console.error(e);
+    }
+}

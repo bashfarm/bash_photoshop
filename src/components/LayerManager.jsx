@@ -75,29 +75,25 @@ export const LayerManager = ({ layers }) => {
     }
 
     function CreateLayersFromContexts() {
-        console.log(activeDocumentLayers);
         let topContext = GetLayerAIContext(
             activeDocumentLayers[0],
             layerAIContexts
         );
 
         if (Object.keys(layerAIContexts).length > 0) {
-            console.log(layerAIContexts);
-            console.log(topContext);
             return [
                 <Layer
                     key={topContext.id}
-                    layer={activeDocumentLayers[0]}
+                    layer={topContext.currentLayer}
                     isTopLayer={true}
                     layerContext={topContext}
                 />,
                 ...activeDocumentLayers.slice(1).map((layer) => {
                     let aiContext = GetLayerAIContext(layer, layerAIContexts);
-                    console.log(layerAIContexts);
                     return (
                         <Layer
                             key={aiContext.id}
-                            layer={layer}
+                            layer={aiContext.currentLayer}
                             layerContext={aiContext}
                         />
                     );
@@ -116,6 +112,19 @@ export const LayerManager = ({ layers }) => {
         let newContext = {
             ...aiContext,
             layers: [...aiContext.layers, layer],
+        };
+        setAILayerContext(CreateAILayerContextId(layer), newContext);
+    }
+
+    /**
+     * Setting the current layer property of the AI layer context
+     * @param {} layer
+     * @param {*} aiContext
+     */
+    function SetLayerAIContextCurrentLayer(layer, aiContext) {
+        let newContext = {
+            ...aiContext,
+            currentLayer: layer,
         };
         setAILayerContext(CreateAILayerContextId(layer), newContext);
     }

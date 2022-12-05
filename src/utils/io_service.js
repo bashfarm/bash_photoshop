@@ -184,9 +184,15 @@ export async function GetContextFileEntries(
     }
 }
 
+/**
+ * Get the context's historical information.  Aka Images.  Hopefully we get more file entries for more
+ * meta data soon.
+ * @param {*} layerContext
+ * @returns
+ */
 export async function GetContextHistoryFileEntries(layerContext) {
     try {
-        GetContextFileEntries(
+        return await GetContextFileEntries(
             layerContext,
             ContextHistoryEnums.HISTORY_FILE_FLAG
         );
@@ -195,9 +201,15 @@ export async function GetContextHistoryFileEntries(layerContext) {
     }
 }
 
+/**
+ * Get the context's Merged information.  Aka Images.  Hopefully we get more file entries for more
+ * meta data soon.
+ * @param {*} layerContext
+ * @returns
+ */
 export async function GetContextMergedFileEntries(layerContext) {
     try {
-        GetContextFileEntries(
+        return await GetContextFileEntries(
             layerContext,
             ContextHistoryEnums.MERGED_FILE_FLAG
         );
@@ -206,9 +218,15 @@ export async function GetContextMergedFileEntries(layerContext) {
     }
 }
 
+/**
+ * Get the context's Generated information.  Aka Images.  Hopefully we get more file entries for more
+ * meta data soon.
+ * @param {*} layerContext
+ * @returns
+ */
 export async function GetContextGeneratedFileEntries(layerContext) {
     try {
-        GetContextFileEntries(
+        return await GetContextFileEntries(
             layerContext,
             ContextHistoryEnums.GENERATED_FILE_FLAG
         );
@@ -239,7 +257,7 @@ export async function CreateHistoryFile(layerContext, imgData) {
  * There are only 5 history files available
  * @param {*} layerContext
  */
-async function GetNextAvailableHistoryFileName(layerContext) {
+export async function GetNextAvailableHistoryFileName(layerContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerContext);
     let latestFileNumber = GetLatestFileNumber(historyFiles);
 
@@ -289,9 +307,15 @@ export function CreateContextGeneratedFileName(layerAIContext, fileNumber) {
 }
 
 export function GetLatestFileNumber(fileEntries) {
-    return Math.max(
+    console.log(fileEntries);
+
+    let fileNumber = Math.max(
         fileEntries.map((file) => parseInt(file.name.split('_').slice(-1)[0]))
     );
+    console.log(fileNumber);
+    if (!fileNumber) {
+        return 1;
+    }
 }
 
 export async function GetLatestHistoryFileName(layerAIContext) {

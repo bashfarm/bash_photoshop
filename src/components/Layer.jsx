@@ -8,7 +8,7 @@ import {
     Textarea,
 } from 'react-uxp-spectrum';
 import { Progressbar } from 'react-uxp-spectrum/dist';
-import { useAppStore } from '../store/appStore';
+import { CreateAILayerContextId, useAppStore } from '../store/appStore';
 import {
     GenerateAILayer,
     GetImageProcessingProgress,
@@ -18,7 +18,9 @@ import {
     GetDataFolderImageBase64ImgStr,
     GetHistoryFilePaths,
     SaveDocumentToPluginData,
+    SaveLayerToPluginData,
 } from '../utils/io_service';
+import { SaveLayerContexttoHistory } from '../utils/layer_service';
 import { ProgressButton } from './ProgressButton';
 const fs = require('uxp').storage.localFileSystem;
 const photoshop = require('photoshop');
@@ -48,26 +50,18 @@ const AssetItem = ({ src }) => {
 };
 
 export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
-    console.log('yolo');
-
     let [imageProgress, SetImageProgress] = useState(0);
     let [variationIntensity, SetVariationIntensity] = useState(0.25);
     let [thisLayersContext, SetThisLayersContext] = useState(layerContext);
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
 
-    useEffect(() => {
-        if (imageProgress == 1) {
-            clearInterval(timer);
-        }
-    }, [imageProgress]);
-
     return (
         <div className="flex flex-col bg-brand-dark">
             <div className="flex flex-row justify-between bg-brand">
                 <Heading className="text-lg text-brand-dark">
-                    Layer:{' '}
+                    Current Layer :
                     <span className="text-lg text-white">
-                        {layer.name.toUpperCase()}
+                        {thisLayersContext.currentLayer.name}
                     </span>
                 </Heading>
                 <div className="flex flex-col justify-between">
@@ -82,14 +76,18 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                     <ProgressButton
                         // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                         //  512x512 is the cheapest.  We will have to have a final step of upscaling
-                        longRunningFunction={() =>
+                        longRunningFunction={async () => {
+                            let fileName = await SaveLayerContexttoHistory(
+                                thisLayersContext
+                            );
+                            console.log(fileName);
                             GenerateAILayer(
-                                base64MergedImgStr,
+                                fileName,
                                 512,
                                 512,
-                                finalDocumentPrompt
-                            )
-                        }
+                                thisLayersContext.currentPrompt
+                            );
+                        }}
                         progressQueryFunction={GetImageProcessingProgress}
                         queryResponseParser={(response) => response['progress']}
                         progressSetter={SetImageProgress}
@@ -118,6 +116,7 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                             CreateAILayerContextId(layer),
                             newContext
                         );
+                        SetThisLayersContext(newContext);
                     }}
                     className="w-full"
                 ></Textarea>
@@ -136,6 +135,7 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                         )
                     }
                 ></Slider>
+                <div>{thisLayersContext.currentPrompt}</div>
             </div>
         </div>
     );

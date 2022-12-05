@@ -23,6 +23,7 @@ import create from 'zustand';
 // 	"layerRenegenerationPrompts": [],
 // 	"currentPrompt": ""
 //   "layers": [] // the layers that belong to the context
+//   "currentLayer": {layer} // this should just be the main layer, most likley the first element always
 // }
 
 // let sdStyle = {
@@ -113,10 +114,10 @@ export function CreateAILayerContext(
         layerRenegenerationPrompts: layerRenegenerationPrompts,
         currentPrompt: currentPrompt,
         layers: [layer],
+        currentLayer: layer,
     };
 }
 
 export function CreateAILayerContextId(layer) {
-    console.log(layer);
     return parseInt(`${layer._id}${layer._docid}`);
 }

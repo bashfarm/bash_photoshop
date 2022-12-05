@@ -1,9 +1,9 @@
 import {
     SaveB64ImageToBinaryFileToDataFolder,
     IsBase64Str,
+    GetDataFolderImageBase64ImgStr,
 } from './io_service';
 import { PlaceImageFromDataOnLayer } from './layer_service';
-import { alert } from '../utils/general_utils';
 
 const GENERATEDFILENAME = 'generatedFile.png';
 
@@ -184,14 +184,13 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
     // Set the first generated image to the generated image string
 }
 
-export async function GenerateAILayer(imgB64, width, height, prompt) {
+export async function GenerateAILayer(fileName, width, height, prompt) {
     console.log('Generate AI layer');
     try {
-        if (!imgB64) {
-            alert('Cannot Generate an AI Image Layer without Merging first.');
-            return;
-        }
-        let formattedB64Str = FormatBase64Image(imgB64);
+        let b64Data = (await GetDataFolderImageBase64ImgStr(fileName))
+            .base64Data;
+        console.log(b64Data);
+        let formattedB64Str = FormatBase64Image(b64Data);
         const genb64Str = await GenerateImage(
             formattedB64Str,
             height,
