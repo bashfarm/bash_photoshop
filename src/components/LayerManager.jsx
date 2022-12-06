@@ -28,13 +28,24 @@ export const LayerManager = ({ layers }) => {
     let [activeDocumentLayers, SetActiveDocumentLayers] = useState(
         photoshop.app.activeDocument.layers
     );
+    CreateInitialContexts();
 
-    let [timer, SetTimer] = useState({});
-    let [isFirst, SetIsFirst] = useState(true);
-    let timeOut = 1000; //ms
+    function CreateInitialContexts() {
+        try {
+            let currentContextLayerId;
+            for (let layer of app.activeDocument.layers) {
+                currentContextLayerId = CreateAILayerContextId(layer);
+                if (!layerAIContexts[currentContextLayerId]) {
+                    let layerAIContext = CreateAILayerContext(layer);
+                    setAILayerContext(currentContextLayerId, layerAIContext);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     function onMake() {
-        console.log(photoshop.app.activeDocument.layers.map((layer) => layer));
         SetActiveDocumentLayers(photoshop.app.activeDocument.layers);
     }
 
@@ -45,42 +56,13 @@ export const LayerManager = ({ layers }) => {
         };
     });
 
-    // useEffect(() => {
-    //     // let layerIdsThatHaveContexts = Object.keys(layerAIContexts)
-    //     // let availableLayerIds = app.activeDocument.layers.map((layer) => layer.id)
-    //     // let deletedLayers = layerIdsThatHaveContexts.filter(x => !availableLayerIds.includes(x));
-
-    // 	CreateInitialContexts()
-    // }, [activeDocumentLayers]);
-
-    function CreateInitialContexts() {
-        let currentContextLayerId;
-        for (let layer of app.activeDocument.layers) {
-            currentContextLayerId = CreateAILayerContextId(layer);
-            if (!layerAIContexts[currentContextLayerId]) {
-                let layerAIContext = CreateAILayerContext(layer);
-                setAILayerContext(currentContextLayerId, layerAIContext);
-            }
-        }
-    }
-    CreateInitialContexts();
-
-    function CreateLayers() {
-        return [
-            <Layer layer={activeDocumentLayers[0]} isTopLayer={true} />,
-            ...activeDocumentLayers.slice(1).map((layer) => {
-                return <Layer layer={layer} />;
-            }),
-        ];
-    }
-
     function CreateLayersFromContexts() {
         let topContext = GetLayerAIContext(
             activeDocumentLayers[0],
             layerAIContexts
         );
 
-        if (Object.keys(layerAIContexts).length > 0) {
+        if (topContext) {
             return [
                 <Layer
                     key={topContext.id}
@@ -90,6 +72,7 @@ export const LayerManager = ({ layers }) => {
                 />,
                 ...activeDocumentLayers.slice(1).map((layer) => {
                     let aiContext = GetLayerAIContext(layer, layerAIContexts);
+                    console.log(aiContext);
                     return (
                         <Layer
                             key={aiContext.id}
@@ -104,14 +87,10 @@ export const LayerManager = ({ layers }) => {
         }
     }
 
-    function IsLayerInContext(layer, layerAIContext) {
-        return layerAIContext.layers.includes(layer);
-    }
-
     function AddLayerToContext(layer, aiContext) {
         let newContext = {
             ...aiContext,
-            layers: [...aiContext.layers, layer],
+            layers: [layer, ...aiContext.layers],
         };
         setAILayerContext(CreateAILayerContextId(layer), newContext);
     }
