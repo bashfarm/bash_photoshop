@@ -20,50 +20,65 @@ import {
     SaveDocumentToPluginData,
     SaveLayerToPluginData,
 } from '../utils/io_service';
-import { SaveLayerContexttoHistory } from '../utils/layer_service';
+import {
+    GetNewestLayer,
+    SaveLayerContexttoHistory,
+} from '../utils/layer_service';
 import { ProgressButton } from './ProgressButton';
 const fs = require('uxp').storage.localFileSystem;
 const photoshop = require('photoshop');
 const app = photoshop.app;
 
-const dummyArray = [
-    { id: 1, value: 30, src: 'img/cat.jpg' },
-    { id: 2, value: 40, src: 'img/cat.jpg' },
-    { id: 3, value: 30, src: 'img/cat.jpg' },
-    { id: 4, value: 30, src: 'img/cat.jpg' },
-];
-
-const AssetItem = ({ src }) => {
-    const handleClick = async (src) => {
-        await PlaceImageFromDataOnLayer(`${src.slice(-3)}-img`);
-    };
-    return (
-        <div className="mx-5">
-            <img
-                className="rounded-sm w-[90px] hover:border"
-                src={src}
-                alt="Demo Image"
-                onClick={() => handleClick(src)}
-            />
-        </div>
-    );
-};
-
 export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
     let [imageProgress, SetImageProgress] = useState(0);
     let [variationIntensity, SetVariationIntensity] = useState(0.25);
     let [thisLayersContext, SetThisLayersContext] = useState(layerContext);
+    let [layerContextHisoricalFiles, SetLayerContextHisoricalFiles] = useState(
+        []
+    );
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
+
+    // function deleteCurrentContextLayer(layerAIContext){
+    // 	executeAsModal(
+    // 		layerAIContext.currentLayer.delete()
+    // 	);
+    // }
+
+    useEffect(async () => {
+        if (imageProgress == 1 || imageProgress == 0) {
+            SetLayerContextHisoricalFiles(
+                await GetHistoryFilePaths(thisLayersContext)
+            );
+            // let generatedLayer = GetNewestLayer()
+            // let generatedIntendedLayerContextId = CreateAILayerContextId(generatedLayer)
+            // setAILayerContext(generatedIntendedLayerContextId, thisLayersContext)
+            // console.log(`set old layer context ${thisLayersContext.id} to new layer ${generatedLayer.name}, ${generatedLayer.id}`)
+            // generatedLayer.move(thisLayersContext.currentLayer, photoshop.constants.ElementPlacement.PLACEBEFORE)
+            // SetLayerAIContextCurrentLayer(generatedLayer, thisLayersContext)
+            // deleteCurrentContextLayer(thisLayersContext)
+        }
+    }, [imageProgress]);
 
     return (
         <div className="flex flex-col bg-brand-dark">
             <div className="flex flex-row justify-between bg-brand">
-                <Heading className="text-lg text-brand-dark">
-                    Current Layer :
-                    <span className="text-lg text-white">
-                        {thisLayersContext.currentLayer.name}
-                    </span>
-                </Heading>
+                <div className="flex flex-col bg-brand-dark">
+                    <Heading className="text-lg text-brand-dark">
+                        <span className="text-lg text-white">
+                            {thisLayersContext.currentLayer.name}
+                        </span>
+                    </Heading>
+                    <Heading className="text-lg text-brand-dark">
+                        <span className="text-lg text-white">
+                            {thisLayersContext.currentLayer.id}
+                        </span>
+                    </Heading>
+                </div>
+                {layerContextHisoricalFiles &&
+                    layerContextHisoricalFiles.map((fpath, index) => {
+                        console.log(fpath);
+                        return <img key={index} src={fpath} />;
+                    })}
                 <div className="flex flex-col justify-between">
                     {isTopLayer && (
                         <Button
@@ -85,7 +100,7 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                                 fileName,
                                 512,
                                 512,
-                                thisLayersContext.currentPrompt
+                                thisLayersContext
                             );
                         }}
                         progressQueryFunction={GetImageProcessingProgress}

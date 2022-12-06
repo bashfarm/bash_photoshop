@@ -1,11 +1,9 @@
 import {
-    SaveB64ImageToBinaryFileToDataFolder,
     IsBase64Str,
     GetDataFolderImageBase64ImgStr,
+    CreateHistoryFile,
 } from './io_service';
-import { PlaceImageFromDataOnLayer } from './layer_service';
-
-const GENERATEDFILENAME = 'generatedFile.png';
+import { GetNewestLayer } from './layer_service';
 
 /**
  * @param {String} imgb64Str
@@ -184,7 +182,15 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
     // Set the first generated image to the generated image string
 }
 
-export async function GenerateAILayer(fileName, width, height, prompt) {
+/**
+ * Generate a new AI Image and put it in a layer
+ * @param {*} fileName
+ * @param {*} width
+ * @param {*} height
+ * @param {*} layerAIContext
+ * @param {Boolean} inplace if true this will replace the current layer with the new image
+ */
+export async function GenerateAILayer(fileName, width, height, layerAIContext) {
     console.log('Generate AI layer');
     try {
         let b64Data = (await GetDataFolderImageBase64ImgStr(fileName))
@@ -195,13 +201,11 @@ export async function GenerateAILayer(fileName, width, height, prompt) {
             formattedB64Str,
             height,
             width,
-            prompt
+            layerAIContext.currentPrompt
         );
-        await SaveB64ImageToBinaryFileToDataFolder(
-            GENERATEDFILENAME,
-            genb64Str
-        );
-        await PlaceImageFromDataOnLayer(GENERATEDFILENAME);
+        await CreateHistoryFile(layerAIContext, genb64Str);
+        let generatedLayer = GetNewestLayer();
+        return generatedLayer;
     } catch (e) {
         console.error(e);
     }

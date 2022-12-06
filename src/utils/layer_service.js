@@ -285,9 +285,11 @@ export function GetLayerAIContext(layer, layerAIContextStore) {
  * This function will retrieve the last created layer.  The layer with the highest value id must be the latest one created
  * @returns
  */
-// function GetNewestLayer(){
-// 	return app.activeDocument.layers.reduce((prev, current) => (+prev.id > +current.id) ? prev : current)
-// }
+export function GetNewestLayer() {
+    return app.activeDocument.layers.reduce((prev, current) =>
+        +prev.id > +current.id ? prev : current
+    );
+}
 
 /**
  * Save the current layer context to the contexts historical files.  Return the new file name

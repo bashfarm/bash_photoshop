@@ -177,7 +177,6 @@ export async function GetContextFileEntries(
                 entry.name.includes(layerFileContextEnum)
         );
 
-        console.log(theContextsFiles);
         return theContextsFiles;
     } catch (e) {
         console.error(e);
@@ -307,24 +306,28 @@ export function CreateContextGeneratedFileName(layerAIContext, fileNumber) {
 }
 
 export function GetLatestFileNumber(fileEntries) {
-    console.log(fileEntries);
-
     let fileNumber = Math.max(
         fileEntries.map((file) => parseInt(file.name.split('_').slice(-1)[0]))
     );
-    console.log(fileNumber);
     if (!fileNumber) {
         return 1;
     }
+    return fileNumber;
 }
 
 export async function GetLatestHistoryFileName(layerAIContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerAIContext);
     let latestFileNumber = GetLatestFileNumber(historyFiles);
-    return CreateContextHistoryFileName(layerAIContext, latestFileNumber);
+    return CreateContextHistoryFileName(layerAIContext, latestFileNumber + 1);
 }
 
 export async function GetHistoryFilePaths(layerAIContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerAIContext);
-    return historyFiles.map((entry) => entry.nativePath.replace('\\\\', '\\'));
+    let paths = historyFiles.map((entry) =>
+        entry.nativePath.replace('\\\\', '\\')
+    );
+    if (!paths) {
+        return [];
+    }
+    return paths;
 }
