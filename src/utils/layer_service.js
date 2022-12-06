@@ -1,3 +1,9 @@
+import { CreateAILayerContextId } from '../store/appStore';
+import {
+    GetNextAvailableHistoryFileName,
+    SaveLayerToPluginData,
+} from './io_service';
+
 const photoshop = require('photoshop');
 const app = photoshop.app;
 const bp = photoshop.action.batchPlay;
@@ -227,6 +233,70 @@ export async function selectLayerMask(layer) {
             return await bp([command], {});
         });
         console.log(`Selecting mask of layer ${layer.name}, id: ${layer.id}`);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * This function is made to return the unique contexts that are available.  A context can be associated with multiple layers
+ * or have been created from another layer originally and then passed to another layer that still exists while the original does not.
+ * @param {} layerAIContextStore
+ * @returns
+ */
+// function GetUniqueContexts(layerAIContextStore){
+// 	let aiContext;
+// 	let uniqueContexts = [];
+
+// 	for(let contextKey of Object.keys(layerAIContextStore)){
+// 		aiContext = layerAIContextStore[contextKey]
+// 		if (!uniqueContexts.includes(aiContext.id))
+// 			uniqueContexts.push(aiContext)
+// 	}
+// 	return uniqueContexts
+// }
+
+/**
+ * Every Layer has had a context created for them unless they inherited a context.
+ * @param {} layer
+ * @param {*} layerAIContextStore
+ * @returns
+ */
+export function GetLayerAIContext(layer, layerAIContextStore) {
+    return layerAIContextStore[CreateAILayerContextId(layer)];
+}
+
+/**
+ * This function will duplicate the given layer and return a reference to it.
+ * @param {*} layer
+ */
+// async function DuplicateLayer(layer){
+
+// 		// Duplicate current layer
+// 		command = {"ID":[layer.id],"_obj":"duplicate","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"version":5};
+// 		executeAsModal(async () => {
+// 			return await bp([command], {})
+// 		})
+
+// 	return GetNewestLayer()
+// }
+
+/**
+ * This function will retrieve the last created layer.  The layer with the highest value id must be the latest one created
+ * @returns
+ */
+// function GetNewestLayer(){
+// 	return app.activeDocument.layers.reduce((prev, current) => (+prev.id > +current.id) ? prev : current)
+// }
+
+/**
+ * Save the current layer context to the contexts historical files.  Return the new file name
+ */
+export async function SaveLayerContexttoHistory(layerAIContext) {
+    try {
+        let fileName = await GetNextAvailableHistoryFileName(layerAIContext);
+        await SaveLayerToPluginData(fileName, layerAIContext.currentLayer);
+        return fileName;
     } catch (e) {
         console.error(e);
     }

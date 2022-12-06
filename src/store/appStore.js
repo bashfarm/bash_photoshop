@@ -22,6 +22,8 @@ import create from 'zustand';
 // 	"smallDetails": [], // The details from the above object
 // 	"layerRenegenerationPrompts": [],
 // 	"currentPrompt": ""
+//   "layers": [] // the layers that belong to the context
+//   "currentLayer": {layer} // this should just be the main layer, most likley the first element always
 // }
 
 // let sdStyle = {
@@ -53,9 +55,21 @@ export const useAppStore = create(
                 }
             }),
         layerAIContexts: {},
-        setAILayerContext: (layerAIMetaData) =>
+        setAILayerContext: (intendedLayerContextId, layerAIContext) =>
             set((state) => {
-                state.layerAIContexts[layerAIMetaData.id] = layerAIMetaData;
+                state.layerAIContexts[intendedLayerContextId] = layerAIContext;
+            }),
+        addLayerToContext: (layer, layerAIContext) =>
+            set((state) => {
+                let layerContext = state.layerAIContexts[layerAIContext.id];
+                if (!layerContext.layers.includes(layer))
+                    layerContext.layers.push(layer);
+            }),
+        removeLayerToContext: (layer, layerAIContext) =>
+            set((state) => {
+                let layerContext = state.layerAIContexts[layerAIContext.id];
+                if (layerContext.layers.includes(layer))
+                    layerContext.layers.remove(layer);
             }),
         mergedLayerConexts: {},
         // I think if we have descriptions for each layer we can regenerate them all or collapse all of the descriptions in to a final description
@@ -89,15 +103,21 @@ export const useAppStore = create(
  * @returns {Object} The object is an AI Layer context for the app state.
  */
 export function CreateAILayerContext(
-    id,
+    layer,
     details = [],
     layerRenegenerationPrompts = [],
     currentPrompt = ''
 ) {
     return {
-        id: id, // this should be the id number of the layer
+        id: CreateAILayerContextId(layer), // this should be the id number of the layer
         smallDetails: details, // The details from the above object
         layerRenegenerationPrompts: layerRenegenerationPrompts,
         currentPrompt: currentPrompt,
+        layers: [layer],
+        currentLayer: layer,
     };
+}
+
+export function CreateAILayerContextId(layer) {
+    return parseInt(`${layer._id}${layer._docid}`);
 }
