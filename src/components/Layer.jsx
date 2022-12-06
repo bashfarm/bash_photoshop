@@ -12,6 +12,7 @@ import { CreateAILayerContextId, useAppStore } from '../store/appStore';
 import {
     GenerateAILayer,
     GetImageProcessingProgress,
+	RegenerateLayer,
 } from '../utils/ai_service';
 import {
     CreateContextMergedFileName,
@@ -26,8 +27,7 @@ import {
 } from '../utils/layer_service';
 import { ProgressButton } from './ProgressButton';
 const fs = require('uxp').storage.localFileSystem;
-const photoshop = require('photoshop');
-const app = photoshop.app;
+
 
 export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
     let [imageProgress, SetImageProgress] = useState(0);
@@ -37,25 +37,29 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
         []
     );
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
+    let replaceAILayerContext = useAppStore((state) => state.replaceAILayerContext);
 
-    // function deleteCurrentContextLayer(layerAIContext){
-    // 	executeAsModal(
-    // 		layerAIContext.currentLayer.delete()
-    // 	);
-    // }
+	/**
+     * Setting the current layer property of the AI layer context
+     * @param {} layer
+     * @param {*} aiContext
+     */
+	function SetLayerAIContextCurrentLayer(layer, aiContext) {
+		let newContext = {
+			...aiContext,
+			currentLayer: layer,
+		};
+
+		setAILayerContext(CreateAILayerContextId(layer), newContext);
+	}
+	
 
     useEffect(async () => {
         if (imageProgress == 1 || imageProgress == 0) {
             SetLayerContextHisoricalFiles(
                 await GetHistoryFilePaths(thisLayersContext)
             );
-            // let generatedLayer = GetNewestLayer()
-            // let generatedIntendedLayerContextId = CreateAILayerContextId(generatedLayer)
-            // setAILayerContext(generatedIntendedLayerContextId, thisLayersContext)
-            // console.log(`set old layer context ${thisLayersContext.id} to new layer ${generatedLayer.name}, ${generatedLayer.id}`)
-            // generatedLayer.move(thisLayersContext.currentLayer, photoshop.constants.ElementPlacement.PLACEBEFORE)
-            // SetLayerAIContextCurrentLayer(generatedLayer, thisLayersContext)
-            // deleteCurrentContextLayer(thisLayersContext)
+
         }
     }, [imageProgress]);
 
@@ -76,7 +80,6 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                 </div>
                 {layerContextHisoricalFiles &&
                     layerContextHisoricalFiles.map((fpath, index) => {
-                        console.log(fpath);
                         return <img key={index} src={fpath} />;
                     })}
                 <div className="flex flex-col justify-between">
@@ -92,15 +95,12 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                         // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                         //  512x512 is the cheapest.  We will have to have a final step of upscaling
                         longRunningFunction={async () => {
-                            let fileName = await SaveLayerContexttoHistory(
-                                thisLayersContext
-                            );
-                            console.log(fileName);
-                            GenerateAILayer(
-                                fileName,
+                            RegenerateLayer(
                                 512,
                                 512,
-                                thisLayersContext
+                                thisLayersContext,
+								replaceAILayerContext,
+								SetLayerAIContextCurrentLayer
                             );
                         }}
                         progressQueryFunction={GetImageProcessingProgress}

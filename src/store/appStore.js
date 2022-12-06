@@ -59,6 +59,11 @@ export const useAppStore = create(
             set((state) => {
                 state.layerAIContexts[intendedLayerContextId] = layerAIContext;
             }),
+		replaceAILayerContext: (oldLayerContextId, newLayerContextId, layerAIContext) =>
+            set((state) => {
+                state.layerAIContexts[newLayerContextId] = layerAIContext;
+				delete state.layerAIContexts[oldLayerContextId]
+            }),
         addLayerToContext: (layer, layerAIContext) =>
             set((state) => {
                 let layerContext = state.layerAIContexts[layerAIContext.id];
@@ -71,6 +76,9 @@ export const useAppStore = create(
                 if (layerContext.layers.includes(layer))
                     layerContext.layers.remove(layer);
             }),
+		deleteContext: (layerAIContextID) => set((state) => {
+			delete state.layerAIContexts[layerAIContextID]
+		}),
         mergedLayerConexts: {},
         // I think if we have descriptions for each layer we can regenerate them all or collapse all of the descriptions in to a final description
         addMergedLayerContext: (mergedLayerAIMetaData) =>

@@ -14,6 +14,7 @@ import { ContextHistoryEnums } from '../constants';
 import { UnformatBase64Image } from './ai_service';
 import { GetVisibleLayers } from './layer_service';
 var b64ImgHeader = 'data:image/png;base64, ';
+import {alert} from './general_utils'
 
 export async function SaveTextFileToDataFolder(fileName, data) {
     const dataFolder = await lfs.getDataFolder();
@@ -242,11 +243,14 @@ export async function GetContextGeneratedFileEntries(layerContext) {
 export async function CreateHistoryFile(layerContext, imgData) {
     try {
         let fp = GetFileProvider(imgData);
-        let fileName = GetNextAvailableHistoryFileName(layerContext);
+        let fileName = await GetNextAvailableHistoryFileName(layerContext);
+		console.log(`Saving file with name ${fileName}`)
         if (!fileName) {
             alert('Please delete a file or use inplace image regeneration');
+			return 
         }
         await fp(fileName, imgData);
+		return fileName
     } catch (e) {
         console.error(e);
     }
@@ -259,11 +263,13 @@ export async function CreateHistoryFile(layerContext, imgData) {
 export async function GetNextAvailableHistoryFileName(layerContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerContext);
     let latestFileNumber = GetLatestFileNumber(historyFiles);
+	console.log(`Greatest file number ${latestFileNumber}`)
 
-    if (latestFileNumber == 5) {
+    if (latestFileNumber >= 5) {
         console.log(
             'We have run out of historical file storage, the user needs to delete a file or do inplace regneration'
         );
+		alert( 'We have run out of historical file storage, the user needs to delete a file or do inplace regneration')
         return;
     }
     let fileName = CreateContextHistoryFileName(layerContext, latestFileNumber);
@@ -285,6 +291,7 @@ function GetFileProvider(imgData) {
  * @returns
  */
 export function CreateContextHistoryFileName(layerAIContext, fileNumber) {
+	fileNumber += 1
     return `${ContextHistoryEnums.HISTORY_FILE_FLAG}_${layerAIContext.id}_${fileNumber}.png`;
 }
 
@@ -292,6 +299,7 @@ export function CreateContextHistoryFileName(layerAIContext, fileNumber) {
  * Most likely just going to be a place holder for when we are merging thing sot be sent of for variation.
  */
 export function CreateContextMergedFileName(layerAIContext, fileNumber) {
+	fileNumber += 1
     return `${ContextHistoryEnums.MERGED_FILE_FLAG}_${layerAIContext.id}_${fileNumber}.png`;
 }
 
@@ -302,17 +310,23 @@ export function CreateContextMergedFileName(layerAIContext, fileNumber) {
  * @returns
  */
 export function CreateContextGeneratedFileName(layerAIContext, fileNumber) {
+	fileNumber += 1
     return `${ContextHistoryEnums.GENERATED_FILE_FLAG}_${layerAIContext.id}_${fileNumber}.png`;
 }
 
 export function GetLatestFileNumber(fileEntries) {
     let fileNumber = Math.max(
-        fileEntries.map((file) => parseInt(file.name.split('_').slice(-1)[0]))
+        ...fileEntries.map((file) => parseInt(file.name.split('_').slice(-1)[0].split('.png')[0]))
     );
-    if (!fileNumber) {
-        return 1;
+	let splitEntries = fileEntries.map((file) => parseInt(file.name.split('_').slice(-1)[0].split('.png')[0]))
+
+	console.log(`FileNum: ${fileNumber}`)
+	console.log(fileEntries)
+	console.log(splitEntries)
+    if (fileNumber >= 0) {
+        return fileNumber;
     }
-    return fileNumber;
+    return 0;
 }
 
 export async function GetLatestHistoryFileName(layerAIContext) {

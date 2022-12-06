@@ -6,7 +6,7 @@ import {
     useAppStore,
 } from '../store/appStore';
 import { GetContextFileEntries } from '../utils/io_service';
-import { GetLayerAIContext } from '../utils/layer_service';
+import { GetDeletedLayersThatNeedToBeRemovedFromContexts, GetLayerAIContext } from '../utils/layer_service';
 import { Layer } from './Layer';
 const fs = require('uxp').storage.localFileSystem;
 const photoshop = require('photoshop');
@@ -22,13 +22,21 @@ const events = [
     { event: 'undoEnum' },
 ];
 
+const deleteEvent = [
+    { event: 'delete' },
+]
+
 export const LayerManager = ({ layers }) => {
     let layerAIContexts = useAppStore((state) => state.layerAIContexts);
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
     let [activeDocumentLayers, SetActiveDocumentLayers] = useState(
         photoshop.app.activeDocument.layers
     );
+	let [renderedContexts, SetRenderedContexts] = useState([])
+    let deleteContext = useAppStore((state) => state.deleteContext);
+
     CreateInitialContexts();
+	console.log(layerAIContexts)
 
     function CreateInitialContexts() {
         try {
@@ -37,9 +45,10 @@ export const LayerManager = ({ layers }) => {
                 currentContextLayerId = CreateAILayerContextId(layer);
                 if (!layerAIContexts[currentContextLayerId]) {
                     let layerAIContext = CreateAILayerContext(layer);
-                    setAILayerContext(currentContextLayerId, layerAIContext);
-                }
+					setAILayerContext(currentContextLayerId, layerAIContext);
+			}
             }
+
         } catch (e) {
             console.error(e);
         }
@@ -49,11 +58,22 @@ export const LayerManager = ({ layers }) => {
         SetActiveDocumentLayers(photoshop.app.activeDocument.layers);
     }
 
+	// function onDelete(){
+	// 	let layerIdsToDelete = GetDeletedLayersThatNeedToBeRemovedFromContexts()
+	// 	console.log("delete is being called")
+	// 	for(let layerId of layerIdsToDelete){
+	// 		deleteContext(layerId)
+	// 	}
+		
+	// }
+
     useEffect(() => {
         photoshop.action.addNotificationListener(events, onMake);
+        // photoshop.action.addNotificationListener(deleteEvent, onDelete);
         return () => {
             photoshop.action.removeNotificationListener(events, onMake);
-        };
+        	// photoshop.action.addNotificationListener(deleteEvent, onDelete);
+	};
     });
 
     function CreateLayersFromContexts() {
@@ -61,8 +81,13 @@ export const LayerManager = ({ layers }) => {
             activeDocumentLayers[0],
             layerAIContexts
         );
+ 
+
 
         if (topContext) {
+			console.log(topContext);
+			console.log(layerAIContexts);
+			console.log(topContext.currentLayer);
             return [
                 <Layer
                     key={topContext.id}
@@ -73,13 +98,18 @@ export const LayerManager = ({ layers }) => {
                 ...activeDocumentLayers.slice(1).map((layer) => {
                     let aiContext = GetLayerAIContext(layer, layerAIContexts);
                     console.log(aiContext);
-                    return (
-                        <Layer
-                            key={aiContext.id}
-                            layer={aiContext.currentLayer}
-                            layerContext={aiContext}
-                        />
-                    );
+                    console.log(layerAIContexts);
+                    console.log(aiContext.currentLayer);
+					if(aiContext.currentLayer){
+						return (
+							<Layer
+								key={aiContext.id}
+								layer={aiContext.currentLayer}
+								layerContext={aiContext}
+							/>
+						);
+					}
+
                 }),
             ];
         } else {
@@ -95,25 +125,6 @@ export const LayerManager = ({ layers }) => {
         setAILayerContext(CreateAILayerContextId(layer), newContext);
     }
 
-    /**
-     * Setting the current layer property of the AI layer context
-     * @param {} layer
-     * @param {*} aiContext
-     */
-    function SetLayerAIContextCurrentLayer(layer, aiContext) {
-        let newContext = {
-            ...aiContext,
-            currentLayer: layer,
-        };
-        setAILayerContext(CreateAILayerContextId(layer), newContext);
-    }
-
-    function duplicateLayer(layer, layerAIContextStore) {
-        // 1. dupe layer
-        // 2. get layer info
-        // 3. have new layer inherit the duplicated layers context.  They will then both
-        // then be referenced together in a our internal LAyerManager UI in a Layer
-    }
 
     return (
         <>
