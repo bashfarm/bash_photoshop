@@ -79,11 +79,21 @@ export const ContextItem = ({ layerContext = {} }) => {
                 </div>
             </div>
             <div>
-                <Textarea
+			<Textarea
                     placeholder="Enter a description of the content in this layer"
                     onInput={(event) => {
-                        setAILayerContextPrompt(event.target.value)
-						SetThisLayersContext(getAILayerContext(thisLayersContext.id))
+
+						// Making a copy like this and resetting seems to render things well
+						// using the app store methods causing a total rerender and makes this suck
+                        let newContext = {
+                            ...thisLayersContext,
+                            currentPrompt: event.target.value,
+                        };
+                        setAILayerContext(
+                            CreateAILayerContextId(thisLayersContext.layers[0]),
+                            newContext
+                        );
+						SetThisLayersContext(newContext)
                     }}
                     className="w-full"
                 ></Textarea>

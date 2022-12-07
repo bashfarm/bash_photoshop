@@ -72,7 +72,7 @@ export const useAppStore = create(
             }),
 		setAILayerContextPrompt: (layerAIContext, newPrompt) =>
             set((state) => {
-                state.layerAIContexts[layerAIContext.id] = newPrompt;
+                state.layerAIContexts[layerAIContext.id].currentPrompt = newPrompt;
             }),
 		getAILayerContext: (intendedLayerContextId) =>
             get().layerAIContexts[intendedLayerContextId],
