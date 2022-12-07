@@ -5,13 +5,16 @@ import {
 } from './io_service';
 import {
     GetNewestLayer,
-    MoveLayer,
     PlaceImageFromDataOnLayer,
     SaveLayerContexttoHistory,
 } from './layer_service';
 const photoshop = require('photoshop');
 const executeAsModal = photoshop.core.executeAsModal;
 const bp = photoshop.action.batchPlay;
+
+const myHeaders = new Headers();
+myHeaders.append('Content-Type', 'application/json');
+myHeaders.append('Accept', 'application/json');
 
 /**
  * @param {String} imgb64Str
