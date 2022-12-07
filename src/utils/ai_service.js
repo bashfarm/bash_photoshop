@@ -351,6 +351,7 @@ export async function RegenerateLayer(
 
 /**
  * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
+ * update: Dont think this is working.  The layer gets deleted, 1. right now its the wrong layer and 2. I am not detecting the event 😒
  * @param {*} layer
  */
 export async function deleteLayer(layer) {
