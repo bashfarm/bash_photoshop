@@ -131,6 +131,16 @@ export function MoveLayerToTop(layer) {
     }
 }
 
+export async function MoveLayer(
+    layer,
+    relativeLayer,
+    placement = photoshop.constants.ElementPlacement.PLACEBEFORE
+) {
+    await executeAsModal(async () => {
+        layer.move(relativeLayer, placement);
+    });
+}
+
 export async function CreateMergedLayer() {
     try {
         console.log('we in create merged layer');
@@ -266,18 +276,24 @@ export function GetLayerAIContext(layer, layerAIContextStore) {
     return layerAIContextStore[CreateAILayerContextId(layer)];
 }
 
-export function GetDeletedLayersThatNeedToBeRemovedFromContexts(layerAIContextStore){
-	let docLayerIds = GetDocumentLayerContextIds()
-	let layersThatHaveBeenDeletedAndContextsRemain = Object.keys(layerAIContextStore).filter(x => !docLayerIds.includes(parseInt(x)));
-	return layersThatHaveBeenDeletedAndContextsRemain
+export function GetDeletedLayersThatNeedToBeRemovedFromContexts(
+    layerAIContextStore
+) {
+    let docLayerIds = GetDocumentLayerContextIds();
+    let layersThatHaveBeenDeletedAndContextsRemain = Object.keys(
+        layerAIContextStore
+    ).filter((x) => !docLayerIds.includes(parseInt(x)));
+    return layersThatHaveBeenDeletedAndContextsRemain;
 }
 
-export function GetDocumentLayerIds(){
-	return app.activeDocument.layers.map((layer) => layer.id) 
+export function GetDocumentLayerIds() {
+    return app.activeDocument.layers.map((layer) => layer.id);
 }
 
-export function GetDocumentLayerContextIds(){
-	return app.activeDocument.layers.map((layer) => CreateAILayerContextId(layer)) 
+export function GetDocumentLayerContextIds() {
+    return app.activeDocument.layers.map((layer) =>
+        CreateAILayerContextId(layer)
+    );
 }
 
 /**
@@ -311,9 +327,9 @@ export function GetNewestLayer() {
 export async function SaveLayerContexttoHistory(layerAIContext) {
     try {
         let fileName = await GetNextAvailableHistoryFileName(layerAIContext);
-		if(!fileName){
-			return
-		}
+        if (!fileName) {
+            return;
+        }
         await SaveLayerToPluginData(fileName, layerAIContext.currentLayer);
         return fileName;
     } catch (e) {

@@ -1,4 +1,3 @@
-import { CreateAILayerContextId } from '../store/appStore';
 import {
     IsBase64Str,
     GetDataFolderImageBase64ImgStr,
@@ -6,12 +5,14 @@ import {
 } from './io_service';
 import {
     GetNewestLayer,
+    MoveLayer,
     PlaceImageFromDataOnLayer,
     SaveLayerContexttoHistory,
 } from './layer_service';
 const photoshop = require('photoshop');
-const app = photoshop.app;
 const executeAsModal = photoshop.core.executeAsModal;
+const bp = photoshop.action.batchPlay;
+
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
@@ -304,10 +305,12 @@ export async function RegenerateLayer(
     width,
     height,
     layerAIContext,
-    replaceAILayerContext,
-    SetLayerAIContextCurrentLayer
+    setLayerid2ContextId,
+    removeLayerid2ContextId,
+    setAILayerContext
 ) {
     try {
+        let currentLayer2Generate = layerAIContext.layers[0];
         let generatedLayer = await GenerateAILayer(
             width,
             height,
@@ -318,17 +321,26 @@ export async function RegenerateLayer(
         if (!generatedLayer) {
             return;
         }
-        replaceAILayerContext(
-            CreateAILayerContextId(layerAIContext.currentLayer),
-            CreateAILayerContextId(generatedLayer),
-            layerAIContext
-        );
-        generatedLayer.move(
-            layerAIContext.currentLayer,
+        // replaceAILayerContext(CreateAILayerContextId(currentLayer2Generate), CreateAILayerContextId(generatedLayer), layerAIContext)
+        MoveLayer(
+            currentLayer2Generate,
             photoshop.constants.ElementPlacement.PLACEBEFORE
         );
-        deleteCurrentContextLayer(layerAIContext);
-        SetLayerAIContextCurrentLayer(generatedLayer, layerAIContext);
+        // deleteLayer(currentLayer2Generate)
+        console.log('Layer to delete');
+        console.log(currentLayer2Generate);
+        console.log('Layer to keep');
+        console.log(generatedLayer);
+        removeLayerid2ContextId(currentLayer2Generate.id);
+        setLayerid2ContextId(generatedLayer.id);
+
+        let newContext = {
+            ...layerAIContext,
+            layers: [generatedLayer],
+        };
+        setAILayerContext(newContext);
+
+        // Probably need to push a new layer in to the layers array with the new layer
         console.log(
             `set old layer context contextID: ${layerAIContext.id}, LayerID: ${layerAIContext.currentLayer.id} LayerName: ${layerAIContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`
         );
@@ -337,30 +349,25 @@ export async function RegenerateLayer(
     }
 }
 
-export async function deleteCurrentContextLayer(layerAIContext) {
+/**
+ * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
+ * @param {*} layer
+ */
+export async function deleteLayer(layer) {
     try {
-        command = {
+        let command = {
             _obj: 'delete',
             _target: [
                 { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
             ],
-            layerID: [22],
+            layerID: [layer.id],
         };
         await executeAsModal(async () => {
             return await bp([command], {});
         });
 
-        console.log(layerAIContext.currentLayer);
+        console.log(layer);
     } catch (e) {
         console.error(e);
     }
-}
-
-async function actionCommands() {
-    let command;
-    let result;
-    let psAction = require('photoshop').action;
-
-    // Delete current layer
-    result = await psAction.batchPlay([command], {});
 }
