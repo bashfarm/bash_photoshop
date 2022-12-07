@@ -23,12 +23,15 @@ import create from 'zustand';
 // 	"layerRenegenerationPrompts": [],
 // 	"currentPrompt": ""
 //   "layers": [] // the layers that belong to the context
-//   "currentLayer": {layer} // this should just be the main layer, most likley the first element always
 // }
 
 // let sdStyle = {
 // 	"name": "" // The name of the style to apply
 // }
+
+let layerId2ContextIdMap = {
+	"1" : "1" // The id of the context
+}
 
 // Immer store wrapper
 export const immer = (config) => (set, get) =>
@@ -36,7 +39,7 @@ export const immer = (config) => (set, get) =>
 
 // Zustand and Immer
 export const useAppStore = create(
-    immer((set) => ({
+    immer((set, get) => ({
         promptStyleReferences: {},
         addPromptStyleRef: (promptStyleRef) =>
             set((state) => {
@@ -54,10 +57,29 @@ export const useAppStore = create(
                         smallDetail;
                 }
             }),
+			layerId2ContextIdMap : {},
+		setLayerid2ContextId: (layerId, contextId) => set((state) => {
+			state.layerId2ContextIdMap[layerId] = contextId
+		}),
+		getLayerid2ContextId: (layerId) => get().layerId2ContextIdMap[layerId],
+		removeLayerid2ContextId: (layerId, contextId) => set((state) => {
+			delete state.layerId2ContextIdMap[layerId]
+		}),
         layerAIContexts: {},
         setAILayerContext: (intendedLayerContextId, layerAIContext) =>
             set((state) => {
                 state.layerAIContexts[intendedLayerContextId] = layerAIContext;
+            }),
+		setAILayerContextPrompt: (layerAIContext, newPrompt) =>
+            set((state) => {
+                state.layerAIContexts[layerAIContext.id].currentPrompt = newPrompt;
+            }),
+		getAILayerContext: (intendedLayerContextId) =>
+            get().layerAIContexts[intendedLayerContextId],
+		replaceAILayerContext: (oldLayerContextId, newLayerContextId, layerAIContext) =>
+            set((state) => {
+                state.layerAIContexts[newLayerContextId] = layerAIContext;
+				delete state.layerAIContexts[oldLayerContextId]
             }),
         addLayerToContext: (layer, layerAIContext) =>
             set((state) => {
@@ -71,6 +93,9 @@ export const useAppStore = create(
                 if (layerContext.layers.includes(layer))
                     layerContext.layers.remove(layer);
             }),
+		deleteContext: (layerAIContextID) => set((state) => {
+			delete state.layerAIContexts[layerAIContextID]
+		}),
         mergedLayerConexts: {},
         // I think if we have descriptions for each layer we can regenerate them all or collapse all of the descriptions in to a final description
         addMergedLayerContext: (mergedLayerAIMetaData) =>

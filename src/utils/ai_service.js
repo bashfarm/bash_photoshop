@@ -1,9 +1,13 @@
+import { CreateAILayerContextId } from '../store/appStore';
 import {
     IsBase64Str,
     GetDataFolderImageBase64ImgStr,
     CreateHistoryFile,
 } from './io_service';
-import { GetNewestLayer } from './layer_service';
+import { GetNewestLayer, PlaceImageFromDataOnLayer, SaveLayerContexttoHistory } from './layer_service';
+const photoshop = require('photoshop');
+const app = photoshop.app;
+const executeAsModal = photoshop.core.executeAsModal;
 
 /**
  * @param {String} imgb64Str
@@ -57,7 +61,6 @@ export async function Img2Img(imgb64Str, height, width, prompt) {
             body: raw,
             redirect: 'follow',
         };
-        console.log(process.env.API_URL);
         const response = await fetch(
             `${process.env.API_URL}/sdapi/v1/img2img`,
             requestOptions
@@ -190,12 +193,16 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
  * @param {*} layerAIContext
  * @param {Boolean} inplace if true this will replace the current layer with the new image
  */
-export async function GenerateAILayer(fileName, width, height, layerAIContext) {
+export async function GenerateAILayer(width, height, layerAIContext) {
     console.log('Generate AI layer');
     try {
-        let b64Data = (await GetDataFolderImageBase64ImgStr(fileName))
-            .base64Data;
-        console.log(b64Data);
+		let savedLayerFileName = await SaveLayerContexttoHistory(layerAIContext);
+		// No available file name.  The user needs to remove some history
+		if(!savedLayerFileName){
+			return;
+		}
+		console.log(`Save Filename ${savedLayerFileName}`)
+        let b64Data = (await GetDataFolderImageBase64ImgStr(savedLayerFileName)).base64Data;
         let formattedB64Str = FormatBase64Image(b64Data);
         const genb64Str = await GenerateImage(
             formattedB64Str,
@@ -203,7 +210,9 @@ export async function GenerateAILayer(fileName, width, height, layerAIContext) {
             width,
             layerAIContext.currentPrompt
         );
-        await CreateHistoryFile(layerAIContext, genb64Str);
+        let generatedFileName = await CreateHistoryFile(layerAIContext, genb64Str);
+		console.log(`Generated Filename ${generatedFileName}`)
+		await PlaceImageFromDataOnLayer(generatedFileName)
         let generatedLayer = GetNewestLayer();
         return generatedLayer;
     } catch (e) {
@@ -235,3 +244,47 @@ export const GetImageProcessingProgress = async () => {
         console.error(error);
     }
 };
+
+
+export async function RegenerateLayer(width, height, layerAIContext, replaceAILayerContext, SetLayerAIContextCurrentLayer){
+	try{
+		let generatedLayer = await GenerateAILayer(width, height, layerAIContext)
+
+		// User probably needs to make space for new generations.  They can only hold up to 5 versions of a layer in history
+		if(!generatedLayer){
+			return
+		}
+		replaceAILayerContext(CreateAILayerContextId(layerAIContext.currentLayer), CreateAILayerContextId(generatedLayer), layerAIContext)
+		generatedLayer.move(layerAIContext.currentLayer, photoshop.constants.ElementPlacement.PLACEBEFORE)
+		deleteCurrentContextLayer(layerAIContext)
+		SetLayerAIContextCurrentLayer(generatedLayer, layerAIContext)
+		console.log(`set old layer context contextID: ${layerAIContext.id}, LayerID: ${layerAIContext.currentLayer.id} LayerName: ${layerAIContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`)
+	} catch(e){
+		console.error(e)
+	}
+
+}
+
+export async function deleteCurrentContextLayer(layerAIContext){
+	try{
+		command = {"_obj":"delete","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"layerID":[22]};
+        await executeAsModal(async () => {
+            return await bp([command], {});
+        });
+
+		console.log(layerAIContext.currentLayer)
+	} catch(e){
+		console.error(e)
+	}
+
+}
+
+async function actionCommands() {
+    let command;
+    let result;
+    let psAction = require("photoshop").action;
+
+    // Delete current layer
+    result = await psAction.batchPlay([command], {});
+}
+

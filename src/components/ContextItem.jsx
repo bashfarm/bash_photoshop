@@ -1,57 +1,30 @@
 import { useState, useEffect } from 'react';
 import {
-    Button,
     Heading,
-    Icon,
-    Label,
-    Slider,
     Textarea,
 } from 'react-uxp-spectrum';
 import { Progressbar } from 'react-uxp-spectrum/dist';
 import { CreateAILayerContextId, useAppStore } from '../store/appStore';
 import {
-    GenerateAILayer,
     GetImageProcessingProgress,
 	RegenerateLayer,
 } from '../utils/ai_service';
 import {
-    CreateContextMergedFileName,
-    GetDataFolderImageBase64ImgStr,
     GetHistoryFilePaths,
-    SaveDocumentToPluginData,
-    SaveLayerToPluginData,
 } from '../utils/io_service';
-import {
-    GetNewestLayer,
-    SaveLayerContexttoHistory,
-} from '../utils/layer_service';
 import { ProgressButton } from './ProgressButton';
 const fs = require('uxp').storage.localFileSystem;
+const photoshop = require('photoshop');
+const app = photoshop.app;
 
-
-export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
+export const ContextItem = ({ layerContext = {} }) => {
     let [imageProgress, SetImageProgress] = useState(0);
-    let [variationIntensity, SetVariationIntensity] = useState(0.25);
     let [thisLayersContext, SetThisLayersContext] = useState(layerContext);
-    let [layerContextHisoricalFiles, SetLayerContextHisoricalFiles] = useState(
-        []
-    );
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
-    let replaceAILayerContext = useAppStore((state) => state.replaceAILayerContext);
-
-	/**
-     * Setting the current layer property of the AI layer context
-     * @param {} layer
-     * @param {*} aiContext
-     */
-	function SetLayerAIContextCurrentLayer(layer, aiContext) {
-		let newContext = {
-			...aiContext,
-			currentLayer: layer,
-		};
-
-		setAILayerContext(CreateAILayerContextId(layer), newContext);
-	}
+    let layerAIContexts = useAppStore((state) => state.layerAIContexts);
+    let replaceAILayerContext = useAppStore((state) => state.getAILayerContext);
+    let getAILayerContext = useAppStore((state) => state.replaceAILayerContext);
+    let setAILayerContextPrompt = useAppStore((state) => state.setAILayerContextPrompt);
 	
 
     useEffect(async () => {
@@ -78,30 +51,16 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                         </span>
                     </Heading>
                 </div>
-                {layerContextHisoricalFiles &&
-                    layerContextHisoricalFiles.map((fpath, index) => {
-                        return <img key={index} src={fpath} />;
-                    })}
                 <div className="flex flex-col justify-between">
-                    {isTopLayer && (
-                        <Button
-                            className="bg-white text-brand-dark border-brand-dark"
-                            onClick={() => {}}
-                        >
-                            Merge Layers
-                        </Button>
-                    )}
                     <ProgressButton
                         // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                         //  512x512 is the cheapest.  We will have to have a final step of upscaling
                         longRunningFunction={async () => {
-                            RegenerateLayer(
-                                512,
-                                512,
-                                thisLayersContext,
-								replaceAILayerContext,
-								SetLayerAIContextCurrentLayer
-                            );
+							console.log("regenerate Layer")
+							console.log(thisLayersContext)
+							console.log(layerAIContexts)
+							console.log(app.activeDocument.layers)
+
                         }}
                         progressQueryFunction={GetImageProcessingProgress}
                         queryResponseParser={(response) => response['progress']}
@@ -120,36 +79,24 @@ export const Layer = ({ layer, isTopLayer, layerContext = {}, children }) => {
                 </div>
             </div>
             <div>
-                <Textarea
+			<Textarea
                     placeholder="Enter a description of the content in this layer"
                     onInput={(event) => {
+
+						// Making a copy like this and resetting seems to render things well
+						// using the app store methods causing a total rerender and makes this suck
                         let newContext = {
                             ...thisLayersContext,
                             currentPrompt: event.target.value,
                         };
                         setAILayerContext(
-                            CreateAILayerContextId(layer),
+                            CreateAILayerContextId(thisLayersContext.layers[0]),
                             newContext
                         );
-                        SetThisLayersContext(newContext);
+						SetThisLayersContext(newContext)
                     }}
                     className="w-full"
                 ></Textarea>
-                <div className="font-white">Variation Intensity</div>
-                <Slider
-                    min={0}
-                    max={100}
-                    value={0}
-                    id={1}
-                    className="w-1/3 py-2 mr-2"
-                    showValue="true"
-                    valueLabel="%"
-                    onInput={(event) =>
-                        console.log(
-                            `Not implemented, but capturing value ${event.target.value}`
-                        )
-                    }
-                ></Slider>
                 <div>{thisLayersContext.currentPrompt}</div>
             </div>
         </div>

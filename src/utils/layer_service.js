@@ -266,6 +266,20 @@ export function GetLayerAIContext(layer, layerAIContextStore) {
     return layerAIContextStore[CreateAILayerContextId(layer)];
 }
 
+export function GetDeletedLayersThatNeedToBeRemovedFromContexts(layerAIContextStore){
+	let docLayerIds = GetDocumentLayerContextIds()
+	let layersThatHaveBeenDeletedAndContextsRemain = Object.keys(layerAIContextStore).filter(x => !docLayerIds.includes(parseInt(x)));
+	return layersThatHaveBeenDeletedAndContextsRemain
+}
+
+export function GetDocumentLayerIds(){
+	return app.activeDocument.layers.map((layer) => layer.id) 
+}
+
+export function GetDocumentLayerContextIds(){
+	return app.activeDocument.layers.map((layer) => CreateAILayerContextId(layer)) 
+}
+
 /**
  * This function will duplicate the given layer and return a reference to it.
  * @param {*} layer
@@ -297,6 +311,9 @@ export function GetNewestLayer() {
 export async function SaveLayerContexttoHistory(layerAIContext) {
     try {
         let fileName = await GetNextAvailableHistoryFileName(layerAIContext);
+		if(!fileName){
+			return
+		}
         await SaveLayerToPluginData(fileName, layerAIContext.currentLayer);
         return fileName;
     } catch (e) {
