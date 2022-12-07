@@ -27,6 +27,7 @@ import { ProgressButton } from '../components/ProgressButton';
 import { useAppStore } from '../store/appStore';
 import { LayerManager } from '../components/LayerManager';
 import Example from '../components/tailwindtest';
+import { ContextManager } from '../components/ContextManager';
 
 const MERGEDFILENAME = 'mergedFile.png';
 const GENERATEDFILENAME = 'generatedFile.png';
@@ -122,7 +123,8 @@ export const UxpStorage = () => {
                 multiline
             ></Textarea>
             <sp-label>{finalDocumentPrompt}</sp-label>
-            <LayerManager layers={app.activeDocument.layers}></LayerManager>
+            {/* <LayerManager layers={app.activeDocument.layers}></LayerManager> */}
+			<ContextManager></ContextManager>
         </>
     );
 };

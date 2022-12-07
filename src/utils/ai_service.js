@@ -267,15 +267,24 @@ export async function RegenerateLayer(width, height, layerAIContext, replaceAILa
 
 export async function deleteCurrentContextLayer(layerAIContext){
 	try{
-		const res = await executeAsModal(
-			async () => {
-				layerAIContext.currentLayer.delete()
-			},
-			{ commandName: 'Delete Layer' }
-		);
+		command = {"_obj":"delete","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"layerID":[22]};
+        await executeAsModal(async () => {
+            return await bp([command], {});
+        });
+
 		console.log(layerAIContext.currentLayer)
 	} catch(e){
 		console.error(e)
 	}
 
 }
+
+async function actionCommands() {
+    let command;
+    let result;
+    let psAction = require("photoshop").action;
+
+    // Delete current layer
+    result = await psAction.batchPlay([command], {});
+}
+
