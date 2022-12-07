@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import {
-    Textarea,
-    ActionButton,
-    Divider,
-    Heading,
-    Icon,
-    Textfield,
-} from 'react-uxp-spectrum';
+import { Divider, Heading, Icon, Dropdown } from 'react-uxp-spectrum';
+import { useFetchFunction, useFetch } from '../hooks/fetchHooks';
+import { getArtists, getArtistCategories } from '../utils/ai_service';
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
     { id: 2, value: 40, src: 'img/cat.jpg' },
@@ -29,28 +24,35 @@ const StyleImages = (props) => {
     );
 };
 
+const SpMenuItems = ({ name, score, category }) => (
+    <sp-menu-item> {name} </sp-menu-item>
+);
 export const StyleReferences = () => {
-    const [loadingImages, setLoadingImages] = useState(false);
+    // const { artist, loadingArtist, artistError } = useFetchFunction(getArtists);
+    const {
+        data: artist,
+        loading: artistLoading,
+        error: artistError,
+    } = useFetchFunction(getArtists);
 
     return (
         <div className="flex flex-col">
             <Heading size="XS" weight="light">
-                Style Reference Images
+                Artist List
             </Heading>
-            <Textfield
-                // onInput={(event) => setPrompt(event.target.value)}
-                className="w-full"
-                placeholder="Search me!"
-            ></Textfield>
-            <ActionButton
-                // disabled={loadingImages}
-                // onClick={() => generateImages(prompt)}
-                title="test"
-            >
-                {loadingImages
-                    ? 'Searching for images...'
-                    : 'Search for images'}
-            </ActionButton>
+            {/* {artistLoading && 'Loading...'} */}
+            <Dropdown>
+                <sp-menu slot="options">
+                    {artistLoading ? (
+                        <sp-menu-item>Loading</sp-menu-item>
+                    ) : (
+                        artist.map((item, index) => (
+                            <SpMenuItems key={index} name={item.name} />
+                        ))
+                    )}
+                </sp-menu>
+                {artist && console.log(artist)}
+            </Dropdown>
             <Divider className="my-2" size="small" />
             <div className="flex flex-wrap mb-4 w-full justify-center">
                 {dummyArray.map((item) => (

@@ -4,10 +4,17 @@ import {
     GetDataFolderImageBase64ImgStr,
     CreateHistoryFile,
 } from './io_service';
-import { GetNewestLayer, PlaceImageFromDataOnLayer, SaveLayerContexttoHistory } from './layer_service';
+import {
+    GetNewestLayer,
+    PlaceImageFromDataOnLayer,
+    SaveLayerContexttoHistory,
+} from './layer_service';
 const photoshop = require('photoshop');
 const app = photoshop.app;
 const executeAsModal = photoshop.core.executeAsModal;
+const myHeaders = new Headers();
+myHeaders.append('Content-Type', 'application/json');
+myHeaders.append('Accept', 'application/json');
 
 /**
  * @param {String} imgb64Str
@@ -18,9 +25,6 @@ const executeAsModal = photoshop.core.executeAsModal;
  */
 export async function Img2Img(imgb64Str, height, width, prompt) {
     try {
-        const myHeaders = new Headers();
-        myHeaders.append('Content-Type', 'application/json');
-
         const raw = JSON.stringify({
             init_images: [imgb64Str],
             resize_mode: 0,
@@ -118,9 +122,6 @@ export const txt2Img = async (
         sampler_index: 'Euler',
     };
 
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('accept', 'application/json');
     const requestOptions = {
         method: 'POST',
         headers: myHeaders,
@@ -137,6 +138,54 @@ export const txt2Img = async (
         return await response.json();
     } catch (error) {
         console.error(error);
+    }
+};
+
+/**
+ * @typedef {Object} Artists
+ * @property {String}
+ * @property {Number}
+ * @property {String}
+ */
+
+/**
+ * @returns {Array<Artists>} Array of artist objects
+ */
+export const getArtists = async () => {
+    const requestOptions = {
+        method: 'GET',
+        headers: myHeaders,
+    };
+    try {
+        console.log(process.env.API_URL);
+        const response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/artists`,
+            requestOptions
+        );
+        return await response.json();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+/**
+ * @returns {Array<String>} Array of artist categoties
+ */
+export const getArtistCategories = async () => {
+    const requestOptions = {
+        method: 'GET',
+        headers: myHeaders,
+    };
+    try {
+        console.log(process.env.API_URL);
+        const response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/artist-categories`,
+            requestOptions
+        );
+
+        return await response.json();
+    } catch (error) {
+        console.log(error);
     }
 };
 
@@ -196,13 +245,16 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
 export async function GenerateAILayer(width, height, layerAIContext) {
     console.log('Generate AI layer');
     try {
-		let savedLayerFileName = await SaveLayerContexttoHistory(layerAIContext);
-		// No available file name.  The user needs to remove some history
-		if(!savedLayerFileName){
-			return;
-		}
-		console.log(`Save Filename ${savedLayerFileName}`)
-        let b64Data = (await GetDataFolderImageBase64ImgStr(savedLayerFileName)).base64Data;
+        let savedLayerFileName = await SaveLayerContexttoHistory(
+            layerAIContext
+        );
+        // No available file name.  The user needs to remove some history
+        if (!savedLayerFileName) {
+            return;
+        }
+        console.log(`Save Filename ${savedLayerFileName}`);
+        let b64Data = (await GetDataFolderImageBase64ImgStr(savedLayerFileName))
+            .base64Data;
         let formattedB64Str = FormatBase64Image(b64Data);
         const genb64Str = await GenerateImage(
             formattedB64Str,
@@ -210,9 +262,12 @@ export async function GenerateAILayer(width, height, layerAIContext) {
             width,
             layerAIContext.currentPrompt
         );
-        let generatedFileName = await CreateHistoryFile(layerAIContext, genb64Str);
-		console.log(`Generated Filename ${generatedFileName}`)
-		await PlaceImageFromDataOnLayer(generatedFileName)
+        let generatedFileName = await CreateHistoryFile(
+            layerAIContext,
+            genb64Str
+        );
+        console.log(`Generated Filename ${generatedFileName}`);
+        await PlaceImageFromDataOnLayer(generatedFileName);
         let generatedLayer = GetNewestLayer();
         return generatedLayer;
     } catch (e) {
@@ -245,46 +300,67 @@ export const GetImageProcessingProgress = async () => {
     }
 };
 
+export async function RegenerateLayer(
+    width,
+    height,
+    layerAIContext,
+    replaceAILayerContext,
+    SetLayerAIContextCurrentLayer
+) {
+    try {
+        let generatedLayer = await GenerateAILayer(
+            width,
+            height,
+            layerAIContext
+        );
 
-export async function RegenerateLayer(width, height, layerAIContext, replaceAILayerContext, SetLayerAIContextCurrentLayer){
-	try{
-		let generatedLayer = await GenerateAILayer(width, height, layerAIContext)
-
-		// User probably needs to make space for new generations.  They can only hold up to 5 versions of a layer in history
-		if(!generatedLayer){
-			return
-		}
-		replaceAILayerContext(CreateAILayerContextId(layerAIContext.currentLayer), CreateAILayerContextId(generatedLayer), layerAIContext)
-		generatedLayer.move(layerAIContext.currentLayer, photoshop.constants.ElementPlacement.PLACEBEFORE)
-		deleteCurrentContextLayer(layerAIContext)
-		SetLayerAIContextCurrentLayer(generatedLayer, layerAIContext)
-		console.log(`set old layer context contextID: ${layerAIContext.id}, LayerID: ${layerAIContext.currentLayer.id} LayerName: ${layerAIContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`)
-	} catch(e){
-		console.error(e)
-	}
-
+        // User probably needs to make space for new generations.  They can only hold up to 5 versions of a layer in history
+        if (!generatedLayer) {
+            return;
+        }
+        replaceAILayerContext(
+            CreateAILayerContextId(layerAIContext.currentLayer),
+            CreateAILayerContextId(generatedLayer),
+            layerAIContext
+        );
+        generatedLayer.move(
+            layerAIContext.currentLayer,
+            photoshop.constants.ElementPlacement.PLACEBEFORE
+        );
+        deleteCurrentContextLayer(layerAIContext);
+        SetLayerAIContextCurrentLayer(generatedLayer, layerAIContext);
+        console.log(
+            `set old layer context contextID: ${layerAIContext.id}, LayerID: ${layerAIContext.currentLayer.id} LayerName: ${layerAIContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`
+        );
+    } catch (e) {
+        console.error(e);
+    }
 }
 
-export async function deleteCurrentContextLayer(layerAIContext){
-	try{
-		command = {"_obj":"delete","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"layerID":[22]};
+export async function deleteCurrentContextLayer(layerAIContext) {
+    try {
+        command = {
+            _obj: 'delete',
+            _target: [
+                { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
+            ],
+            layerID: [22],
+        };
         await executeAsModal(async () => {
             return await bp([command], {});
         });
 
-		console.log(layerAIContext.currentLayer)
-	} catch(e){
-		console.error(e)
-	}
-
+        console.log(layerAIContext.currentLayer);
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 async function actionCommands() {
     let command;
     let result;
-    let psAction = require("photoshop").action;
+    let psAction = require('photoshop').action;
 
     // Delete current layer
     result = await psAction.batchPlay([command], {});
 }
-
