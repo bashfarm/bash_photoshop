@@ -5,6 +5,7 @@ import {
 } from './io_service';
 import {
     GetNewestLayer,
+    MoveLayer,
     PlaceImageFromDataOnLayer,
     SaveLayerContexttoHistory,
 } from './layer_service';
