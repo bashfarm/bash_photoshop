@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "NodeNext",
+        "target": "es5",
+        "allowJs": true,
+        "sourceMap": true,
+        "moduleResolution": "NodeNext",
+        "jsx": "react",
+        "typeRoots": ["node_modules/@types", "node_modules/uxp-types"]
+    },
+    "include": ["src/**/*"]
+}

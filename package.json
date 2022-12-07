@@ -4,7 +4,7 @@
     "scripts": {
         "preinstall": "npx npm-force-resolutions",
         "build": "webpack --config webpack.dev.js",
-        "watch": "nodemon -w src -e js,json,jsx,css,html -w plugin -x \"npm run build\"",
+        "watch": "nodemon -w src -e ts,tsx,js,json,jsx,css,html -w plugin -x \"npm run build\"",
         "prod": "webpack --config webpack.prod.js",
         "prepare": "husky install"
     },
@@ -17,6 +17,7 @@
         "@babel/plugin-transform-computed-properties": "^7.13.0",
         "@babel/plugin-transform-react-jsx": "^7.13.12",
         "@svgr/webpack": "^6.5.1",
+        "@types/photoshop": "^23.0.0",
         "acorn": "^8.1.1",
         "autoprefixer": "^10.4.13",
         "babel-loader": "^8.2.2",
@@ -43,6 +44,9 @@
         "stream-browserify": "^3.0.0",
         "style-loader": "^2.0.0",
         "tailwindcss": "^3.2.4",
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.9.3",
+        "uxp-types": "^0.1.2",
         "webpack": "^5.75.0",
         "webpack-cli": "^4.6.0",
         "webpack-merge": "^5.7.3",
