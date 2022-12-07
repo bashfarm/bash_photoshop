@@ -5,7 +5,8 @@ const Dotenv = require('dotenv-webpack');
 // SEE: https://webpack.js.org/guides/production/#specify-the-mode
 
 module.exports = {
-    entry: './src/main.jsx',
+    entry: './src/main.tsx',
+    devtool: 'inline-source-map',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'main.jsx',
@@ -18,7 +19,7 @@ module.exports = {
         os: 'commonjs2 os',
     },
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.tsx', '.ts', '.js', '.jsx'],
         // Webpack 5, see:
         // https://stackoverflow.com/questions/64557638/how-to-polyfill-node-core-modules-in-webpack-5
         modules: [path.resolve(__dirname, './src'), 'node_modules'],
@@ -42,6 +43,11 @@ module.exports = {
     },
     module: {
         rules: [
+            {
+                test: /\.(ts|tsx)$/,
+                loader: 'ts-loader',
+                exclude: /node_modules/,
+            },
             {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
