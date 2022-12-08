@@ -9,21 +9,22 @@ const photoshop = require('photoshop');
 const types = require('uxp').storage.types;
 const formats = require('uxp').storage.formats;
 const executeAsModal = photoshop.core.executeAsModal;
-const base64js = require('base64-js');
+import base64js from 'base64-js';
 import { ContextHistoryEnums } from '../constants';
 import { UnformatBase64Image } from './ai_service';
 import { GetVisibleLayers } from './layer_service';
 const b64ImgHeader: string = 'data:image/png;base64, ';
 import { alert } from './general_utils';
+import { Layer } from 'photoshop/dom/Layer';
 
 export async function SaveTextFileToDataFolder(fileName, data) {
     const dataFolder = await lfs.getDataFolder();
     try {
-        let entry = dataFolder.createEntry(fileName, {
+        const entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
-        var res = await entry;
+        const res = await entry;
 
         res.write(data, { format: formats.utf8 });
         console.log('saved base64 data in plugin folder');
@@ -36,11 +37,11 @@ export async function SaveTextFileToDataFolder(fileName, data) {
 export async function SaveBinaryFileToDataFolder(fileName, data) {
     const dataFolder = await lfs.getDataFolder();
     try {
-        let entry = dataFolder.createEntry(fileName, {
+        const entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
-        var res = await entry;
+        const res = await entry;
         res.write(data, { format: formats.binary });
         console.log('saved binary data to image in plugin folder');
     } catch (e) {
@@ -48,13 +49,15 @@ export async function SaveBinaryFileToDataFolder(fileName, data) {
         console.log(e);
     }
 }
-
-export async function SaveB64ImageToBinaryFileToDataFolder(fileName, data) {
+// TODO: ask ben why there's a return here
+export async function SaveB64ImageToBinaryFileToDataFolder(
+    fileName: string,
+    data: string
+): Promise<void> {
     try {
-        console.log(UnformatBase64Image(data));
-        data = base64js.toByteArray(UnformatBase64Image(data));
+        const data_response = base64js.toByteArray(UnformatBase64Image(data));
         console.log('converting with base64-js');
-        return await SaveBinaryFileToDataFolder(fileName, data);
+        return await SaveBinaryFileToDataFolder(fileName, data_response);
     } catch (e) {
         console.log(e);
     }
@@ -62,10 +65,9 @@ export async function SaveB64ImageToBinaryFileToDataFolder(fileName, data) {
 
 /**
  * BROKEN NOT WORKING
- * @param {String} base64Data
- * @returns
+ * @returns boolean
  */
-export function IsBase64Str(base64Data) {
+export function IsBase64Str(base64Data: string): Boolean {
     // Not a good test
     return base64Data.length > 200;
 }
@@ -80,8 +82,10 @@ export async function GetDataFolderImageBase64ImgStr(
 ): Promise<DataFolderImageBase64> {
     try {
         const dataFolder = await lfs.getDataFolder();
-        var placedDocument = await dataFolder.getEntry(fileName);
-        var binaryData = await placedDocument.read({ format: formats.binary });
+        const placedDocument = await dataFolder.getEntry(fileName);
+        const binaryData = await placedDocument.read({
+            format: formats.binary,
+        });
         const base64String: string = base64js.fromByteArray(
             new Uint8Array(binaryData)
         );
@@ -93,14 +97,16 @@ export async function GetDataFolderImageBase64ImgStr(
     }
 }
 
-export async function SaveDocumentToPluginData(fileName) {
+export async function SaveDocumentToPluginData(
+    fileName: string
+): Promise<void> {
     const dataFolder = await lfs.getDataFolder();
     try {
-        let entry = dataFolder.createEntry(fileName, {
+        const entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
-        var fileRef = await entry;
+        const fileRef = await entry;
         console.log(fileRef.nativePath.replace('\\\\', '\\'));
         await executeAsModal(async () => {
             await photoshop.app.activeDocument.saveAs.png(
@@ -119,18 +125,21 @@ export async function SaveDocumentToPluginData(fileName) {
     }
 }
 
-export async function SaveLayerToPluginData(fileName, layer) {
+export async function SaveLayerToPluginData(
+    fileName: string,
+    layer: Layer
+): Promise<void> {
     const dataFolder = await lfs.getDataFolder();
     try {
-        let visibleLayers = GetVisibleLayers();
-        let prevVisibility = layer.visible;
+        const visibleLayers = GetVisibleLayers();
+        const prevVisibility = layer.visible;
 
-        let entry = dataFolder.createEntry(fileName, {
+        const entry = dataFolder.createEntry(fileName, {
             type: types.file,
             overwrite: true,
         });
 
-        let fileRef = await entry;
+        const fileRef = await entry;
 
         console.log(fileRef.nativePath.replace('\\\\', '\\'));
 

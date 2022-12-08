@@ -14,7 +14,6 @@ import {
     ArtistCategories,
 } from '../common/types';
 import { Layer } from 'photoshop/dom/Layer';
-import { Layer } from 'photoshop/dom/Layer';
 
 const photoshop = require('photoshop');
 
@@ -208,9 +207,35 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
  * @param {*} prompt
  * @returns
  */
-export async function generateImage(mergeStr, height, width, prompt) {
+export const FormatBase64Image = (b64imgStr: string): string => {
+    const b64header = 'data:image/png;base64, ';
+    if (!b64imgStr.includes('data:image')) return b64header + b64imgStr;
+    return b64imgStr;
+};
+
+/**
+ *
+ * @returns unformats base64 string
+ */
+export function UnformatBase64Image(b64imgStr: string): string {
+    const b64header = 'data:image/png;base64, ';
+    if (b64imgStr.includes('data:image'))
+        return b64imgStr.replace(b64header, '');
+    return b64imgStr;
+}
+
+/**
+ *
+ * @returns  Generated image in formatted base64 string
+ */
+export async function GenerateImage(
+    mergeStr: string,
+    height: number,
+    width: number,
+    prompt: string
+): Promise<string | undefined> {
     try {
-        var generatedImageResponse = await img2Img(
+        const generatedImageResponse = await img2Img(
             mergeStr,
             height,
             width,
