@@ -29,9 +29,9 @@ import create from 'zustand';
 // 	"name": "" // The name of the style to apply
 // }
 
-let layerId2ContextIdMap = {
-	"1" : "1" // The id of the context
-}
+// let layerId2ContextIdMap = {
+// 	"1" : "1" // The id of the context
+// }
 
 // Immer store wrapper
 export const immer = (config) => (set, get) =>
@@ -41,45 +41,40 @@ export const immer = (config) => (set, get) =>
 export const useAppStore = create(
     immer((set, get) => ({
         promptStyleReferences: {},
+        layerId2ContextIdMap: {},
+        layerAIContexts: {},
         addPromptStyleRef: (promptStyleRef) =>
             set((state) => {
                 state.promptStyleReferences[promptStyleRef.id] = promptStyleRef;
             }),
-        smallDetailAssets: {},
-        addSmallDetail: (smallDetail) =>
+        setLayerid2ContextId: (layerId, contextId) =>
             set((state) => {
-                if (state.smallDetailAssets[smallDetail.detailName]) {
-                    state.smallDetailAssets[smallDetail.detailName][
-                        'numInDoc'
-                    ] += 1;
-                } else {
-                    state.smallDetailAssets[smallDetail.detailName] =
-                        smallDetail;
-                }
+                state.layerId2ContextIdMap[layerId] = contextId;
             }),
-			layerId2ContextIdMap : {},
-		setLayerid2ContextId: (layerId, contextId) => set((state) => {
-			state.layerId2ContextIdMap[layerId] = contextId
-		}),
-		getLayerid2ContextId: (layerId) => get().layerId2ContextIdMap[layerId],
-		removeLayerid2ContextId: (layerId, contextId) => set((state) => {
-			delete state.layerId2ContextIdMap[layerId]
-		}),
-        layerAIContexts: {},
+        getLayerid2ContextId: (layerId) => get().layerId2ContextIdMap[layerId],
+        removeLayerid2ContextId: (layerId) =>
+            set((state) => {
+                delete state.layerId2ContextIdMap[layerId];
+            }),
         setAILayerContext: (intendedLayerContextId, layerAIContext) =>
             set((state) => {
                 state.layerAIContexts[intendedLayerContextId] = layerAIContext;
             }),
-		setAILayerContextPrompt: (layerAIContext, newPrompt) =>
+        setAILayerContextPrompt: (layerAIContext, newPrompt) =>
             set((state) => {
-                state.layerAIContexts[layerAIContext.id].currentPrompt = newPrompt;
+                state.layerAIContexts[layerAIContext.id].currentPrompt =
+                    newPrompt;
             }),
-		getAILayerContext: (intendedLayerContextId) =>
+        getAILayerContext: (intendedLayerContextId) =>
             get().layerAIContexts[intendedLayerContextId],
-		replaceAILayerContext: (oldLayerContextId, newLayerContextId, layerAIContext) =>
+        replaceAILayerContext: (
+            oldLayerContextId,
+            newLayerContextId,
+            layerAIContext
+        ) =>
             set((state) => {
                 state.layerAIContexts[newLayerContextId] = layerAIContext;
-				delete state.layerAIContexts[oldLayerContextId]
+                delete state.layerAIContexts[oldLayerContextId];
             }),
         addLayerToContext: (layer, layerAIContext) =>
             set((state) => {
@@ -93,27 +88,9 @@ export const useAppStore = create(
                 if (layerContext.layers.includes(layer))
                     layerContext.layers.remove(layer);
             }),
-		deleteContext: (layerAIContextID) => set((state) => {
-			delete state.layerAIContexts[layerAIContextID]
-		}),
-        mergedLayerConexts: {},
-        // I think if we have descriptions for each layer we can regenerate them all or collapse all of the descriptions in to a final description
-        addMergedLayerContext: (mergedLayerAIMetaData) =>
+        deleteContext: (layerAIContextID) =>
             set((state) => {
-                state.layerAIContexts[mergedLayerAIMetaData.id] =
-                    mergedLayerAIMetaData;
-            }),
-        generatedLayerConexts: {},
-        addGeneratedLayerContext: (generatedLayerAIMetaData) =>
-            set((state) => {
-                // If we are collapsing
-                state.layerAIContexts[generatedLayerAIMetaData.id] =
-                    generatedLayerAIMetaData;
-            }),
-        finalDocumentPrompt: 'Colorful anime knives illustration',
-        setFinalDocumentPrompt: (prompt) =>
-            set((state) => {
-                state.finalDocumentPrompt = prompt;
+                delete state.layerAIContexts[layerAIContextID];
             }),
         sdStyles: {},
     }))

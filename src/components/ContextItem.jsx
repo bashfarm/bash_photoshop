@@ -3,6 +3,8 @@ import { Heading, Textarea } from 'react-uxp-spectrum';
 import { Progressbar } from 'react-uxp-spectrum/dist';
 import { CreateAILayerContextId, useAppStore } from '../store/appStore';
 import {
+    deleteLayer,
+    GenerateAILayer,
     GetImageProcessingProgress,
     RegenerateLayer,
 } from '../utils/ai_service';
@@ -12,6 +14,7 @@ import {
 } from '../utils/io_service';
 import {
     CreateNewLayerFromImage,
+    MoveLayer,
     PlaceImageFromDataOnLayer,
 } from '../utils/layer_service';
 import { HidingTool, UnHidingTool } from '../utils/tools_service';
@@ -56,6 +59,11 @@ const ContextToolColumn = ({ layerContext }) => {
     );
 };
 
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
 const ContextToolBar = ({ layerContext }) => {
     return (
         <div className="flex flex-row space-x-1">
@@ -69,7 +77,16 @@ const ContextToolBar = ({ layerContext }) => {
     );
 };
 
+/**
+ * This is the img of the previous version of the context.
+ * @param {*} param0
+ * @returns
+ */
 const ContextImage = ({ imageEntry, layerContext }) => {
+    /**
+     * This needs to be revamped.  We want to select this on image click.
+     * Then have a button
+     */
     async function whenClicked() {
         await CreateNewLayerFromImage(
             imageEntry.name,
@@ -89,6 +106,11 @@ const ContextImage = ({ imageEntry, layerContext }) => {
     );
 };
 
+/**
+ * This is the version history of the context.  The versions are pretty much just images.  But this can hold more information in the future.
+ * @param {*} param0
+ * @returns
+ */
 const ContextHistoryBar = ({ layerContext }) => {
     let [localContextHistoryFileEntries, SetLocalContextHistoryFileEntries] =
         useState([]);
@@ -103,7 +125,6 @@ const ContextHistoryBar = ({ layerContext }) => {
         <div className="flex flex-row space-x-1">
             {localContextHistoryFileEntries &&
                 localContextHistoryFileEntries.map((fEntry, index) => {
-                    console.log(fEntry);
                     return (
                         <ContextImage
                             key={index}
@@ -116,6 +137,11 @@ const ContextHistoryBar = ({ layerContext }) => {
     );
 };
 
+/**
+ * The component for the ride hand side of the context item UI.  This is responsible for styling and etc.  This might bneed to be revamped.
+ * @param {*}
+ * @returns
+ */
 const RegenerationColumn = ({ layerContext }) => {
     let [imageProgress, SetImageProgress] = useState(0);
 
@@ -127,11 +153,53 @@ const RegenerationColumn = ({ layerContext }) => {
         (state) => state.removeLayerid2ContextId
     );
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
+    let layerAIContexts = useAppStore((state) => state.layerAIContexts);
 
-    useEffect(async () => {
-        if (imageProgress == 1 || imageProgress == 0) {
+    async function RegenerateLayer(width, height) {
+        try {
+            let currentLayer2Generate = layerContext.layers[0];
+            let generatedLayer = await GenerateAILayer(
+                width,
+                height,
+                layerContext
+            );
+
+            // User probably needs to make space for new generations.  They can only hold up to 5 versions of a layer in history
+            if (!generatedLayer) {
+                return;
+            }
+            // replaceAILayerContext(CreateAILayerContextId(currentLayer2Generate), CreateAILayerContextId(generatedLayer), thisLayersContext)
+            MoveLayer(
+                generatedLayer,
+                currentLayer2Generate,
+                photoshop.constants.ElementPlacement.PLACEBEFORE
+            );
+            // deleteLayer(currentLayer2Generate)
+            console.log('Layer to delete');
+            console.log(currentLayer2Generate);
+            console.log('Layer to keep');
+            console.log(generatedLayer);
+            console.log(layerAIContexts);
+            let newContext = {
+                ...layerContext,
+                layers: [generatedLayer],
+            };
+            setAILayerContext(
+                CreateAILayerContextId(generatedLayer),
+                newContext
+            );
+            console.log(layerAIContexts);
+            removeLayerid2ContextId(currentLayer2Generate.id);
+            setLayerid2ContextId(generatedLayer.id, newContext.id);
+
+            // Probably need to push a new layer in to the layers array with the new layer
+            console.log(
+                `set old layer context contextID: ${layerContext.id}, LayerID: ${layerContext.currentLayer.id} LayerName: ${layerContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`
+            );
+        } catch (e) {
+            console.error(e);
         }
-    }, [imageProgress]);
+    }
 
     return (
         <>

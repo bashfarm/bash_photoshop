@@ -87,7 +87,7 @@ export const ContextManager = () => {
     }, []);
 
     /**
-     * Create the initial contexts.  Should be done only once when the component first loads.
+     * Create the initial contexts for the layers.  Should be done only once when the component first loads.
      */
     function CreateInitialContexts() {
         try {
@@ -104,19 +104,18 @@ export const ContextManager = () => {
         }
     }
 
-    function GetContextsInOrder() {
+    /**
+     * This retrieves the documents contexts in order of the photoshop layers
+     * @returns {Array}
+     */
+    function GetContextsInLayerOrder() {
         try {
             let newOrderedContexts = [];
             if (Object.keys(layerAIContexts).length > 0) {
                 for (let layer of app.activeDocument.layers) {
-                    let contextId = CreateAILayerContextId(layer);
                     let layerContext = getAILayerContext(
                         CreateAILayerContextId(layer)
                     );
-                    // console.log(contextId)
-                    // console.log(layerContext)
-                    // console.log(layer)
-                    // console.log(layerAIContexts)
                     if (layerContext && layerContext.layers.length > 0) {
                         newOrderedContexts.push(layerContext);
                     }
@@ -128,9 +127,13 @@ export const ContextManager = () => {
         }
     }
 
-    function CreateLayersFromContexts() {
-        let contextList = GetContextsInOrder();
-        console.log(contextList);
+    /**
+     * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
+     * in the order the layers are found in the document.
+     * @returns
+     */
+    function CreatecontextItems() {
+        let contextList = GetContextsInLayerOrder();
         return (
             <>
                 {contextList &&
@@ -144,5 +147,5 @@ export const ContextManager = () => {
         );
     }
 
-    return <>{CreateLayersFromContexts()}</>;
+    return <>{CreatecontextItems()}</>;
 };
