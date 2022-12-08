@@ -14,6 +14,7 @@ import {
     ArtistCategories,
 } from '../common/types';
 import { Layer } from 'photoshop/dom/Layer';
+import { Layer } from 'photoshop/dom/Layer';
 
 const photoshop = require('photoshop');
 
@@ -143,6 +144,7 @@ export const txt2Img = async (
     } catch (error) {
         console.error(error);
         throw error;
+        throw error;
     }
 };
 
@@ -171,6 +173,7 @@ export const getArtists = async (): Promise<ArtistType[]> => {
     } catch (error) {
         console.log(error);
         throw error;
+        throw error;
     }
 };
 
@@ -192,6 +195,7 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
         return await response.json();
     } catch (error) {
         console.log(error);
+        throw error;
         throw error;
     }
 };
@@ -221,17 +225,13 @@ export async function generateImage(mergeStr, height, width, prompt) {
 
 /**
  * Generate a new AI Image and put it in a layer
- * @param {*} fileName
- * @param {*} width
- * @param {*} height
- * @param {*} layerAIContext
- * @param {Boolean} inplace if true this will replace the current layer with the new image
  */
 export async function generateAILayer(
     width: number,
     height: number,
-    layerAIContext: any
+    layerAIContext: any // TODO: Set this type
 ) {
+    console.log('Generate AI layer');
     try {
         let savedLayerFileName = await saveLayerContexttoHistory(
             layerAIContext
@@ -285,6 +285,33 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
         return await response.json();
     } catch (error) {
         console.error(error);
-        throw error;
+    }
+}
+
+/**
+ * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
+ * update: Dont think this is working.  The layer gets deleted, 1. right now its the wrong layer and 2. I am not detecting the event 😒
+ * @param {*} layer
+ */
+// TODO: Set layer type
+export async function deleteLayer(layer: any): Promise<void> {
+    try {
+        // let command = {
+        //     _obj: 'delete',
+        //     _target: [
+        //         { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
+        //     ],
+        //     layerID: [layer.id],
+        // };
+        // await executeAsModal(async () => {
+        //     return await bp([command], {});
+        // });
+        await executeAsModal(async () => {
+            layer.delete();
+        });
+
+        console.log(layer);
+    } catch (e) {
+        console.error(e);
     }
 }
