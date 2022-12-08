@@ -28,9 +28,9 @@
     "entrypoints": [
         {
             "type": "panel",
-            "id": "uxpstorage",
+            "id": "contextmanager",
             "label": {
-                "default": "AI Optimized Photobashing Workflow Menu"
+                "default": "Context Manager"
             },
             "minimumSize": {
                 "width": 100,

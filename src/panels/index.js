@@ -1,5 +1,5 @@
-import { UxpStorage } from './UxpStorage';
+import { ContextManager } from './ContextManager';
 import { SmallUiDetail } from './SmallUiDetail';
 import { StyleReferences } from './StyleReferences';
 
-export { SmallUiDetail, UxpStorage, StyleReferences };
+export { SmallUiDetail, ContextManager, StyleReferences };

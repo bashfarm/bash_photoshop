@@ -347,12 +347,13 @@ export async function GetLatestHistoryFileName(layerAIContext) {
 
 export async function GetHistoryFilePaths(layerAIContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerAIContext);
-    let paths = historyFiles.map((entry) =>
-        entry.nativePath.replace('\\\\', '\\')
-    );
-    if (!paths) {
-        return [];
-    }
+
+    let paths = historyFiles.map((entry) => {
+        return entry.url.href;
+    });
+
+    if (!paths) paths = [];
+
     return paths;
 }
 

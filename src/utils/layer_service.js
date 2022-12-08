@@ -69,6 +69,16 @@ export function IsMoreThanOneVisibleLayer() {
     return GetVisibleLayers().length > 1;
 }
 
+export async function CreateNewLayerFromImage(
+    imageName,
+    relativeLayer,
+    relativeLayerPlacement
+) {
+    await PlaceImageFromDataOnLayer(imageName);
+    let newestLayer = GetNewestLayer();
+    MoveLayer(newestLayer, relativeLayer, relativeLayerPlacement);
+}
+
 export const PlaceImageFromDataOnLayer = async (imageName) => {
     try {
         const dataFolder = await lfs.getDataFolder();
