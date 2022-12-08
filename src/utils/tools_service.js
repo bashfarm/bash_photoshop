@@ -1,11 +1,7 @@
 const photoshop = require('photoshop');
 const executeAsModal = photoshop.core.executeAsModal;
 const bp = photoshop.action.batchPlay;
-import {
-    CreateTopLayerMask,
-    GetTopLayer,
-    selectLayerMask,
-} from './layer_service';
+import { CreateLayerMask, selectLayerMask } from './layer_service';
 
 export class PhotoshopTool {
     static MOVETOOL = 'moveTool';
@@ -84,11 +80,12 @@ export async function SetBrushTool() {
 // https://stackoverflow.com/questions/29109677/photoshop-javascript-how-to-get-set-current-tool
 // Tool names (use quoted strings, e.g. 'moveTool')
 
-export async function HidingTool() {
+export async function HidingTool(layerContext) {
     console.log('Hide Tool Enabled!');
     try {
-        await CreateTopLayerMask();
-        await selectLayerMask(GetTopLayer());
+        let primaryLayer = layerContext.layers[0];
+        await CreateLayerMask(primaryLayer);
+        await selectLayerMask(primaryLayer);
         await SetBrushTool();
         const black = new photoshop.app.SolidColor();
         black.rgb.red = 0;
@@ -102,11 +99,12 @@ export async function HidingTool() {
     }
 }
 
-export async function UnHidingTool() {
-    console.log('Hide Tool Enabled!');
+export async function UnHidingTool(layerContext) {
+    console.log('Unhiding!');
     try {
-        await CreateTopLayerMask();
-        await selectLayerMask(GetTopLayer());
+        let primaryLayer = layerContext.layers[0];
+        await CreateLayerMask(primaryLayer);
+        await selectLayerMask(primaryLayer);
         await SetBrushTool();
         const white = new photoshop.app.SolidColor();
         white.rgb.red = 255;

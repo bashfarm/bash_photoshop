@@ -1,18 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Button, Label } from 'react-uxp-spectrum';
+import { useEffect } from 'react';
 import {
     CreateAILayerContext,
     CreateAILayerContextId,
     useAppStore,
 } from '../store/appStore';
-import { GetContextFileEntries } from '../utils/io_service';
-import {
-    GetDeletedLayersThatNeedToBeRemovedFromContexts,
-    GetLayerAIContext,
-} from '../utils/layer_service';
-import { ContextItem } from './ContextItem';
-import { Layer } from './Layer';
-const fs = require('uxp').storage.localFileSystem;
+
+import { ContextItem } from '../components/ContextItem';
 const photoshop = require('photoshop');
 const app = photoshop.app;
 
@@ -26,9 +19,7 @@ const events = [
     { event: 'undoEnum' },
 ];
 
-const deleteEvent = [{ event: 'delete' }];
-
-export const ContextManager = ({ layers }) => {
+export const ContextManager = () => {
     let layerAIContexts = useAppStore((state) => state.layerAIContexts);
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
     let getAILayerContext = useAppStore((state) => state.getAILayerContext);
@@ -151,38 +142,6 @@ export const ContextManager = ({ layers }) => {
                     ))}
             </>
         );
-
-        // if (topContext) {
-        // 	console.log(topContext);
-        // 	console.log(layerAIContexts);
-        // 	console.log(topContext.currentLayer);
-        //     return [
-        //         <Layer
-        //             key={topContext.id}
-        //             layer={topContext.currentLayer}
-        //             isTopLayer={true}
-        //             layerContext={topContext}
-        //         />,
-        //         ...activeDocumentLayers.slice(1).map((layer) => {
-        //             let aiContext = GetLayerAIContext(layer, layerAIContexts);
-        //             console.log(aiContext);
-        //             console.log(layerAIContexts);
-        //             console.log(aiContext.currentLayer);
-        // 			if(aiContext.currentLayer){
-        // 				return (
-        // 					<Layer
-        // 						key={aiContext.id}
-        // 						layer={aiContext.currentLayer}
-        // 						layerContext={aiContext}
-        // 					/>
-        // 				);
-        // 			}
-
-        //         }),
-        //     ];
-        // } else {
-        //     return <div></div>;
-        // }
     }
 
     return <>{CreateLayersFromContexts()}</>;
