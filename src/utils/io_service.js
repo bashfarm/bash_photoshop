@@ -310,7 +310,7 @@ export function CreateContextMergedFileName(layerAIContext, fileNumber) {
 }
 
 /**
- * Create the geenrated file name
+ * Create the genrated file name
  * @param {*} layerAIContext
  * @param {*} fileNumber
  * @returns
@@ -320,31 +320,42 @@ export function CreateContextGeneratedFileName(layerAIContext, fileNumber) {
     return `${ContextHistoryEnums.GENERATED_FILE_FLAG}_${layerAIContext.id}_${fileNumber}.png`;
 }
 
+/**
+ * Retrieve the greatest file number for a give contexts file entries.
+ * Files must be named in the standard format {flag}_{contextid}_{fileNum}
+ * @param {*} fileEntries
+ * @returns
+ */
 export function GetLatestFileNumber(fileEntries) {
     let fileNumber = Math.max(
         ...fileEntries.map((file) =>
             parseInt(file.name.split('_').slice(-1)[0].split('.png')[0])
         )
     );
-    let splitEntries = fileEntries.map((file) =>
-        parseInt(file.name.split('_').slice(-1)[0].split('.png')[0])
-    );
 
-    console.log(`FileNum: ${fileNumber}`);
-    console.log(fileEntries);
-    console.log(splitEntries);
     if (fileNumber >= 0) {
         return fileNumber;
     }
     return 0;
 }
 
+/**
+ * Retrieve the latest history file name that is currently available.
+ * @param {*} layerAIContext
+ * @returns
+ */
 export async function GetLatestHistoryFileName(layerAIContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerAIContext);
     let latestFileNumber = GetLatestFileNumber(historyFiles);
     return CreateContextHistoryFileName(layerAIContext, latestFileNumber + 1);
 }
 
+/**
+ * Get only the href filepaths for the given context.  This is a relative path to the plugin data
+ * where the history files are located.
+ * @param {*} layerAIContext
+ * @returns
+ */
 export async function GetHistoryFilePaths(layerAIContext) {
     let historyFiles = await GetContextHistoryFileEntries(layerAIContext);
 

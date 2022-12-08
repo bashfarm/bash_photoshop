@@ -5,13 +5,11 @@ import {
 } from './io_service';
 import {
     GetNewestLayer,
-    MoveLayer,
     PlaceImageFromDataOnLayer,
     SaveLayerContexttoHistory,
 } from './layer_service';
 const photoshop = require('photoshop');
 const executeAsModal = photoshop.core.executeAsModal;
-const bp = photoshop.action.batchPlay;
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -301,54 +299,6 @@ export const GetImageProcessingProgress = async () => {
     }
 };
 
-export async function RegenerateLayer(
-    width,
-    height,
-    layerAIContext,
-    setLayerid2ContextId,
-    removeLayerid2ContextId,
-    setAILayerContext
-) {
-    try {
-        let currentLayer2Generate = layerAIContext.layers[0];
-        let generatedLayer = await GenerateAILayer(
-            width,
-            height,
-            layerAIContext
-        );
-
-        // User probably needs to make space for new generations.  They can only hold up to 5 versions of a layer in history
-        if (!generatedLayer) {
-            return;
-        }
-        // replaceAILayerContext(CreateAILayerContextId(currentLayer2Generate), CreateAILayerContextId(generatedLayer), layerAIContext)
-        MoveLayer(
-            currentLayer2Generate,
-            photoshop.constants.ElementPlacement.PLACEBEFORE
-        );
-        // deleteLayer(currentLayer2Generate)
-        console.log('Layer to delete');
-        console.log(currentLayer2Generate);
-        console.log('Layer to keep');
-        console.log(generatedLayer);
-        removeLayerid2ContextId(currentLayer2Generate.id);
-        setLayerid2ContextId(generatedLayer.id);
-
-        let newContext = {
-            ...layerAIContext,
-            layers: [generatedLayer],
-        };
-        setAILayerContext(newContext);
-
-        // Probably need to push a new layer in to the layers array with the new layer
-        console.log(
-            `set old layer context contextID: ${layerAIContext.id}, LayerID: ${layerAIContext.currentLayer.id} LayerName: ${layerAIContext.currentLayer.name} to new layer, LayerName: ${generatedLayer.name}, LayerID: ${generatedLayer.id}`
-        );
-    } catch (e) {
-        console.error(e);
-    }
-}
-
 /**
  * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
  * update: Dont think this is working.  The layer gets deleted, 1. right now its the wrong layer and 2. I am not detecting the event 😒
@@ -356,15 +306,18 @@ export async function RegenerateLayer(
  */
 export async function deleteLayer(layer) {
     try {
-        let command = {
-            _obj: 'delete',
-            _target: [
-                { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
-            ],
-            layerID: [layer.id],
-        };
+        // let command = {
+        //     _obj: 'delete',
+        //     _target: [
+        //         { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
+        //     ],
+        //     layerID: [layer.id],
+        // };
+        // await executeAsModal(async () => {
+        //     return await bp([command], {});
+        // });
         await executeAsModal(async () => {
-            return await bp([command], {});
+            layer.delete();
         });
 
         console.log(layer);
