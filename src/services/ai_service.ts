@@ -13,8 +13,7 @@ import {
     ArtistType,
     ArtistCategories,
 } from '../common/types';
-import { Layer } from 'photoshop/dom/Layer';
-
+g;
 const photoshop = require('photoshop');
 
 const myHeaders = new Headers();
@@ -200,40 +199,15 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
 };
 
 /**
- * This will send a request to the AI server and request an image given the prompt and image base64 string.  Also height and widith 😅
- * @param {*} mergeStr
- * @param {*} height
- * @param {*} width
- * @param {*} prompt
- * @returns
- */
-export const FormatBase64Image = (b64imgStr: string): string => {
-    const b64header = 'data:image/png;base64, ';
-    if (!b64imgStr.includes('data:image')) return b64header + b64imgStr;
-    return b64imgStr;
-};
-
-/**
- *
- * @returns unformats base64 string
- */
-export function UnformatBase64Image(b64imgStr: string): string {
-    const b64header = 'data:image/png;base64, ';
-    if (b64imgStr.includes('data:image'))
-        return b64imgStr.replace(b64header, '');
-    return b64imgStr;
-}
-
-/**
  *
  * @returns  Generated image in formatted base64 string
  */
-export async function GenerateImage(
+export async function generateImage(
     mergeStr: string,
     height: number,
     width: number,
     prompt: string
-): Promise<string | undefined> {
+): Promise<string> {
     try {
         const generatedImageResponse = await img2Img(
             mergeStr,
@@ -244,6 +218,7 @@ export async function GenerateImage(
         return formatBase64Image(generatedImageResponse['images'][0]);
     } catch (e) {
         console.log(e);
+        throw e;
     }
     // Set the first generated image to the generated image string
 }
@@ -310,33 +285,6 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
         return await response.json();
     } catch (error) {
         console.error(error);
-    }
-}
-
-/**
- * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
- * update: Dont think this is working.  The layer gets deleted, 1. right now its the wrong layer and 2. I am not detecting the event 😒
- * @param {*} layer
- */
-// TODO: Set layer type
-export async function deleteLayer(layer: any): Promise<void> {
-    try {
-        // let command = {
-        //     _obj: 'delete',
-        //     _target: [
-        //         { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
-        //     ],
-        //     layerID: [layer.id],
-        // };
-        // await executeAsModal(async () => {
-        //     return await bp([command], {});
-        // });
-        await executeAsModal(async () => {
-            layer.delete();
-        });
-
-        console.log(layer);
-    } catch (e) {
-        console.error(e);
+        throw error;
     }
 }
