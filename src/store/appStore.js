@@ -23,6 +23,7 @@ import create from 'zustand';
 // 	"layerRenegenerationPrompts": [],
 // 	"currentPrompt": ""
 //   "layers": [] // the layers that belong to the context
+//   "history": [] // the hisory of the context
 // }
 
 // let sdStyle = {
@@ -104,14 +105,14 @@ export const useAppStore = create(
  * @param {String} currentPrompt
  * @returns {Object} The object is an AI Layer context for the app state.
  */
-export function CreateAILayerContext(
+export function createAILayerContext(
     layer,
     details = [],
     layerRenegenerationPrompts = [],
     currentPrompt = ''
 ) {
     return {
-        id: CreateAILayerContextId(layer), // this should be the id number of the layer
+        id: createAILayerContextId(layer), // this should be the id number of the layer
         smallDetails: details, // The details from the above object
         layerRenegenerationPrompts: layerRenegenerationPrompts,
         currentPrompt: currentPrompt,
@@ -120,6 +121,6 @@ export function CreateAILayerContext(
     };
 }
 
-export function CreateAILayerContextId(layer) {
+export function createAILayerContextId(layer) {
     return parseInt(`${layer._id}${layer._docid}`);
 }

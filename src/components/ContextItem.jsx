@@ -1,27 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Heading, Textarea } from 'react-uxp-spectrum';
 import { Progressbar } from 'react-uxp-spectrum/dist';
-import { CreateAILayerContextId, useAppStore } from '../store/appStore';
+import { createAILayerContextId, useAppStore } from '../store/appStore';
 import {
-    deleteLayer,
-    GenerateAILayer,
-    GetImageProcessingProgress,
-    RegenerateLayer,
-} from '../utils/ai_service';
-import {
-    GetContextHistoryFileEntries,
-    GetHistoryFilePaths,
-} from '../utils/io_service';
-import {
-    CreateNewLayerFromImage,
-    MoveLayer,
-    PlaceImageFromDataOnLayer,
-} from '../utils/layer_service';
-import { HidingTool, UnHidingTool } from '../utils/tools_service';
+    generateAILayer,
+    getImageProcessingProgress,
+} from '../services/ai_service';
+import { getContextHistoryFileEntries } from '../services/context_service';
+import { createNewLayerFromImage, moveLayer } from '../services/layer_service';
 import { ProgressButton } from './ProgressButton';
-const fs = require('uxp').storage.localFileSystem;
+import {
+    toggleOffContextHidingTool,
+    toggleOnContextHidingTool,
+} from '../services/tools_service';
 const photoshop = require('photoshop');
-const app = photoshop.app;
 
 const ContextLabel = ({ value, labelText }) => {
     return (
@@ -67,10 +59,10 @@ const ContextToolColumn = ({ layerContext }) => {
 const ContextToolBar = ({ layerContext }) => {
     return (
         <div className="flex flex-row space-x-1">
-            <sp-button onClick={() => HidingTool(layerContext)}>
+            <sp-button onClick={() => toggleOnContextHidingTool(layerContext)}>
                 Hiding Tool
             </sp-button>
-            <sp-button onClick={() => UnHidingTool(layerContext)}>
+            <sp-button onClick={() => toggleOffContextHidingTool(layerContext)}>
                 UnHiding Tool
             </sp-button>
         </div>
@@ -88,7 +80,7 @@ const ContextImage = ({ imageEntry, layerContext }) => {
      * Then have a button
      */
     async function whenClicked() {
-        await CreateNewLayerFromImage(
+        await createNewLayerFromImage(
             imageEntry.name,
             layerContext.layers[0],
             photoshop.constants.ElementPlacement.PLACEBEFORE
@@ -112,12 +104,12 @@ const ContextImage = ({ imageEntry, layerContext }) => {
  * @returns
  */
 const ContextHistoryBar = ({ layerContext }) => {
-    let [localContextHistoryFileEntries, SetLocalContextHistoryFileEntries] =
+    let [localContextHistoryFileEntries, setLocalContextHistoryFileEntries] =
         useState([]);
 
     useEffect(async () => {
-        SetLocalContextHistoryFileEntries(
-            await GetContextHistoryFileEntries(layerContext)
+        setLocalContextHistoryFileEntries(
+            await getContextHistoryFileEntries(layerContext)
         );
     }, []);
 
@@ -143,7 +135,7 @@ const ContextHistoryBar = ({ layerContext }) => {
  * @returns
  */
 const RegenerationColumn = ({ layerContext }) => {
-    let [imageProgress, SetImageProgress] = useState(0);
+    let [imageProgress, setImageProgress] = useState(0);
 
     let setLayerid2ContextId = useAppStore(
         (state) => state.setLayerid2ContextId
@@ -155,10 +147,10 @@ const RegenerationColumn = ({ layerContext }) => {
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
     let layerAIContexts = useAppStore((state) => state.layerAIContexts);
 
-    async function RegenerateLayer(width, height) {
+    async function regenerateLayer(width, height) {
         try {
             let currentLayer2Generate = layerContext.layers[0];
-            let generatedLayer = await GenerateAILayer(
+            let generatedLayer = await generateAILayer(
                 width,
                 height,
                 layerContext
@@ -168,8 +160,7 @@ const RegenerationColumn = ({ layerContext }) => {
             if (!generatedLayer) {
                 return;
             }
-            // replaceAILayerContext(CreateAILayerContextId(currentLayer2Generate), CreateAILayerContextId(generatedLayer), thisLayersContext)
-            MoveLayer(
+            moveLayer(
                 generatedLayer,
                 currentLayer2Generate,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
@@ -185,7 +176,7 @@ const RegenerationColumn = ({ layerContext }) => {
                 layers: [generatedLayer],
             };
             setAILayerContext(
-                CreateAILayerContextId(generatedLayer),
+                createAILayerContextId(generatedLayer),
                 newContext
             );
             console.log(layerAIContexts);
@@ -208,18 +199,13 @@ const RegenerationColumn = ({ layerContext }) => {
                     // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                     //  512x512 is the cheapest.  We will have to have a final step of upscaling
                     longRunningFunction={async () => {
-                        RegenerateLayer(
-                            512,
-                            512,
-                            layerContext,
-                            setLayerid2ContextId,
-                            removeLayerid2ContextId,
-                            setAILayerContext
-                        );
+                        console.log('before regenerate');
+                        regenerateLayer(512, 512);
+                        console.log('after regenerate');
                     }}
-                    progressQueryFunction={GetImageProcessingProgress}
+                    progressQueryFunction={getImageProcessingProgress}
                     queryResponseParser={(response) => response['progress']}
-                    progressSetter={SetImageProgress}
+                    progressSetter={setImageProgress}
                     pollingSeconds={1}
                 >
                     Regenerate Layer
@@ -237,7 +223,7 @@ const RegenerationColumn = ({ layerContext }) => {
 };
 
 export const ContextItem = ({ layerContext = {} }) => {
-    let [thisLayersContext, SetThisLayersContext] = useState(layerContext);
+    let [thisLayersContext, setThisLayersContext] = useState(layerContext);
     let setAILayerContext = useAppStore((state) => state.setAILayerContext);
 
     return (
@@ -258,10 +244,10 @@ export const ContextItem = ({ layerContext = {} }) => {
                             currentPrompt: event.target.value,
                         };
                         setAILayerContext(
-                            CreateAILayerContextId(thisLayersContext.layers[0]),
+                            createAILayerContextId(thisLayersContext.layers[0]),
                             newContext
                         );
-                        SetThisLayersContext(newContext);
+                        setThisLayersContext(newContext);
                     }}
                     className="w-full"
                 ></Textarea>

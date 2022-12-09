@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import {
-    CreateAILayerContext,
-    CreateAILayerContextId,
+    createAILayerContext,
+    createAILayerContextId,
     useAppStore,
 } from '../store/appStore';
 
@@ -48,11 +48,11 @@ export const ContextManager = () => {
             if (!layerContextId) {
                 // Lets get this layers context id so we can retrieve the right context
                 // probably could just have this get the context outright, but I was having rerendering issues
-                layerContextId = CreateAILayerContextId(layer);
+                layerContextId = createAILayerContextId(layer);
 
                 // Ok so since there wasn't a contextId, there wasn't a context for this layer in the store
                 // so lets set that
-                setAILayerContext(layerContextId, CreateAILayerContext(layer));
+                setAILayerContext(layerContextId, createAILayerContext(layer));
 
                 // Ok so lets set that layer id to be mapped to the context id
                 // we should be able to get it back later with getLayerid2ContextId()
@@ -93,9 +93,9 @@ export const ContextManager = () => {
         try {
             let currentContextLayerId;
             for (let layer of app.activeDocument.layers) {
-                currentContextLayerId = CreateAILayerContextId(layer);
+                currentContextLayerId = createAILayerContextId(layer);
                 if (!layerAIContexts[currentContextLayerId]) {
-                    let layerAIContext = CreateAILayerContext(layer);
+                    let layerAIContext = createAILayerContext(layer);
                     setAILayerContext(currentContextLayerId, layerAIContext);
                 }
             }
@@ -114,7 +114,7 @@ export const ContextManager = () => {
             if (Object.keys(layerAIContexts).length > 0) {
                 for (let layer of app.activeDocument.layers) {
                     let layerContext = getAILayerContext(
-                        CreateAILayerContextId(layer)
+                        createAILayerContextId(layer)
                     );
                     if (layerContext && layerContext.layers.length > 0) {
                         newOrderedContexts.push(layerContext);
