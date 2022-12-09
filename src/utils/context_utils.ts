@@ -1,6 +1,6 @@
 /**
  * Convenenience function to retrieve the file meta data
- * @param {*} fname
+ * @param {string} fname
  * @returns
  */
 export function getContextInfoFromFileName(fname: string) {
@@ -15,10 +15,10 @@ export function getContextInfoFromFileName(fname: string) {
 
 /**
  * From a list of standardized file names determine which one is the latest and return its metadata.
- * @param {*} fileNames
+ * @param {Array<string>} fileNames
  * @returns
  */
-export function getLatestContextHistoryFileInfo(fileNames) {
+export function getLatestContextHistoryFileInfo(fileNames: Array<string>) {
     try {
         if (fileNames.length == 0) {
             console.warn(

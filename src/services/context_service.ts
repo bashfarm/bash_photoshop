@@ -1,4 +1,6 @@
-import { ContextHistoryEnums } from '../constants';
+import LayerAIContext from 'models/LayerAIContext';
+import { storage } from 'uxp';
+import { ContextHistoryEnum } from '../constants';
 import {
     getContextInfoFromFileName,
     getLatestContextHistoryFileInfo,
@@ -10,14 +12,19 @@ import {
     saveLayerToPluginData,
 } from './io_service';
 
+import bashful from 'bashful';
+
 /**
  * Create the next available historical file for the LayerContext
- * @param {*} layerContext
- * @param {*} imgData
+ * @param {LayerAIContext} layerContext
+ * @param {string | Uint8Array} imgData
  */
-export async function createNewContextHistoryFile(layerContext, imgData) {
+export async function createNewContextHistoryFile(
+    layerContext: LayerAIContext,
+    imgData: string | Uint8Array
+) {
     try {
-        let serializer = getFileSerializer(imgData);
+        let serializer: bashful.io.Serializer = getFileSerializer(imgData);
         let fileName = await getNextAvailableHistoryFileName(layerContext);
         console.log(`Saving file with name ${fileName}`);
         if (!fileName) {
@@ -37,10 +44,12 @@ export async function createNewContextHistoryFile(layerContext, imgData) {
  * @param {*} layerAIContext
  * @returns
  */
-export async function getContextHisotryPluginFilePaths(layerAIContext) {
+export async function getContextHisotryPluginFilePaths(
+    layerAIContext: LayerAIContext
+) {
     let historyFiles = await getContextHistoryFileEntries(layerAIContext);
 
-    let paths = historyFiles.map((entry) => {
+    let paths = historyFiles.map((entry: storage.File) => {
         return entry.url.href;
     });
 
@@ -51,26 +60,29 @@ export async function getContextHisotryPluginFilePaths(layerAIContext) {
 
 /**
  * The file number can only go up to 5.  Only 5 files will be allowed for history
- * @param {*} layerAIContext
- * @param {*} fileNumber
+ * @param {Number} contextId
+ * @param {Number} fileNumber
  * @returns
  */
-export function createContextHistoryFileName(contextId, fileNumber) {
-    return `${ContextHistoryEnums.HISTORY_FILE_FLAG}_${contextId}_${fileNumber}.png`;
+export function createContextHistoryFileName(
+    contextId: Number,
+    fileNumber: Number
+) {
+    return `${ContextHistoryEnum.HISTORY_FILE_FLAG}_${contextId}_${fileNumber}.png`;
 }
 
 /**
  * Retreive the next available context history file name.
- * @param {*} layerContext
+ * @param {LayerAIContext} layerContext
  */
 export async function getNextAvailableHistoryFileName(
-    context,
-    userFileLimit = 5
+    layerContext: LayerAIContext,
+    userFileLimit: Number = 5
 ) {
     let fileNumber = 0;
-    let contextId = context.id;
+    let contextId = layerContext.id;
 
-    let fileEntries = await getContextHistoryFileEntries(context);
+    let fileEntries = await getContextHistoryFileEntries(layerContext);
 
     let latestContextFileInfo = getLatestContextHistoryFileInfo(
         fileEntries.map((entry) => {
@@ -99,7 +111,9 @@ export async function getNextAvailableHistoryFileName(
 /**
  * Save the current layer context to the contexts historical files.  Return the new file name
  */
-export async function saveLayerContexttoHistory(layerAIContext) {
+export async function saveLayerContexttoHistory(
+    layerAIContext: LayerAIContext
+) {
     try {
         let fileName = await getNextAvailableHistoryFileName(layerAIContext);
         console.log(`trying to save layer with file name ${fileName}`);
@@ -116,14 +130,16 @@ export async function saveLayerContexttoHistory(layerAIContext) {
 /**
  * Get the context's historical information.  Aka Images.  Hopefully we get more file entries for more
  * meta data soon.
- * @param {*} layerContext
+ * @param {LayerAIContext} layerContext
  * @returns
  */
-export async function getContextHistoryFileEntries(layerContext) {
+export async function getContextHistoryFileEntries(
+    layerContext: LayerAIContext
+) {
     try {
         return await getContextFileEntries(
             layerContext,
-            ContextHistoryEnums.HISTORY_FILE_FLAG
+            ContextHistoryEnum.HISTORY_FILE_FLAG
         );
     } catch (e) {
         console.error(e);
@@ -136,9 +152,10 @@ export async function getContextHistoryFileEntries(layerContext) {
  * @param {Object} layerContext
  * @returns {Promise<Array>}
  */
+
 export async function getContextFileEntries(
-    layerContext,
-    layerFileContextEnum
+    layerContext: LayerAIContext,
+    layerFileContextEnum: ContextHistoryEnum
 ) {
     try {
         let entries = await getPluginDataFiles();

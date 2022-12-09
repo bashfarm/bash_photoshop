@@ -2,15 +2,17 @@ import { randomlyPickLayerName } from '../utils/general_utils';
 import { getDataFolderEntry } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { storage } from 'uxp';
-import photoshop, { app, action } from 'photoshop';
+// import photoshop, { app, action } from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
 import { ElementPlacement, RasterizeType } from 'photoshop/dom/Constants';
+// import { Photoshop } from 'photoshop/dom/Photoshop';
+// import { photoshop } from 'photoshop';
 
-// const app = photoshop.app;
-// const bp = photoshop.action.batchPlay;
-// const lfs = require('uxp').storage.localFileSystem;
-const lfs = storage.localFileSystem;
-const bp = action.batchPlay;
+const photoshop = require('photoshop');
+console.log(photoshop);
+const bp = photoshop.action.batchPlay;
+const app = photoshop.app;
+
 /**
  * Given a an Array of photoshop layers, return the array of layers that are visible
  * @param {Array} layers
@@ -46,16 +48,21 @@ export async function createNewLayerFromFile(
 ): Promise<void> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
-    const tkn = lfs.createSessionToken(fileEntry);
+    // const tkn = lfs.createSessionToken(fileEntry);
 
     await executeInPhotoshop(
         async () => {
             await bp(
                 [
+                    // {
+                    //     _obj: 'placeEvent',
+                    //     target: { _path: tkn, _kind: 'local' },
+                    //     linked: true,
+                    // },
                     {
+                        ID: 2,
                         _obj: 'placeEvent',
-                        target: { _path: tkn, _kind: 'local' },
-                        linked: true,
+                        null: { _kind: 'local', _path: fileEntry.nativePath },
                     },
                 ],
                 {}
@@ -72,6 +79,22 @@ export async function createNewLayerFromFile(
     );
 }
 
+// async function actionCommands() {
+//     let command;
+//     let result;
+//     let psAction = require("photoshop").action;
+
+//     // Place
+//     command = {"ID":2,"_obj":"placeEvent","null":{"_kind":"local","_path":"C:\\Users\\benja\\OneDrive\\Documents\\stachologos\\anime_art\\icantrelax_no_media_logo.png"}}};
+//     result = await psAction.batchPlay([command], {});
+// }
+
+// async function runModalFunction() {
+//     await require("photoshop").core.executeAsModal(actionCommands, {"commandName": "Action Commands"});
+// }
+
+// await runModalFunction();
+
 /**
  * Selects all the visible layers and returns a list of the selected layers
  * @returns {Array}
@@ -83,15 +106,15 @@ async function selectAllVisibleLayers(): Promise<Layer[]> {
         });
     });
 
-    return getSelectedLayers();
+    return getSelectedLayers(app.activeDocument.layers);
 }
 
 /**
  * Retrieve an Array of photoshop layers that are selected in the app.
  * @returns
  */
-export function getSelectedLayers(): Layer[] {
-    return app.activeDocument.layers.filter((layer) => layer.selected);
+export function getSelectedLayers(layers: Layer[]): Layer[] {
+    return layers.filter((layer) => layer.selected);
 }
 
 /**
@@ -101,7 +124,7 @@ export function getTopLayer(
     selected: boolean = false,
     active: boolean = false
 ): Layer {
-    if (selected) return getSelectedLayers()[0];
+    if (selected) return getSelectedLayers(app.activeDocument.layers)[0];
 
     if (active) return photoshop.app.activeDocument.activeLayers[0];
     return photoshop.app.activeDocument.layers[0];
@@ -139,7 +162,7 @@ export async function createMergedLayer(): Promise<void> {
     await executeInPhotoshop(async () => {
         selectAllVisibleLayers();
 
-        const selectedLayers = getSelectedLayers();
+        const selectedLayers = getSelectedLayers(app.activeDocument.layers);
         selectedLayers.forEach(async (layer) => {
             if (layer.visible) {
                 const newLayer = await duplicateLayer(layer);
@@ -178,7 +201,7 @@ export async function mergeVisibleLayers() {
  */
 export async function deselectLayers() {
     await executeInPhotoshop(() => {
-        getSelectedLayers().forEach((layer) => {
+        getSelectedLayers(app.activeDocument.layers).forEach((layer) => {
             layer.selected = false;
         });
     });

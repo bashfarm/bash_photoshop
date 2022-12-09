@@ -13,8 +13,6 @@ import {
     ArtistType,
     ArtistCategories,
 } from '../common/types';
-import { Layer } from 'photoshop/dom/Layer';
-
 const photoshop = require('photoshop');
 
 const myHeaders = new Headers();

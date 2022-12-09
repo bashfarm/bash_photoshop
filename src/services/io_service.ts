@@ -1,5 +1,5 @@
 import base64js from 'base64-js';
-import photoshop from 'photoshop';
+const photoshop = require('photoshop');
 import { Layer } from 'photoshop/dom/Layer';
 import { storage } from 'uxp';
 import { unformatBase64Image } from '../utils/io_utils';
@@ -131,7 +131,7 @@ export async function saveDocumentToPluginData(
 /**
  * Save the current document state as a PNG to the given file entry.
  */
-export async function saveDocumentAsPNG(fileRef) {
+export async function saveDocumentAsPNG(fileRef: storage.File) {
     executeInPhotoshop(
         async () =>
             await photoshop.app.activeDocument.saveAs.png(
@@ -182,8 +182,8 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
 /**
  * Simple function that checks if the given data type is a string or not.  If it is a string then it returns the right
  * function to serialize the data.
- * @param {*} imgData
- * @returns
+ * @param {Uint8Array | string} imgData
+ * @returns {bashful.io.Serializer}
  */
 export function getFileSerializer(imgData: Uint8Array | string) {
     if (typeof imgData === 'string' || imgData instanceof String)

@@ -1,5 +1,6 @@
 const photoshop = require('photoshop');
 const bp = photoshop.action.batchPlay;
+import LayerAIContext from 'models/LayerAIContext';
 import { PhotoshopTool } from '../constants';
 import { createLayerMask, selectLayerMask } from './layer_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
@@ -29,9 +30,9 @@ export async function setBrushTool() {
 /**
  * Toggle on the hiding tool.  What this really means it just creates a layer mask for the first layer
  * of the context and sets the brush color black to hide.
- * @param {*} layerContext
+ * @param {LayerAIContext} layerContext
  */
-export async function toggleOnContextHidingTool(layerContext) {
+export async function toggleOnContextHidingTool(layerContext: LayerAIContext) {
     let primaryLayer = layerContext.layers[0];
     await createLayerMask(primaryLayer);
     await selectLayerMask(primaryLayer);
@@ -48,9 +49,9 @@ export async function toggleOnContextHidingTool(layerContext) {
 /**
  * Toggle on the hiding tool.  What this really means it just creates a layer mask for the first layer
  * of the context and sets the brush color white to unhide.
- * @param {*} layerContext
+ * @param {LayerAIContext} layerContext
  */
-export async function toggleOffContextHidingTool(layerContext) {
+export async function toggleOffContextHidingTool(layerContext: LayerAIContext) {
     let primaryLayer = layerContext.layers[0];
     await createLayerMask(primaryLayer);
     await selectLayerMask(primaryLayer);

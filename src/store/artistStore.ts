@@ -10,7 +10,8 @@ interface ArtistState {
 export const useArtistStore = create((set) => ({
     artist: '',
     category: '',
-    selectArtist: (artistSelected) => set({ artist: artistSelected }),
-    selectCategory: (categorySelected) => set({ category: categorySelected }),
+    selectArtist: (artistSelected: string) => set({ artist: artistSelected }),
+    selectCategory: (categorySelected: string) =>
+        set({ category: categorySelected }),
     // increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
 }));
