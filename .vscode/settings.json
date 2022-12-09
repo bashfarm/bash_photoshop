@@ -3,5 +3,6 @@
     "editor.insertSpaces": false,
     "prettier.singleQuote": true,
     "prettier.semi": true,
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

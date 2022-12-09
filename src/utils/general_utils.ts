@@ -1,4 +1,4 @@
-export let validLayerNames = [
+export const validLayerNames = [
     'Banana',
     'Kratos',
     'Goku',
@@ -12,8 +12,8 @@ export let validLayerNames = [
 
 /**
  * Retrieve a random name from a list that is in this function.
- * @returns {String}
+ * @returns String Array
  */
-export function randomlyPickLayerName() {
+export function randomlyPickLayerName(): string {
     return validLayerNames[Math.floor(Math.random() * validLayerNames.length)];
 }

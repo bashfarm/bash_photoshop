@@ -3,7 +3,7 @@
  * @param {*} fname
  * @returns
  */
-export function getContextInfoFromFileName(fname) {
+export function getContextInfoFromFileName(fname: string) {
     let splitFName = fname.split('_');
     let fileFlag = splitFName[0];
     let layerContextId = parseInt(splitFName[1]);
