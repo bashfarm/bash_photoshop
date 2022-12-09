@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Divider, Heading, Icon, Dropdown, Label } from 'react-uxp-spectrum';
-import { useFetchFunction, useFetch } from '../hooks/fetchHooks';
-import { getArtists, getArtistCategories } from '../utils/ai_service';
+import React from 'react';
+import { Divider, Icon, Label } from 'react-uxp-spectrum';
+import { useFetchFunction } from '../hooks/fetchHooks';
+import { getArtists, getArtistCategories } from '../services/ai_service';
 import { useArtistStore } from '../store/artistStore';
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },

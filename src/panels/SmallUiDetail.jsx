@@ -7,9 +7,10 @@ import {
     Heading,
 } from 'react-uxp-spectrum';
 import { TagSelector } from '@components/TagSelector';
-import { txt2Img, FormatBase64Image } from '../utils/ai_service';
-import { SaveB64ImageToBinaryFileToDataFolder } from '../utils/io_service';
-import { PlaceImageFromDataOnLayer } from '../utils/layer_service';
+import { txt2Img } from '../services/ai_service';
+import { saveB64ImageToBinaryFileToDataFolder } from '../services/io_service';
+import { createNewLayerFromFile } from '../services/layer_service';
+import { formatBase64Image } from '../utils/io_utils';
 
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
@@ -20,8 +21,8 @@ const dummyArray = [
 
 const AssetItem = ({ src }) => {
     const handleClick = async (src) => {
-        await SaveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
-        await PlaceImageFromDataOnLayer(`${src.slice(-3)}-img`);
+        await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
+        await createNewLayerFromFile(`${src.slice(-3)}-img`);
     };
     return (
         <div className="mx-5">
@@ -41,7 +42,7 @@ export const SmallUiDetail = () => {
     const [loadingImages, setLoadingImages] = useState(false);
     // var bears = useAppStore((state) => state.bears);
     // var increasePopulation = useAppStore((state) => state.increasePopulation);
-    // let newimg = FormatBase64Image(image[0]);
+    // let newimg = formatBase64Image(image[0]);
 
     const generateImages = async (prompt) => {
         if (!prompt) return;
@@ -52,7 +53,7 @@ export const SmallUiDetail = () => {
             for (const image of data.images) {
                 setImages((oldImages) => [
                     ...oldImages,
-                    FormatBase64Image(image),
+                    formatBase64Image(image),
                 ]);
             }
         } catch (error) {

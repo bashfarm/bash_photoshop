@@ -1,15 +1,11 @@
+import { formatBase64Image } from '../utils/io_utils';
 import {
-    IsBase64Str,
-    GetDataFolderImageBase64ImgStr,
-    CreateHistoryFile,
-} from './io_service';
-import {
-    GetNewestLayer,
-    PlaceImageFromDataOnLayer,
-    SaveLayerContexttoHistory,
-} from './layer_service';
+    createNewContextHistoryFile,
+    saveLayerContexttoHistory,
+} from './context_service';
+import { getDataFolderImageBase64ImgStr } from './io_service';
+import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 const photoshop = require('photoshop');
-const executeAsModal = photoshop.core.executeAsModal;
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -22,7 +18,7 @@ myHeaders.append('Accept', 'application/json');
  * @param {String} prompt
  * @returns {Object}
  */
-export async function Img2Img(imgb64Str, height, width, prompt) {
+export async function img2Img(imgb64Str, height, width, prompt) {
     try {
         const raw = JSON.stringify({
             init_images: [imgb64Str],
@@ -68,10 +64,8 @@ export async function Img2Img(imgb64Str, height, width, prompt) {
             `${process.env.API_URL}/sdapi/v1/img2img`,
             requestOptions
         );
-        const data = await response.json();
-        console.log(data);
 
-        return data;
+        return await response.json();
     } catch (e) {
         console.log(e);
     }
@@ -189,44 +183,22 @@ export const getArtistCategories = async () => {
 };
 
 /**
- *
- * @param {String} b64imgStr the base64encoded string that will need to be formatted
+ * This will send a request to the AI server and request an image given the prompt and image base64 string.  Also height and widith 😅
+ * @param {*} mergeStr
+ * @param {*} height
+ * @param {*} width
+ * @param {*} prompt
  * @returns
  */
-export function FormatBase64Image(b64imgStr) {
-    const b64header = 'data:image/png;base64, ';
-    if (!b64imgStr.includes('data:image')) return b64header + b64imgStr;
-    return b64imgStr;
-}
-
-/**
- *
- * @param {String} b64imgStr the base64encoded string that will need to be unformatted for images
- * @returns unformatted base64 string
- */
-export function UnformatBase64Image(b64imgStr) {
-    const b64header = 'data:image/png;base64, ';
-    if (b64imgStr.includes('data:image'))
-        return b64imgStr.replace(b64header, '');
-    return b64imgStr;
-}
-
-export async function GenerateImage(mergeStr, height, width, prompt) {
+export async function generateImage(mergeStr, height, width, prompt) {
     try {
-        if (!IsBase64Str(mergeStr)) {
-            console.log(
-                `Merged file we are trying to generate from is not in the correct base64 format '${mergeStr}'🙄`
-            );
-            return;
-        }
-        var generatedImageResponse = await Img2Img(
+        var generatedImageResponse = await img2Img(
             mergeStr,
             height,
             width,
             prompt
         );
-        console.log('🔥🔥 Generated image form UspxStorage.jsx 🔥🔥');
-        return FormatBase64Image(generatedImageResponse['images'][0]);
+        return formatBase64Image(generatedImageResponse['images'][0]);
     } catch (e) {
         console.log(e);
     }
@@ -241,33 +213,34 @@ export async function GenerateImage(mergeStr, height, width, prompt) {
  * @param {*} layerAIContext
  * @param {Boolean} inplace if true this will replace the current layer with the new image
  */
-export async function GenerateAILayer(width, height, layerAIContext) {
-    console.log('Generate AI layer');
+export async function generateAILayer(width, height, layerAIContext) {
     try {
-        let savedLayerFileName = await SaveLayerContexttoHistory(
+        let savedLayerFileName = await saveLayerContexttoHistory(
             layerAIContext
         );
+
         // No available file name.  The user needs to remove some history
         if (!savedLayerFileName) {
             return;
         }
         console.log(`Save Filename ${savedLayerFileName}`);
-        let b64Data = (await GetDataFolderImageBase64ImgStr(savedLayerFileName))
-            .base64Data;
-        let formattedB64Str = FormatBase64Image(b64Data);
-        const genb64Str = await GenerateImage(
+        let b64Data = await getDataFolderImageBase64ImgStr(savedLayerFileName);
+        let formattedB64Str = formatBase64Image(b64Data);
+        const genb64Str = await generateImage(
             formattedB64Str,
             height,
             width,
             layerAIContext.currentPrompt
         );
-        let generatedFileName = await CreateHistoryFile(
+        let generatedFileName = await createNewContextHistoryFile(
             layerAIContext,
             genb64Str
         );
         console.log(`Generated Filename ${generatedFileName}`);
-        await PlaceImageFromDataOnLayer(generatedFileName);
-        let generatedLayer = GetNewestLayer();
+        await createNewLayerFromFile(generatedFileName);
+        let generatedLayer = getNewestLayer(
+            photoshop.app.activeDocument.layers
+        );
         return generatedLayer;
     } catch (e) {
         console.error(e);
@@ -275,12 +248,10 @@ export async function GenerateAILayer(width, height, layerAIContext) {
 }
 
 /**
+ * Retrieve the progress of the currently generating batch of images
  * @returns {Object}
  */
-export const GetImageProcessingProgress = async () => {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('accept', 'application/json');
+export async function getImageProcessingProgress() {
     const requestOptions = {
         method: 'GET',
         headers: myHeaders,
@@ -296,32 +267,5 @@ export const GetImageProcessingProgress = async () => {
         return await response.json();
     } catch (error) {
         console.error(error);
-    }
-};
-
-/**
- * Switching back to using the batchplay version.  I think we can invoke a delete and capture the delete event with this.
- * update: Dont think this is working.  The layer gets deleted, 1. right now its the wrong layer and 2. I am not detecting the event 😒
- * @param {*} layer
- */
-export async function deleteLayer(layer) {
-    try {
-        // let command = {
-        //     _obj: 'delete',
-        //     _target: [
-        //         { _enum: 'ordinal', _ref: 'layer', _value: 'targetEnum' },
-        //     ],
-        //     layerID: [layer.id],
-        // };
-        // await executeAsModal(async () => {
-        //     return await bp([command], {});
-        // });
-        await executeAsModal(async () => {
-            layer.delete();
-        });
-
-        console.log(layer);
-    } catch (e) {
-        console.error(e);
     }
 }
