@@ -13,6 +13,7 @@ import {
     ArtistType,
     ArtistCategories,
 } from '../common/types';
+import { Layer } from 'photoshop/dom/Layer';
 
 const photoshop = require('photoshop');
 
@@ -197,6 +198,31 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
         throw error;
     }
 };
+
+/**
+ * This will send a request to the AI server and request an image given the prompt and image base64 string.  Also height and widith 😅
+ * @param {*} mergeStr
+ * @param {*} height
+ * @param {*} width
+ * @param {*} prompt
+ * @returns
+ */
+export const FormatBase64Image = (b64imgStr: string): string => {
+    const b64header = 'data:image/png;base64, ';
+    if (!b64imgStr.includes('data:image')) return b64header + b64imgStr;
+    return b64imgStr;
+};
+
+/**
+ *
+ * @returns unformats base64 string
+ */
+export function UnformatBase64Image(b64imgStr: string): string {
+    const b64header = 'data:image/png;base64, ';
+    if (b64imgStr.includes('data:image'))
+        return b64imgStr.replace(b64header, '');
+    return b64imgStr;
+}
 
 /**
  *
