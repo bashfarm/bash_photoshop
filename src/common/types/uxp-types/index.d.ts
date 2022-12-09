@@ -247,7 +247,15 @@ declare module 'uxp' {
             function clear(): Promise<void>;
         }
 
-        class LocalFileSystemProvider extends FileSystemProvider {}
+        class LocalFileSystemProvider extends FileSystemProvider {
+            createSessionToken: (entry: Entry) => string;
+
+            getEntryForSessionToken: (token: string) => Entry;
+
+            createPersistentToken: (entry: Entry) => string;
+
+            getEntryForPersistentToken: (token: string) => Entry;
+        }
         const localFileSystem: LocalFileSystemProvider;
     }
 

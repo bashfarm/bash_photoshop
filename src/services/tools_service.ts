@@ -8,7 +8,7 @@ import { executeInPhotoshop } from './middleware/photoshop_middleware';
  * Selects a tool given the tool enum value.
  * @param {string} toolStr a tool string given the enums from photoshop tool constants
  */
-export async function selectTool(toolStr) {
+export async function selectTool(toolStr: string) {
     await executeInPhotoshop(async () => {
         await bp([{ _obj: 'select', _target: [{ _ref: toolStr }] }], {
             commandName: 'Select Tool',

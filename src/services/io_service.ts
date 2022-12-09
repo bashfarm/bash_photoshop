@@ -1,8 +1,7 @@
-const lfs = require('uxp').storage.localFileSystem;
-const photoshop = require('photoshop');
-const types = require('uxp').storage.types;
-const formats = require('uxp').storage.formats;
-const base64js = require('base64-js');
+import base64js from 'base64-js';
+import photoshop from 'photoshop';
+import { Layer } from 'photoshop/dom/Layer';
+import { storage } from 'uxp';
 import { unformatBase64Image } from '../utils/io_utils';
 import {
     getVisibleLayers,
@@ -12,16 +11,21 @@ import {
 
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 
+const [lfs, types, formats] = [
+    storage.localFileSystem,
+    storage.types,
+    storage.formats,
+];
+
 /**
  * Save the given text to a file in the plugin data folder
  * @param {String} fileName
  * @param {*} data
  */
-export async function saveTextFileToDataFolder(fileName, data) {
+export async function saveTextFileToDataFolder(fileName: string, data: string) {
     try {
-        let entry = await createDataFolderEntry(fileName);
-        let res = await entry;
-
+        const entry = await createDataFolderEntry(fileName);
+        const res = (await entry) as storage.File;
         res.write(data, { format: formats.utf8 });
     } catch (e) {
         console.log('something not write');
@@ -34,10 +38,13 @@ export async function saveTextFileToDataFolder(fileName, data) {
  * @param {String} fileName
  * @param {*} data
  */
-export async function saveBinaryFileToDataFolder(fileName, data) {
+export async function saveBinaryFileToDataFolder(
+    fileName: string,
+    data: Uint8Array
+): Promise<void> {
     try {
         let entry = await createDataFolderEntry(fileName);
-        let res = await entry;
+        let res = (await entry) as storage.File;
         res.write(data, { format: formats.binary });
     } catch (e) {
         console.log('something not write');
@@ -51,9 +58,12 @@ export async function saveBinaryFileToDataFolder(fileName, data) {
  * @param {String} data
  * @returns
  */
-export async function saveB64ImageToBinaryFileToDataFolder(fileName, data) {
+export async function saveB64ImageToBinaryFileToDataFolder(
+    fileName: string,
+    data: string
+): Promise<void> {
     try {
-        return await saveBinaryFileToDataFolder(
+        await saveBinaryFileToDataFolder(
             fileName,
             base64js.toByteArray(unformatBase64Image(data))
         );
@@ -65,15 +75,15 @@ export async function saveB64ImageToBinaryFileToDataFolder(fileName, data) {
 /**
  * Create an entry for the plugin data folder.
  * @param {String} fileName
- * @returns
+ * @returns a data folder
  */
-export async function createDataFolderEntry(fileName) {
-    const dataFolder = await lfs.getDataFolder();
-    let entry = dataFolder.createEntry(fileName, {
+export async function createDataFolderEntry(fileName: string) {
+    const dataFolder: storage.Folder = await lfs.getDataFolder();
+    const entry = dataFolder.createEntry(fileName, {
         type: types.file,
         overwrite: true,
     });
-    return entry;
+    return entry as Promise<storage.File>;
 }
 
 /**
@@ -81,29 +91,36 @@ export async function createDataFolderEntry(fileName) {
  * @param {String} fileName
  * @returns
  */
-export async function getDataFolderImageBase64ImgStr(fileName) {
+export async function getDataFolderImageBase64ImgStr(
+    fileName: string
+): Promise<string> {
     try {
         let imgEntry = await getDataFolderEntry(fileName);
-        let binaryData = await imgEntry.read({ format: formats.binary });
+        let binaryData = (await imgEntry.read({
+            format: formats.binary,
+        })) as ArrayBuffer;
         return base64js.fromByteArray(new Uint8Array(binaryData));
     } catch (e) {
         console.error(e);
+        throw e;
     }
 }
 
 /**
  * Retrieve a file entry from the plugin's data folder.
  */
-export async function getDataFolderEntry(fileName) {
+export async function getDataFolderEntry(fileName: string) {
     const dataFolder = await lfs.getDataFolder();
-    return await dataFolder.getEntry(fileName);
+    return (await dataFolder.getEntry(fileName)) as storage.File;
 }
 
 /**
  * Save the active app document to the plugin data folder as the given name.
  * @param {String} fileName
  */
-export async function saveDocumentToPluginData(fileName) {
+export async function saveDocumentToPluginData(
+    fileName: string
+): Promise<void> {
     try {
         saveDocumentAsPNG(await createDataFolderEntry(fileName));
     } catch (e) {
@@ -119,7 +136,7 @@ export async function saveDocumentAsPNG(fileRef) {
         async () =>
             await photoshop.app.activeDocument.saveAs.png(
                 fileRef,
-                { quality: 12 },
+                undefined,
                 true
             )
     );
@@ -128,15 +145,15 @@ export async function saveDocumentAsPNG(fileRef) {
 /**
  * This will save the given layer as the given file name.
  * @param {String} fileName the filename to save the layer as
- * @param {*} layer
+ * @param {*} Layer
  */
-export async function saveLayerToPluginData(fileName, layer) {
+export async function saveLayerToPluginData(fileName: string, layer: Layer) {
     try {
-        let visibleLayers = getVisibleLayers(
+        const visibleLayers: Layer[] = getVisibleLayers(
             photoshop.app.activeDocument.layers
         );
         console.log(visibleLayers);
-        let prevVisibility = layer.visible;
+        const prevVisibility = layer.visible;
 
         await executeInPhotoshop(async () => {
             // Make layers inivisible so we only export the document with the the selected layer
@@ -168,7 +185,7 @@ export async function saveLayerToPluginData(fileName, layer) {
  * @param {*} imgData
  * @returns
  */
-export function getFileSerializer(imgData) {
+export function getFileSerializer(imgData: Uint8Array | string) {
     if (typeof imgData === 'string' || imgData instanceof String)
         return saveB64ImageToBinaryFileToDataFolder;
     else return saveBinaryFileToDataFolder;
@@ -178,7 +195,7 @@ export function getFileSerializer(imgData) {
  * Retrieve an array of all the plugin data folders entries.
  * @returns {Promise<Array>} An array of file entries
  */
-export async function getPluginDataFiles() {
+export async function getPluginDataFiles(): Promise<storage.Entry[]> {
     const dataFolder = await lfs.getDataFolder();
-    return await dataFolder.getEntries();
+    return dataFolder.getEntries();
 }

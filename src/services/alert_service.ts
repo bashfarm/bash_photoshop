@@ -1,6 +1,6 @@
 import photoshop from 'photoshop';
 
-const alert = (s) => {
+const alert = (s: string): Promise<void> => {
     return photoshop.app.showAlert(s);
 };
 

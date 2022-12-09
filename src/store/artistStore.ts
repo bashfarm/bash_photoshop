@@ -1,9 +1,16 @@
 import create from 'zustand';
 
+interface ArtistState {
+    artist: String;
+    category: string;
+    selectArtist: (aritstSelected: string) => void;
+    selectCategory: (categorySelected: string) => void;
+}
+
 export const useArtistStore = create((set) => ({
     artist: '',
     category: '',
     selectArtist: (artistSelected) => set({ artist: artistSelected }),
     selectCategory: (categorySelected) => set({ category: categorySelected }),
-    increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
+    // increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
 }));

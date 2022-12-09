@@ -5,6 +5,16 @@ import {
 } from './context_service';
 import { getDataFolderImageBase64ImgStr } from './io_service';
 import { getNewestLayer, createNewLayerFromFile } from './layer_service';
+import {
+    Text2ImgRequest,
+    Img2ImgRequest,
+    ImageResponse,
+    ProgressResponse,
+    ArtistType,
+    ArtistCategories,
+} from '../common/types';
+import { Layer } from 'photoshop/dom/Layer';
+
 const photoshop = require('photoshop');
 
 const myHeaders = new Headers();
@@ -12,15 +22,16 @@ myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
 /**
- * @param {String} imgb64Str
- * @param {Number} height
- * @param {Number} width
- * @param {String} prompt
  * @returns {Object}
  */
-export async function img2Img(imgb64Str, height, width, prompt) {
+export async function img2Img(
+    imgb64Str: string,
+    height: number,
+    width: number,
+    prompt: string
+): Promise<ImageResponse> {
     try {
-        const raw = JSON.stringify({
+        const raw: Img2ImgRequest = {
             init_images: [imgb64Str],
             resize_mode: 0,
             denoising_strength: 0.75,
@@ -52,12 +63,15 @@ export async function img2Img(imgb64Str, height, width, prompt) {
             override_settings: {},
             sampler_index: 'Euler',
             include_init_images: false,
-        });
+            mask: '',
+            styles: [],
+            sampler_name: '',
+        };
 
-        const requestOptions = {
+        const requestOptions: RequestInit = {
             method: 'POST',
             headers: myHeaders,
-            body: raw,
+            body: JSON.stringify(raw),
             redirect: 'follow',
         };
         const response = await fetch(
@@ -68,23 +82,20 @@ export async function img2Img(imgb64Str, height, width, prompt) {
         return await response.json();
     } catch (e) {
         console.log(e);
+        throw e;
     }
 }
 
 /**
- * @param {String} prompt
- * @param {Number} height=512
- * @param {Number} width=512
- * @param {Number} batch_size=4
  * @returns {Object}
  */
 export const txt2Img = async (
-    prompt,
-    height = 512,
-    width = 512,
-    batch_size = 4
-) => {
-    const payload = {
+    prompt: string,
+    height: number = 512,
+    width: number = 512,
+    batch_size: number = 4
+): Promise<ImageResponse> => {
+    const payload: Text2ImgRequest = {
         enable_hr: false,
         denoising_strength: 0,
         firstphase_width: 0,
@@ -115,7 +126,7 @@ export const txt2Img = async (
         sampler_index: 'Euler',
     };
 
-    const requestOptions = {
+    const requestOptions: RequestInit = {
         method: 'POST',
         headers: myHeaders,
         body: JSON.stringify(payload),
@@ -131,6 +142,7 @@ export const txt2Img = async (
         return await response.json();
     } catch (error) {
         console.error(error);
+        throw error;
     }
 };
 
@@ -142,9 +154,9 @@ export const txt2Img = async (
  */
 
 /**
- * @returns {Array<Artists>} Array of artist objects
+ * @returns Array of artist objects
  */
-export const getArtists = async () => {
+export const getArtists = async (): Promise<ArtistType[]> => {
     const requestOptions = {
         method: 'GET',
         headers: myHeaders,
@@ -158,13 +170,14 @@ export const getArtists = async () => {
         return await response.json();
     } catch (error) {
         console.log(error);
+        throw error;
     }
 };
 
 /**
- * @returns {Array<String>} Array of artist categoties
+ * @returns Array of artist categoties
  */
-export const getArtistCategories = async () => {
+export const getArtistCategories = async (): Promise<ArtistCategories> => {
     const requestOptions = {
         method: 'GET',
         headers: myHeaders,
@@ -179,6 +192,7 @@ export const getArtistCategories = async () => {
         return await response.json();
     } catch (error) {
         console.log(error);
+        throw error;
     }
 };
 
@@ -213,7 +227,11 @@ export async function generateImage(mergeStr, height, width, prompt) {
  * @param {*} layerAIContext
  * @param {Boolean} inplace if true this will replace the current layer with the new image
  */
-export async function generateAILayer(width, height, layerAIContext) {
+export async function generateAILayer(
+    width: number,
+    height: number,
+    layerAIContext: any
+) {
     try {
         let savedLayerFileName = await saveLayerContexttoHistory(
             layerAIContext
@@ -251,8 +269,8 @@ export async function generateAILayer(width, height, layerAIContext) {
  * Retrieve the progress of the currently generating batch of images
  * @returns {Object}
  */
-export async function getImageProcessingProgress() {
-    const requestOptions = {
+export async function getImageProcessingProgress(): Promise<ProgressResponse> {
+    const requestOptions: RequestInit = {
         method: 'GET',
         headers: myHeaders,
         redirect: 'follow',
@@ -267,5 +285,6 @@ export async function getImageProcessingProgress() {
         return await response.json();
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }
