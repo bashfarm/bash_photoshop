@@ -137,8 +137,12 @@ declare module 'uxp' {
             isFolder: boolean;
             name: string;
             provider: FileSystemProvider;
-            url: string;
+            url: Url;
             nativePath: string;
+        }
+
+        class Url {
+            href: string;
         }
 
         class File extends Entry {
