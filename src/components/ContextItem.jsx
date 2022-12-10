@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heading, Textarea } from 'react-uxp-spectrum';
 import { Progressbar } from 'react-uxp-spectrum/dist';
 import { createAILayerContextId, useAppStore } from '../store/appStore';
@@ -165,7 +165,7 @@ const RegenerationColumn = ({ layerContext }) => {
                 currentLayer2Generate,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
-            // deleteLayer(currentLayer2Generate)
+            // await deleteLayer(currentLayer2Generate)
             console.log('Layer to delete');
             console.log(currentLayer2Generate);
             console.log('Layer to keep');
