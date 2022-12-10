@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import {
     createAILayerContext,
     createAILayerContextId,
-    useAppStore,
-} from '../store/appStore';
+    useContextStore,
+} from '../store/contextStore';
 
 import { ContextItem } from '../components/ContextItem';
 const photoshop = require('photoshop');
@@ -20,16 +20,16 @@ const events = [
 ];
 
 export const ContextManager = () => {
-    let layerAIContexts = useAppStore((state) => state.layerAIContexts);
-    let setAILayerContext = useAppStore((state) => state.setAILayerContext);
-    let getAILayerContext = useAppStore((state) => state.getAILayerContext);
-    let removeLayerid2ContextId = useAppStore(
+    let layerAIContexts = useContextStore((state) => state.layerAIContexts);
+    let setAILayerContext = useContextStore((state) => state.setAILayerContext);
+    let getAILayerContext = useContextStore((state) => state.getAILayerContext);
+    let removeLayerid2ContextId = useContextStore(
         (state) => state.removeLayerid2ContextId
     );
-    let setLayerid2ContextId = useAppStore(
+    let setLayerid2ContextId = useContextStore(
         (state) => state.setLayerid2ContextId
     );
-    let getLayerid2ContextId = useAppStore(
+    let getLayerid2ContextId = useContextStore(
         (state) => state.getLayerid2ContextId
     );
 

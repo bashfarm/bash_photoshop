@@ -145,7 +145,8 @@ export async function saveDocumentAsPNG(fileRef: storage.File) {
 /**
  * This will save the given layer as the given file name.
  * @param {String} fileName the filename to save the layer as
- * @param {*} Layer
+ * @param {Layer} layer
+ * @return
  */
 export async function saveLayerToPluginData(fileName: string, layer: Layer) {
     try {
@@ -174,6 +175,8 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             // Set the layer back to what it was before
             layer.visible = prevVisibility;
         });
+
+        return await getDataFolderEntry(fileName);
     } catch (e) {
         console.error(e);
     }

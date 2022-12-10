@@ -40,9 +40,6 @@ export const SmallUiDetail = () => {
     const [prompt, setPrompt] = useState('');
     const [images, setImages] = useState([]);
     const [loadingImages, setLoadingImages] = useState(false);
-    // var bears = useAppStore((state) => state.bears);
-    // var increasePopulation = useAppStore((state) => state.increasePopulation);
-    // let newimg = formatBase64Image(image[0]);
 
     const generateImages = async (prompt) => {
         if (!prompt) return;

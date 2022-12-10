@@ -271,3 +271,9 @@ declare module 'uxp' {
         function arch(): string;
     }
 }
+
+declare module 'bashful' {
+    namespace io {
+        type Serializer = (fileName: string, data: string | Uint8Array) => void;
+    }
+}
