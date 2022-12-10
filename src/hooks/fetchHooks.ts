@@ -7,11 +7,11 @@ import { useState, useEffect } from 'react';
  * @property {String} error - Error string
  */
 
-export const useFetchOnClick = (makeFetchRequest, ...arg) => {
-    const [clicked, setClicked] = useState(false);
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+export const useFetchOnClick = (makeFetchRequest: Function, ...arg: any[]) => {
+    const [clicked, setClicked] = useState<boolean>(false);
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         if (clicked) {
@@ -33,10 +33,10 @@ export const useFetchOnClick = (makeFetchRequest, ...arg) => {
     return { data, loading, error, setClicked };
 };
 
-export const useFetch = async (url) => {
+export const useFetch = async (url: string) => {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState<Boolean>(true);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,7 +52,6 @@ export const useFetch = async (url) => {
 
         fetchData();
     }, [url]);
-    console.log('usefetch', data, loading, error);
     return { data, loading, error };
 };
 
@@ -60,10 +59,10 @@ export const useFetch = async (url) => {
  * @param {Function} makeFetchRequest that fetches data from an API
  * @returns {HookType} data, loading, error
  */
-export const useFetchFunction = (makeFetchRequest) => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+export const useFetchFunction = (makeFetchRequest: Function) => {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         async function fetchData() {
