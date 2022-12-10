@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 
+
+
 /**
  * @typedef {Object} HookType
- * @property {Object} data - Data state
+ * @property {Array | Object} data - Data state
  * @property {Boolean} loading - Loading state
  * @property {String} error - Error string
  */
 
+/**
+ * 
+ * @param makeFetchRequest 
+ * @param arg 
+ * @returns 
+ */
 export const useFetchOnClick = (makeFetchRequest: Function, ...arg: any[]) => {
     const [clicked, setClicked] = useState<boolean>(false);
     const [data, setData] = useState<any>(null);
@@ -33,6 +41,11 @@ export const useFetchOnClick = (makeFetchRequest: Function, ...arg: any[]) => {
     return { data, loading, error, setClicked };
 };
 
+/**
+ * 
+ * @param url 
+ * @returns 
+ */
 export const useFetch = async (url: string) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState<Boolean>(true);
@@ -56,10 +69,11 @@ export const useFetch = async (url: string) => {
 };
 
 /**
- * @param {Function} makeFetchRequest that fetches data from an API
- * @returns {HookType} data, loading, error
+ * 
+ * @param makeFetchRequest Fetches data from the api
+ * @returns 
  */
-export const useFetchFunction = (makeFetchRequest: Function) => {
+export const useAsyncEffect = (makeFetchRequest: Function) => {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<any>(null);

@@ -1,3 +1,4 @@
+import { Layer } from 'photoshop/dom/Layer';
 import { ContextHistoryEnum } from '../constants';
 
 /**
@@ -61,4 +62,8 @@ export function createContextHistoryFileName(
     fileNumber: Number
 ) {
     return `${ContextHistoryEnum.HISTORY_FILE_FLAG}_${contextId}_${fileNumber}.png`;
+}
+
+export function createAILayerContextId(layer: Layer) {
+    return parseInt(`${layer.id}${layer.document.id}`);
 }

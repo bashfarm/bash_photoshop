@@ -1,8 +1,9 @@
 import LayerAIContext from 'models/LayerAIContext';
 import { storage } from 'uxp';
-import useAsyncEffect from 'use-async-effect/types/index';
 import React, { useState } from 'react';
 import { ContextImage } from './ContextImage';
+import { useAsyncEffect } from 'hooks/fetchHooks';
+import { getContextHistoryFiles } from 'services/context_service';
 
 export type ContexHistoryBarProps = {
     layerContext: LayerAIContext;
@@ -10,25 +11,25 @@ export type ContexHistoryBarProps = {
 
 export const ContextHistoryBar = (props: ContexHistoryBarProps) => {
     let [localContextHistoryFileEntries, setLocalContextHistoryFileEntries] =
-        useState<storage.File[]>([]);
-
-    useAsyncEffect(async (isMounted) => {
-        const data = await props.layerContext.getContextHistoryFileEntries();
-
-        if (!isMounted()) return;
-        setLocalContextHistoryFileEntries(data);
-    }, []);
+        useState<Array<storage.File>>([]);
+    const { data: historyFiles, loading: filesLoading } = useAsyncEffect(
+        getContextHistoryFiles
+    );
+    let files = historyFiles as Array<storage.File>;
+    setLocalContextHistoryFileEntries(files);
 
     return (
         <div className="flex flex-row space-x-1">
-            {localContextHistoryFileEntries &&
+            {filesLoading &&
                 localContextHistoryFileEntries.map((fEntry, index) => {
                     return (
                         <ContextImage
                             key={index}
                             imageEntry={fEntry}
-                            onClick={() => console.log('not implemented')}
-                        />
+                            onClick={() => {
+                                console.log('Not Implemented');
+                            }}
+                        ></ContextImage>
                     );
                 })}
         </div>

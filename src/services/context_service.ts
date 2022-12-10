@@ -1,16 +1,16 @@
 import LayerAIContext from 'models/LayerAIContext';
+import { storage } from 'uxp';
 import { ContextHistoryEnum } from '../constants';
 import { getContextInfoFromFileName } from '../utils/context_utils';
 
 import { getPluginDataFiles } from './io_service';
 
 /**
- * This is meant to get all the files that have been created from the layerContext.  If you don't know what a Layer context is,
- * Check this documentation out
- * @param {Object} layerContext
- * @returns {Promise<Array>}
+ *
+ * @param layerContext
+ * @param layerFileContextEnum
+ * @returns
  */
-
 export async function getContextFileEntries(
     layerContext: LayerAIContext,
     layerFileContextEnum: ContextHistoryEnum
@@ -36,3 +36,14 @@ export async function getContextFileEntries(
         console.error(e);
     }
 }
+
+export const getContextHistoryFiles = async (
+    layerContext: LayerAIContext
+): Promise<storage.File[]> => {
+    try {
+        return await layerContext.getContextHistoryFileEntries();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

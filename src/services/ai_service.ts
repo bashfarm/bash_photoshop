@@ -167,7 +167,6 @@ export const getArtists = async (): Promise<ArtistType[]> => {
     } catch (error) {
         console.log(error);
         throw error;
-        throw error;
     }
 };
 

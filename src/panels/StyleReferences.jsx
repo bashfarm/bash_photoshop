@@ -1,6 +1,6 @@
 import React from 'react';
 import { Divider, Icon, Label } from 'react-uxp-spectrum';
-import { useFetchFunction } from '../hooks/fetchHooks';
+import { useAsyncEffect } from '../hooks/fetchHooks';
 import { getArtists, getArtistCategories } from '../services/ai_service';
 import { useArtistStore } from '../store/artistStore';
 const dummyArray = [
@@ -27,9 +27,9 @@ const StyleImages = (props) => {
 
 // TODO: @kevmok convert into its own component
 const ArtistDropdowns = () => {
-    const { data: artists } = useFetchFunction(getArtists);
+    const { data: artists } = useAsyncEffect(getArtists);
     const { data: category, loading: categoryLoading } =
-        useFetchFunction(getArtistCategories);
+        useAsyncEffect(getArtistCategories);
 
     const { selectedCategory, selectedArtist, selectCategory, selectArtist } =
         useArtistStore((state) => ({

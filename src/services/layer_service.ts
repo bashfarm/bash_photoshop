@@ -1,12 +1,8 @@
 import { randomlyPickLayerName } from '../utils/general_utils';
 import { getDataFolderEntry } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
-import { storage } from 'uxp';
-// import photoshop, { app, action } from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
 import { ElementPlacement, RasterizeType } from 'photoshop/dom/Constants';
-// import { Photoshop } from 'photoshop/dom/Photoshop';
-// import { photoshop } from 'photoshop';
 
 const photoshop = require('photoshop');
 console.log(photoshop);

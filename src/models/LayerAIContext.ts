@@ -2,6 +2,7 @@ import { Layer } from 'photoshop/dom/Layer';
 import { getContextFileEntries } from 'services/context_service';
 import { getFileSerializer, saveLayerToPluginData } from 'services/io_service';
 import {
+    createAILayerContextId,
     createContextHistoryFileName,
     getLatestContextHistoryFileInfo,
 } from 'utils/context_utils';
@@ -10,9 +11,10 @@ import LayerAIContextHistory from './LayerAIHistory';
 import SmallDetailContext from './SmallDetailContext';
 import bashful from 'bashful';
 import { ContextHistoryEnum } from '../constants';
+const photoshop = require('photoshop');
 
 export default class LayerAIContext {
-    id: Number; // this should be the id number of the layer
+    id: number; // this should be the id number of the layer
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
     layers: Array<Layer>; // the layers that belong to the context
@@ -25,15 +27,11 @@ export default class LayerAIContext {
         layers: Array<Layer> = [],
         history: Array<LayerAIContextHistory> = []
     ) {
-        this.id = LayerAIContext.createAILayerContextId(layer);
+        this.id = createAILayerContextId(layer);
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
         this.layers = [layer, ...layers];
         this.history = history;
-    }
-
-    static createAILayerContextId(layer: Layer) {
-        return parseInt(`${layer.id}${layer.document.id}`);
     }
 
     /**
@@ -146,5 +144,13 @@ export default class LayerAIContext {
         if (!paths) paths = [];
 
         return paths;
+    }
+
+    public hasActiveLayers() {
+        const includesAny = (arr: Array<any>, values: any) =>
+            values.some((v: any) => arr.includes(v));
+
+        let docLayers = photoshop.app.activeDocument.layers;
+        return includesAny(this.layers, docLayers);
     }
 }
