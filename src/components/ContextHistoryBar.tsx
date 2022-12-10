@@ -12,15 +12,15 @@ export type ContexHistoryBarProps = {
 export const ContextHistoryBar = (props: ContexHistoryBarProps) => {
     let [localContextHistoryFileEntries, setLocalContextHistoryFileEntries] =
         useState<Array<storage.File>>([]);
-    const { data: historyFiles, loading: filesLoading } = useAsyncEffect(
-        getContextHistoryFiles
+    const { data: historyFiles, loading: filesLoading } = useAsyncEffect(() =>
+        getContextHistoryFiles(props.layerContext)
     );
     let files = historyFiles as Array<storage.File>;
     setLocalContextHistoryFileEntries(files);
 
     return (
         <div className="flex flex-row space-x-1">
-            {filesLoading &&
+            {!filesLoading &&
                 localContextHistoryFileEntries.map((fEntry, index) => {
                     return (
                         <ContextImage

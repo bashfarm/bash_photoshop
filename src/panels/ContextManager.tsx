@@ -27,6 +27,10 @@ export const ContextManager = () => {
     let getAILayerContext = useContextStore(
         (state: ContextStoreState) => state.getAILayerContext
     );
+    // checking to see if we are setting everything correctly
+    let layerID2Contexts = useContextStore(
+        (state: ContextStoreState) => state.layerID2Context
+    );
 
     function onLayerChange() {
         for (let layer of app.activeDocument.layers) {
@@ -67,7 +71,7 @@ export const ContextManager = () => {
     function CreateInitialContexts() {
         try {
             for (let layer of app.activeDocument.layers) {
-                if (getAILayerContext(layer.id)) {
+                if (!getAILayerContext(layer.id)) {
                     setAILayerContext(layer.id, new LayerAIContext(layer));
                 }
             }
@@ -78,7 +82,7 @@ export const ContextManager = () => {
 
     /**
      * This retrieves the documents contexts in order of the photoshop layers
-     * @returns {Array}
+     * @returns
      */
     function getContextsInLayerOrder() {
         try {
@@ -101,8 +105,9 @@ export const ContextManager = () => {
      * in the order the layers are found in the document.
      * @returns
      */
-    function CreatecontextItems() {
+    function createContextItems() {
         let contextList = getContextsInLayerOrder();
+        console.log(layerID2Contexts);
         return (
             <>
                 {contextList &&
@@ -116,5 +121,5 @@ export const ContextManager = () => {
         );
     }
 
-    return <>{CreatecontextItems()}</>;
+    return <>{createContextItems()}</>;
 };

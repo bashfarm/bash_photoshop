@@ -12,7 +12,8 @@ export const ContextToolColumn = (props: ContexToolColumnProps) => {
         <>
             <div className="flex flex-col w-2/3">
                 <ContextToolBar layerContext={props.layerContext} />
-                <ContextHistoryBar layerContext={props.layerContext} />
+                {/* History bar is broken 😭 */}
+                {/* <ContextHistoryBar layerContext={props.layerContext} /> */}
             </div>
         </>
     );
