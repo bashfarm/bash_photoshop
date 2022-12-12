@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import BlenderIcon from '@mui/icons-material/Blender';
+import { Button } from 'react-uxp-spectrum';
 
-export const ProgressButton = ({
-    longRunningFunction,
-    progressQueryFunction,
-    pollingSeconds,
-    queryResponseParser,
-    progressSetter,
-    children,
-}) => {
-    let [timer, SetTimer] = useState({});
+export type ProgressButtonProps = {
+    longRunningFunction: Function;
+    progressQueryFunction: Function;
+    pollingSeconds: number;
+    queryResponseParser: Function;
+    progressSetter: Function;
+    children: any;
+};
+
+export const ProgressButton = (props: ProgressButtonProps) => {
+    let [timer, SetTimer] = useState<NodeJS.Timer>(null);
     let [progress, SetProgress] = useState(0);
 
     useEffect(() => {
@@ -20,10 +23,12 @@ export const ProgressButton = ({
 
     return (
         <>
-            <sp-button
+            <Button
                 onClick={async () => {
-                    longRunningFunction();
-                    let timeout = (pollingSeconds ? pollingSeconds : 1) * 1000;
+                    props.longRunningFunction();
+                    let timeout =
+                        (props.pollingSeconds ? props.pollingSeconds : 1) *
+                        1000;
                     let prevVal = -1;
                     SetTimer(
                         setInterval(async () => {
@@ -33,21 +38,22 @@ export const ProgressButton = ({
                                         timeout / 1000
                                     } seconds`
                                 );
-                                let response = await progressQueryFunction();
+                                let response =
+                                    await props.progressQueryFunction();
                                 let progressValue =
-                                    queryResponseParser(response);
+                                    props.queryResponseParser(response);
 
                                 prevVal = progressValue;
 
                                 if (prevVal == 0) {
                                     SetProgress(1);
-                                    progressSetter(1);
+                                    props.progressSetter(1);
 
                                     return;
                                 }
                                 SetProgress(progressValue);
-                                if (progressSetter) {
-                                    progressSetter(progressValue);
+                                if (props.progressSetter) {
+                                    props.progressSetter(progressValue);
                                 }
                             } catch (e) {
                                 console.error(e);
@@ -60,8 +66,8 @@ export const ProgressButton = ({
                 <span>
                     <BlenderIcon></BlenderIcon>
                 </span>
-                {children}
-            </sp-button>
+                {props.children}
+            </Button>
         </>
     );
 };

@@ -1,7 +1,7 @@
 import create from 'zustand';
 
-interface ArtistState {
-    artist: String;
+export interface ArtistState {
+    artist: string;
     category: string;
     selectArtist: (aritstSelected: string) => void;
     selectCategory: (categorySelected: string) => void;
