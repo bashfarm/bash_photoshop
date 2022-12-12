@@ -17,3 +17,7 @@ export const validLayerNames = [
 export function randomlyPickLayerName(): string {
     return validLayerNames[Math.floor(Math.random() * validLayerNames.length)];
 }
+
+export function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
