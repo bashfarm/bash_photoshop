@@ -1,8 +1,4 @@
 import { formatBase64Image } from '../utils/io_utils';
-import {
-    createNewContextHistoryFile,
-    saveLayerContexttoHistory,
-} from './context_service';
 import { getDataFolderImageBase64ImgStr } from './io_service';
 import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 import {
@@ -13,8 +9,7 @@ import {
     ArtistType,
     ArtistCategories,
 } from '../common/types';
-import { Layer } from 'photoshop/dom/Layer';
-
+import LayerAIContext from 'models/LayerAIContext';
 const photoshop = require('photoshop');
 
 const myHeaders = new Headers();
@@ -172,7 +167,6 @@ export const getArtists = async (): Promise<ArtistType[]> => {
     } catch (error) {
         console.log(error);
         throw error;
-        throw error;
     }
 };
 
@@ -250,42 +244,74 @@ export async function generateImage(
 }
 
 /**
- * Generate a new AI Image and put it in a layer
+ * Generate a new AI Image for the given context and puts it in a layer.
+ *
+ * @param width
+ * @param height
+ * @param layerAIContext
+ * @returns
  */
 export async function generateAILayer(
     width: number,
     height: number,
-    layerAIContext: any // TODO: Set this type
+    layerAIContext: LayerAIContext
 ) {
     console.log('Generate AI layer');
     try {
-        let savedLayerFileName = await saveLayerContexttoHistory(
-            layerAIContext
-        );
+        // This will save the current layer to plugin folder as a history file
+        // We save in the beginning to make sure we capture all changes that could have occurred to the layer
+        // before we send it off to the AI for regeneration.
+        let contextHistoryFileEntry =
+            layerAIContext.saveLayerContexttoHistory();
 
-        // No available file name.  The user needs to remove some history
-        if (!savedLayerFileName) {
+        // No available file entry.  The user needs to remove some history or do inplace regeneration TODO(Might not happen)
+        if (!contextHistoryFileEntry) {
             return;
         }
-        console.log(`Save Filename ${savedLayerFileName}`);
-        let b64Data = await getDataFolderImageBase64ImgStr(savedLayerFileName);
-        let formattedB64Str = formatBase64Image(b64Data);
+        console.log(`Save File Entry`);
+        console.log(contextHistoryFileEntry);
+
+        // Retrieve the base64 string representation of the image given the name of the image.
+        let b64Data = await getDataFolderImageBase64ImgStr(
+            (
+                await contextHistoryFileEntry
+            ).name
+        );
+
+        // So we send off the new image that we saved and got it's string representation for 👏
+        // What we will get back from the ai is an image.  The string representation in base64 encoding!
         const genb64Str = await generateImage(
-            formattedB64Str,
+            formatBase64Image(b64Data),
             height,
             width,
             layerAIContext.currentPrompt
         );
-        let generatedFileName = await createNewContextHistoryFile(
-            layerAIContext,
-            genb64Str
-        );
+
+        // So we save the newly generated file as the next historical file
+        // remember people will be editing this stuff and will want to go back to earlier
+        // versions and bash them up.  So we want to keep working with the history like a
+        // stack.
+        let generatedFileName =
+            await layerAIContext.createNewContextHistoryFile(genb64Str);
+
         console.log(`Generated Filename ${generatedFileName}`);
+
+        // place the newly created image on a new layer.
+        // 🔥 If we could just do a replace, that would be ideal. But we may lose some editing capabilties.
         await createNewLayerFromFile(generatedFileName);
+
+        // Retrieve the newest layer that was created in photoshop, whereever it is.
         let generatedLayer = getNewestLayer(
             photoshop.app.activeDocument.layers
         );
-        return generatedLayer;
+
+        // We regenerated the layer with the context, now we update the context with the
+        // new info and let the user do the process again!
+        // This just puts the new layer in front of the previous as the layer that we used to
+        // generate from, still exists at this point.
+        layerAIContext.layers = [generatedLayer, ...layerAIContext.layers];
+
+        return layerAIContext;
     } catch (e) {
         console.error(e);
     }

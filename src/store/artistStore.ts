@@ -1,7 +1,7 @@
 import create from 'zustand';
 
-interface ArtistState {
-    artist: String;
+export interface ArtistState {
+    artist: string;
     category: string;
     selectArtist: (aritstSelected: string) => void;
     selectCategory: (categorySelected: string) => void;
@@ -10,7 +10,8 @@ interface ArtistState {
 export const useArtistStore = create((set) => ({
     artist: '',
     category: '',
-    selectArtist: (artistSelected) => set({ artist: artistSelected }),
-    selectCategory: (categorySelected) => set({ category: categorySelected }),
+    selectArtist: (artistSelected: string) => set({ artist: artistSelected }),
+    selectCategory: (categorySelected: string) =>
+        set({ category: categorySelected }),
     // increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
 }));

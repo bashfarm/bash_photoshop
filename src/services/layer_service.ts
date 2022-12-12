@@ -1,16 +1,20 @@
 import { randomlyPickLayerName } from '../utils/general_utils';
 import { getDataFolderEntry } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
-import { storage } from 'uxp';
-import photoshop, { app, action } from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
-import { ElementPlacement, RasterizeType } from 'photoshop/dom/Constants';
+import {
+    AnchorPosition,
+    ElementPlacement,
+    RasterizeType,
+    ResampleMethod,
+} from 'photoshop/dom/Constants';
+import photoshop from 'photoshop';
+import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
+import { Document } from 'photoshop/dom/Document';
 
-// const app = photoshop.app;
-// const bp = photoshop.action.batchPlay;
-// const lfs = require('uxp').storage.localFileSystem;
-const lfs = storage.localFileSystem;
-const bp = action.batchPlay;
+const bp = photoshop.action.batchPlay;
+const app = photoshop.app;
+
 /**
  * Given a an Array of photoshop layers, return the array of layers that are visible
  * @param {Array} layers
@@ -46,16 +50,21 @@ export async function createNewLayerFromFile(
 ): Promise<void> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
-    const tkn = lfs.createSessionToken(fileEntry);
+    // const tkn = lfs.createSessionToken(fileEntry);
 
     await executeInPhotoshop(
         async () => {
             await bp(
                 [
+                    // {
+                    //     _obj: 'placeEvent',
+                    //     target: { _path: tkn, _kind: 'local' },
+                    //     linked: true,
+                    // },
                     {
+                        ID: 2,
                         _obj: 'placeEvent',
-                        target: { _path: tkn, _kind: 'local' },
-                        linked: true,
+                        null: { _kind: 'local', _path: fileEntry.nativePath },
                     },
                 ],
                 {}
@@ -72,6 +81,22 @@ export async function createNewLayerFromFile(
     );
 }
 
+// async function actionCommands() {
+//     let command;
+//     let result;
+//     let psAction = require("photoshop").action;
+
+//     // Place
+//     command = {"ID":2,"_obj":"placeEvent","null":{"_kind":"local","_path":"C:\\Users\\benja\\OneDrive\\Documents\\stachologos\\anime_art\\icantrelax_no_media_logo.png"}}};
+//     result = await psAction.batchPlay([command], {});
+// }
+
+// async function runModalFunction() {
+//     await require("photoshop").core.executeAsModal(actionCommands, {"commandName": "Action Commands"});
+// }
+
+// await runModalFunction();
+
 /**
  * Selects all the visible layers and returns a list of the selected layers
  * @returns {Array}
@@ -83,15 +108,15 @@ async function selectAllVisibleLayers(): Promise<Layer[]> {
         });
     });
 
-    return getSelectedLayers();
+    return getSelectedLayers(app.activeDocument.layers);
 }
 
 /**
  * Retrieve an Array of photoshop layers that are selected in the app.
  * @returns
  */
-export function getSelectedLayers(): Layer[] {
-    return app.activeDocument.layers.filter((layer) => layer.selected);
+export function getSelectedLayers(layers: Layer[]): Layer[] {
+    return layers.filter((layer) => layer.selected);
 }
 
 /**
@@ -101,7 +126,7 @@ export function getTopLayer(
     selected: boolean = false,
     active: boolean = false
 ): Layer {
-    if (selected) return getSelectedLayers()[0];
+    if (selected) return getSelectedLayers(app.activeDocument.layers)[0];
 
     if (active) return photoshop.app.activeDocument.activeLayers[0];
     return photoshop.app.activeDocument.layers[0];
@@ -139,10 +164,14 @@ export async function createMergedLayer(): Promise<void> {
     await executeInPhotoshop(async () => {
         selectAllVisibleLayers();
 
-        const selectedLayers = getSelectedLayers();
+        const selectedLayers = getSelectedLayers(app.activeDocument.layers);
         selectedLayers.forEach(async (layer) => {
             if (layer.visible) {
-                const newLayer = await duplicateLayer(layer);
+                const newLayer = await duplicateLayer(
+                    layer,
+                    undefined,
+                    photoshop.constants.ElementPlacement.PLACEBEFORE
+                );
                 newLayer.selected = false;
                 newLayer.visible = true;
                 layer.visible = false;
@@ -178,7 +207,7 @@ export async function mergeVisibleLayers() {
  */
 export async function deselectLayers() {
     await executeInPhotoshop(() => {
-        getSelectedLayers().forEach((layer) => {
+        getSelectedLayers(app.activeDocument.layers).forEach((layer) => {
             layer.selected = false;
         });
     });
@@ -233,15 +262,16 @@ export async function selectLayerMask(layer: Layer) {
 /**
  * This function will duplicate the given layer and return a reference to it.
  */
-async function duplicateLayer(layer: Layer) {
+async function duplicateLayer(
+    layer: Layer,
+    relativeObject?: Document | Layer,
+    insertionLocation?: ElementPlacement,
+    name?: string
+) {
     await executeInPhotoshop(async () => {
-        await layer.duplicate(
-            undefined,
-            photoshop.constants.ElementPlacement.PLACEBEFORE,
-            undefined
-        );
+        await layer.duplicate(relativeObject, insertionLocation, name);
     });
-
+    // TODO: (kmok) we may need to remove the line below since layer.duplicate already returns the newest layer, so we just set the return on the wrapper above
     return getNewestLayer(photoshop.app.activeDocument.layers);
 }
 
@@ -277,10 +307,210 @@ export async function makeLayersVisible(layers: Layer[]) {
 }
 
 /**
- * Delete the given layer.
+ * Deletes this layer from the document.
  */
 export async function deleteLayer(layer: Layer) {
     await executeInPhotoshop(async () => {
         layer.delete();
+    });
+}
+
+/**
+ * Flips the layer on one or both axis.
+ *
+ * ```javascript
+ * // flip horizontally
+ * await flipLayer(layer, "horizontal")
+ * ```
+ * @param axis Which axis (or both) to flip the layer on.
+ *             - "horizontal": flip layer on horizontal axis
+ *             - "vertical": flip layer on vertical axis
+ *             - "both": flip layer on both axes
+ */
+export async function flipLayer(
+    layer: Layer,
+    axis: 'horizontal' | 'vertical' | 'both'
+) {
+    await executeInPhotoshop(async () => {
+        layer.flip(axis);
+    });
+}
+
+/**
+ * Clears the layer pixels and does not copy to the clipboard. If no pixel selection is found, select all pixels and clear.
+ */
+export async function clearLayer(layer: Layer) {
+    await executeInPhotoshop(async () => {
+        layer.clear();
+    });
+}
+
+/**
+ * Copies the layer to the clipboard. When the optional argument is set to true, a merged copy is performed (that is, all visible layers are copied to the clipboard).
+ */
+export async function copyLayer(layer: Layer, merge: boolean = false) {
+    await executeInPhotoshop(async () => {
+        layer.copy(merge);
+    });
+}
+
+/**
+ * Moves the layer to a position above the topmost layer or group.
+ */
+export async function bringLayerToFront(layer: Layer) {
+    await executeInPhotoshop(() => {
+        layer.bringToFront();
+    });
+}
+/**
+ * Moves the layer to the bottom. If the bottom layer is the background, it will move the layer to the position above the background. If it is in a group, it will move to the bottom of the group.
+ */
+export async function sendLayerToBack(layer: Layer) {
+    await executeInPhotoshop(() => {
+        layer.sendToBack();
+    });
+}
+
+/**
+ * Creates a link between this layer and the target layer if not already linked,
+ * and returns a list of layers linked to this layer.
+ * ```javascript
+ * // link two layers together
+ * const linkedLayers = await linkLayers(strokes, fillLayer)
+ * linkedLayers.forEach((layer) => console.log(layer.name))
+ * > "strokes"
+ * > "fillLayer"
+ * ```
+ */
+export async function linkLayers(
+    originalLayer: Layer,
+    targetLayer: Layer
+): Promise<Layer[]> {
+    return await executeInPhotoshop(async () => {
+        return originalLayer.link(targetLayer);
+    });
+}
+/**
+ * Unlinks the layer from any existing links.
+ */
+export async function unlinkLayers(layer: Layer): Promise<Layer[]> {
+    return await executeInPhotoshop(async () => {
+        return layer.unlink();
+    });
+}
+
+/**
+ * Merges layers. This operates on the currently selected layers. If multiple layers are selected, they will be merged together. If one layer is selected, it is merged down with the layer beneath. In this case, the layer below must be a pixel layer. The merged layer will now be the active layer.
+ */
+export async function mergeSelectedLayer(layer: Layer): Promise<Layer> {
+    return await executeInPhotoshop(async () => {
+        return layer.merge();
+    });
+}
+/**
+ * Converts the targeted contents in the layer into a flat, raster image.
+ */
+export async function rasterizeLayer(layer: Layer, type: RasterizeType) {
+    await executeInPhotoshop(async () => {
+        layer.rasterize(type);
+    });
+}
+
+/**
+ * Rotates the layer.
+```javascript
+// rotate 90 deg counter clockwise
+await rotateLayer(layer, (-90))
+
+// rotate 90 deg clockwise relative to top left corner
+import { AnchorPosition } from 'photoshop/dom/Constants';
+await rotatelayer(layer, 90, AnchorPosition.TOPLEFT)
+```
+ * @param layer 
+ * @param angle Angle to rotate the layer by in degrees
+ * @param anchor Anchor position to rotate around
+ * @param options.interpolation Interpolation method to use when 
+ */
+export async function rotateLayer(
+    layer: Layer,
+    angle: number | AngleValue,
+    anchor?: AnchorPosition,
+    options?: { interpolation?: ResampleMethod }
+) {
+    await executeInPhotoshop(async () => {
+        layer.rotate(angle, anchor, options);
+    });
+}
+
+/**
+ * Scales the layer.
+ * ```javascript
+ * await scaleLayer(layer,80, 80)
+ *
+ * // Scale the layer to be a quarter of the size relative to bottom left corner
+ * import { AnchorPosition } from 'photoshop/dom/Constants';
+ * await scalerLayer(layer, 50, 50, AnchorPosition.BOTTOMLEFT)
+ * ```
+ * @param layer
+ * @param width Numeric percentage to scale layer horizontally
+ * @param height Numeric percentage to scale layer vertically
+ * @param anchor Anchor position to rotate around
+ * @param options.interpolation Interpolation method to use when resampling the image
+ */
+export async function scaleLayer(
+    layer: Layer,
+    width: number,
+    height: number,
+    anchor?: AnchorPosition,
+    options?: { interpolation?: ResampleMethod }
+) {
+    await executeInPhotoshop(async () => {
+        layer.scale(width, height, anchor, options);
+    });
+}
+
+/**
+ * Applies a skew to the layer.
+ * ```javascript
+ * // parellelogram shape
+ * await skewLayer(layer, -15, 0)
+ * ```
+ * @param layer
+ * @param angleH Horizontal angle to skew by
+ * @param angleV Vertical angle to skew by
+ * @param option.interpolation Interpolation method to use when resampling the image
+ */
+export async function skewLayer(
+    layer: Layer,
+    angleH: number | AngleValue,
+    angleV: number | AngleValue,
+    options?: { interpolation?: ResampleMethod }
+) {
+    await executeInPhotoshop(async () => {
+        layer.skew(angleH, angleV, options);
+    });
+}
+
+/**
+ * Moves the layer (translation).
+ * ```javascript
+ * // Translate the layer to the left by 200px
+ * await translateLayer(layer, -200, 0)
+ *
+ * // move the layer one height down
+ * let xOffsetPct = {_unit: "percentUnit", _value: 0};
+ * let yOffsetPct = {_unit: "percentUnit", _value: 100};
+ * await translateLayer(layer, xOffsetPct, yOffsetPct);
+ * ```
+ * @param horizontal Numeric value to offset layer by in pixels or percent
+ * @param vertical Numeric value to offset layer by in pixels or percent
+ */
+export async function translateLayer(
+    layer: Layer,
+    horizontal: number | PercentValue | PixelValue,
+    vertical: number | PercentValue | PixelValue
+) {
+    await executeInPhotoshop(async () => {
+        layer.translate(horizontal, vertical);
     });
 }

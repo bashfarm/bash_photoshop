@@ -9,7 +9,11 @@
         "moduleResolution": "NodeNext",
         "jsx": "react",
         "typeRoots": ["node_modules/@types", "common/types"],
-        "baseUrl": "./src"
+        "baseUrl": "./src",
+		"lib": [
+			"dom",
+			"webworker"
+		]
     },
     "include": ["src/**/*"]
 }

@@ -1,8 +1,11 @@
+import { ArtistType } from 'common/types/sdapi';
 import React from 'react';
-import { Divider, Icon, Label } from 'react-uxp-spectrum';
-import { useFetchFunction } from '../hooks/fetchHooks';
+import { Divider, Dropdown, Icon, Label } from 'react-uxp-spectrum';
+import Menu from 'react-uxp-spectrum/dist/Menu';
+import MenuItem from 'react-uxp-spectrum/dist/MenuItem';
+import { useAsyncEffect } from '../hooks/fetchHooks';
 import { getArtists, getArtistCategories } from '../services/ai_service';
-import { useArtistStore } from '../store/artistStore';
+import { ArtistState, useArtistStore } from '../store/artistStore';
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
     { id: 2, value: 40, src: 'img/cat.jpg' },
@@ -14,7 +17,11 @@ const dummyArray = [
     { id: 4, value: 30, src: 'img/cat.jpg' },
 ];
 
-const StyleImages = (props) => {
+export type StyleImagesProps = {
+    src: string;
+};
+
+const StyleImages = (props: StyleImagesProps) => {
     return (
         <img
             className="rounded-sm w-1/5 m-2"
@@ -27,12 +34,12 @@ const StyleImages = (props) => {
 
 // TODO: @kevmok convert into its own component
 const ArtistDropdowns = () => {
-    const { data: artists } = useFetchFunction(getArtists);
+    const { data: artists } = useAsyncEffect(getArtists);
     const { data: category, loading: categoryLoading } =
-        useFetchFunction(getArtistCategories);
+        useAsyncEffect(getArtistCategories);
 
     const { selectedCategory, selectedArtist, selectCategory, selectArtist } =
-        useArtistStore((state) => ({
+        useArtistStore((state: ArtistState) => ({
             selectedCategory: state.category,
             selectedArtist: state.artist,
             selectCategory: state.selectCategory,
@@ -42,49 +49,53 @@ const ArtistDropdowns = () => {
     let filteredArtists = [];
     if (selectedCategory) {
         filteredArtists = artists.filter(
-            (artist) => artist.category === selectedCategory
+            (artist: ArtistType) => artist.category === selectedCategory
         );
     }
 
     return (
         <div className="flex">
-            <sp-picker size="s">
+            <Dropdown>
                 <Label slot="label">Categories</Label>
-                <sp-menu slot="options">
+                <Menu slot="options">
                     {categoryLoading ? (
-                        <sp-menu-item>Loading categories...</sp-menu-item>
+                        <MenuItem>Loading categories...</MenuItem>
                     ) : (
-                        category.map((name, index) => (
-                            <sp-menu-item
-                                onClick={(e) => selectCategory(e.target.value)}
+                        category.map((name: string, index: number) => (
+                            <MenuItem
+                                onClick={(e: any) =>
+                                    selectCategory(e.target.value)
+                                }
                                 key={`${name}-${index}`}
                             >
                                 {name}
-                            </sp-menu-item>
+                            </MenuItem>
                         ))
                     )}
-                </sp-menu>
-            </sp-picker>
+                </Menu>
+            </Dropdown>
 
-            <sp-picker size="s">
+            <Dropdown>
                 <Label slot="label">Artists</Label>
-                <sp-menu slot="options">
+                <Menu slot="options">
                     {!selectedCategory ? (
-                        <sp-menu-item disabled>
-                            Select a category...
-                        </sp-menu-item>
+                        <MenuItem disabled>Select a category...</MenuItem>
                     ) : (
-                        filteredArtists.map((item, index) => (
-                            <sp-menu-item
-                                onClick={(e) => selectArtist(e.target.value)}
-                                key={`${item.name}-${index}`}
-                            >
-                                {item.name}
-                            </sp-menu-item>
-                        ))
+                        filteredArtists.map(
+                            (item: ArtistType, index: number) => (
+                                <MenuItem
+                                    onClick={(e: any) =>
+                                        selectArtist(e.target.value)
+                                    }
+                                    key={`${item.name}-${index}`}
+                                >
+                                    {item.name}
+                                </MenuItem>
+                            )
+                        )
                     )}
-                </sp-menu>
-            </sp-picker>
+                </Menu>
+            </Dropdown>
         </div>
     );
 };

@@ -137,8 +137,12 @@ declare module 'uxp' {
             isFolder: boolean;
             name: string;
             provider: FileSystemProvider;
-            url: string;
+            url: Url;
             nativePath: string;
+        }
+
+        class Url {
+            href: string;
         }
 
         class File extends Entry {
@@ -265,5 +269,11 @@ declare module 'uxp' {
         function release(): string;
 
         function arch(): string;
+    }
+}
+
+declare module 'bashful' {
+    namespace io {
+        type Serializer = (fileName: string, data: string | Uint8Array) => void;
     }
 }

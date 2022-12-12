@@ -1,3 +1,4 @@
+import { TagSelector } from 'components/TagSelector';
 import React, { useState } from 'react';
 import {
     Textarea,
@@ -6,7 +7,6 @@ import {
     Divider,
     Heading,
 } from 'react-uxp-spectrum';
-import { TagSelector } from '@components/TagSelector';
 import { txt2Img } from '../services/ai_service';
 import { saveB64ImageToBinaryFileToDataFolder } from '../services/io_service';
 import { createNewLayerFromFile } from '../services/layer_service';
@@ -19,8 +19,12 @@ const dummyArray = [
     { id: 4, value: 30, src: 'img/cat.jpg' },
 ];
 
-const AssetItem = ({ src }) => {
-    const handleClick = async (src) => {
+export type AssetItemProps = {
+    src: string;
+};
+
+const AssetItem = (props: AssetItemProps) => {
+    const handleClick = async (src: string) => {
         await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
         await createNewLayerFromFile(`${src.slice(-3)}-img`);
     };
@@ -28,9 +32,9 @@ const AssetItem = ({ src }) => {
         <div className="mx-5">
             <img
                 className="rounded-sm w-[90px] hover:border"
-                src={src}
+                src={props.src}
                 alt="Demo Image"
-                onClick={() => handleClick(src)}
+                onClick={() => handleClick(props.src)}
             />
         </div>
     );
@@ -40,11 +44,8 @@ export const SmallUiDetail = () => {
     const [prompt, setPrompt] = useState('');
     const [images, setImages] = useState([]);
     const [loadingImages, setLoadingImages] = useState(false);
-    // var bears = useAppStore((state) => state.bears);
-    // var increasePopulation = useAppStore((state) => state.increasePopulation);
-    // let newimg = formatBase64Image(image[0]);
 
-    const generateImages = async (prompt) => {
+    const generateImages = async (prompt: string) => {
         if (!prompt) return;
         if (images.length > 0) setImages([]);
         try {
@@ -74,7 +75,6 @@ export const SmallUiDetail = () => {
             <ActionButton
                 disabled={loadingImages}
                 onClick={() => generateImages(prompt)}
-                title="test"
             >
                 {loadingImages ? 'Generating images...' : 'Generate Images'}
             </ActionButton>
