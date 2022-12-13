@@ -22,16 +22,17 @@ export async function executeInPhotoshop(func: Function): Promise<any> {
             async (executionContext: any) => {
                 let hostControl = executionContext.hostControl;
 
+                // this can probably be move outside of executeAsModal and since we will always be in the modal state.  I dunno...
+                // this is working though.
                 if (isExecuting && caller != null) {
                     try {
                         suspensionID = await hostControl.suspendHistory({
                             documentID: photoshop.app.activeDocument?.id,
                             name: 'History',
                         });
-                        console.log('turning on history');
                     } catch (e) {
                         console.warn(
-                            'tried changing the state when it is already changed 😅😅'
+                            'tried changing the state when it is already changed 😅😅. ignore!'
                         );
                     }
                 }
@@ -42,7 +43,6 @@ export async function executeInPhotoshop(func: Function): Promise<any> {
 
                 // We are going to have to rerun this function after we do a lock
                 if (!isExecuting) {
-                    console.log('Im turning off history suspension');
                     await hostControl.resumeHistory(suspensionID);
                     suspensionID = null;
                 }

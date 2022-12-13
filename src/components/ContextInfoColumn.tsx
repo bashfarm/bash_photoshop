@@ -7,6 +7,8 @@ export type ContextInfoColumnProps = {
 };
 
 export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
+    console.log('in context info column');
+    console.log(props);
     return (
         <div className="flex flex-col bg-brand-dark">
             <ContextLabel

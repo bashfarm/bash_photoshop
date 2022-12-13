@@ -3,24 +3,41 @@ import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { createAILayerContextId } from 'utils/context_utils';
 import { ContextItem } from '../components/ContextItem';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
 const app = photoshop.app;
 
+// const events = [
+//     { event: 'make' },
+//     { event: 'select' },
+//     { event: 'selectNoLayers' },
+//     { event: 'move' },
+//     { event: 'undoEvent' },
+//     { event: 'undoEnum' },
+// ];
+
+// const deletEvent = [
+// 	{ event: 'delete'}
+// ]
+
 const events = [
-    { event: 'make' },
-    { event: 'delete' },
-    { event: 'select' },
-    { event: 'selectNoLayers' },
-    { event: 'move' },
-    { event: 'undoEvent' },
-    { event: 'undoEnum' },
+    'make',
+    'select',
+    'selectNoLayers',
+    'move',
+    'undoEvent',
+    'undoEnum',
 ];
 
+const deletEvent = ['delete'];
+
 export const ContextManager = () => {
-    let getContextLayerIDs = useContextStore(
-        (state: ContextStoreState) => state.getContextLayerIDs
+    let syncPhotoshopLayersAndContexts = useContextStore(
+        (state: ContextStoreState) => state.syncPhotoshopLayersAndContexts
+    );
+
+    let retreiveContextFromCache = useContextStore(
+        (state: ContextStoreState) => state.retreiveContextFromCache
     );
     let setAILayerContext = useContextStore(
         (state: ContextStoreState) => state.setAILayerContext
@@ -28,15 +45,32 @@ export const ContextManager = () => {
     let getAILayerContext = useContextStore(
         (state: ContextStoreState) => state.getAILayerContext
     );
+
+    let removeAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.removeAILayerContext
+    );
     // checking to see if we are setting everything correctly
     let layerID2Contexts = useContextStore(
         (state: ContextStoreState) => state.layerID2Context
     );
 
+    function onDelete(something: any) {
+        console.log(something);
+        syncPhotoshopLayersAndContexts(app.activeDocument.layers);
+    }
+
     function onLayerChange() {
         for (let layer of app.activeDocument.layers) {
-            // Check if the layer is managed by a context
-            let layerContext: LayerAIContext = getAILayerContext(layer.id);
+            let layerContext: LayerAIContext = null;
+
+            // if the context is in the cache it must have been deleted.  The user must have done a `ctrl+z` for this to retrieve anything
+            // or the app is buggy lol ❤️‍🔥.
+            layerContext = retreiveContextFromCache(layer.id);
+
+            if (!layerContext) {
+                // Check if the layer is managed by an active context
+                layerContext = getAILayerContext(layer.id);
+            }
 
             if (!layerContext) {
                 // No layer context, lets create one then.
@@ -58,6 +92,13 @@ export const ContextManager = () => {
         photoshop.action.addNotificationListener(events, onLayerChange);
         return () => {
             photoshop.action.removeNotificationListener(events, onLayerChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(deletEvent, onDelete);
+        return () => {
+            photoshop.action.removeNotificationListener(deletEvent, onDelete);
         };
     });
 

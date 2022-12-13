@@ -6,12 +6,26 @@ import {
     getTopLayer,
 } from 'services/layer_service';
 import photoshop from 'photoshop';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 export function E2ETestingPanel() {
+    let setAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.setAILayerContext
+    );
+    let getAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.getAILayerContext
+    );
     return (
         <>
             <h1>TEST NAME: Convert All Layers To Smart Objects</h1>
-            <Button onClick={() => convertAllLayersToSmartObjects()}>
+            <Button
+                onClick={() =>
+                    convertAllLayersToSmartObjects(
+                        getAILayerContext,
+                        setAILayerContext
+                    )
+                }
+            >
                 Test
             </Button>
         </>
@@ -28,7 +42,10 @@ function convertTopLayerToSmartObject() {
     convertLayerToSmartObject(topLayer);
 }
 
-function convertAllLayersToSmartObjects() {
+function convertAllLayersToSmartObjects(
+    getAILayerContext: Function,
+    setAILayerContext: Function
+) {
     let layers = photoshop.app.activeDocument.layers;
-    convertLayersToSmartObjects(layers);
+    convertLayersToSmartObjects(layers, getAILayerContext, setAILayerContext);
 }
