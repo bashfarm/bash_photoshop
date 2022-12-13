@@ -11,6 +11,7 @@ import {
 import photoshop from 'photoshop';
 import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
+import { storage } from 'uxp';
 
 const bp = photoshop.action.batchPlay;
 const app = photoshop.app;
@@ -512,5 +513,30 @@ export async function translateLayer(
 ) {
     await executeInPhotoshop(async () => {
         layer.translate(horizontal, vertical);
+    });
+}
+
+export function regenerateLayer(layer: Layer) {}
+
+export function replaceLayerContents(layer: Layer, data: storage.File) {
+    // layer.
+}
+
+export function convertLayersToSmartObjects(layers: Array<Layer>) {
+    executeInPhotoshop(async () => {
+        for (let layer of layers) {
+            console.log(layer);
+            await convertLayerToSmartObject(layer);
+        }
+    });
+}
+
+export async function convertLayerToSmartObject(layer: Layer) {
+    let command = { _obj: 'newPlacedLayer' };
+    return await executeInPhotoshop(async () => {
+        layer.selected = true;
+        console.log(layer);
+        console.log(new Date().getTime());
+        await bp([command], {});
     });
 }
