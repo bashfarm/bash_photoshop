@@ -522,6 +522,12 @@ export function replaceLayerContents(layer: Layer, data: storage.File) {
     // layer.
 }
 
+/**
+ * ERROR: This is having ASYNC issues.  Every time one layer is executing the `convert to smart object` function, which
+ * merges the selected layers and then at the same time we are selecting another layer so what ends up happening is all layers merge.
+ * So we got timing issues, AKA ASYNC issues.  Need to make this `SYNCHRONOUS`
+ * @param layers
+ */
 export function convertLayersToSmartObjects(layers: Array<Layer>) {
     executeInPhotoshop(async () => {
         for (let layer of layers) {
@@ -539,4 +545,25 @@ export async function convertLayerToSmartObject(layer: Layer) {
         console.log(new Date().getTime());
         await bp([command], {});
     });
+}
+
+/**
+ * Creates a new layer given the new layer's name
+ * @param layerName
+ * @returns
+ */
+export async function createNewLayer(layerName: string) {
+    try {
+        return (await executeInPhotoshop(async () => {
+            if (photoshop.app.activeDocument) {
+                let newLayer: Layer =
+                    await photoshop.app.activeDocument.layers.add();
+
+                if (layerName) {
+                    newLayer.name = layerName;
+                }
+                return newLayer;
+            }
+        })) as Layer;
+    } catch (e) {}
 }

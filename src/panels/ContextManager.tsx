@@ -2,26 +2,34 @@ import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';
+import { Button } from 'react-uxp-spectrum';
+import { createNewLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { createAILayerContextId } from 'utils/context_utils';
 import { ContextItem } from '../components/ContextItem';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
 const app = photoshop.app;
 
+// const events = [
+//     { event: 'make' },
+//     { event: 'delete' },
+//     { event: 'select' },
+//     { event: 'selectNoLayers' },
+//     { event: 'move' },
+//     { event: 'undoEvent' },
+//     { event: 'undoEnum' },
+// ];
+
 const events = [
-    { event: 'make' },
-    { event: 'delete' },
-    { event: 'select' },
-    { event: 'selectNoLayers' },
-    { event: 'move' },
-    { event: 'undoEvent' },
-    { event: 'undoEnum' },
+    'make',
+    'delete',
+    'select',
+    'selectNoLayers',
+    'move',
+    'undoEvent',
+    'undoEnum',
 ];
 
 export const ContextManager = () => {
-    let getContextLayerIDs = useContextStore(
-        (state: ContextStoreState) => state.getContextLayerIDs
-    );
     let setAILayerContext = useContextStore(
         (state: ContextStoreState) => state.setAILayerContext
     );
@@ -122,9 +130,25 @@ export const ContextManager = () => {
         );
     }
 
+    function createNewContext() {}
+
     return (
         <>
             <E2ETestingPanel></E2ETestingPanel>
+            <div>
+                <Button
+                    onClick={async () => {
+                        let newlayer = await createNewLayer(
+                            `Layer ${
+                                photoshop.app.activeDocument.layers.length + 1
+                            }`
+                        );
+                        console.log(newlayer);
+                    }}
+                >
+                    Create New Layer
+                </Button>
+            </div>
             {createContextItems()}
         </>
     );
