@@ -2,26 +2,35 @@ import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';
+import { Button } from 'react-uxp-spectrum';
+import { createNewLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { createAILayerContextId } from 'utils/context_utils';
 import { ContextItem } from '../components/ContextItem';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
+import { randomlyPickLayerName } from 'utils/general_utils';
 const app = photoshop.app;
 
+// const events = [
+//     { event: 'make' },
+//     { event: 'delete' },
+//     { event: 'select' },
+//     { event: 'selectNoLayers' },
+//     { event: 'move' },
+//     { event: 'undoEvent' },
+//     { event: 'undoEnum' },
+// ];
+
 const events = [
-    { event: 'make' },
-    { event: 'delete' },
-    { event: 'select' },
-    { event: 'selectNoLayers' },
-    { event: 'move' },
-    { event: 'undoEvent' },
-    { event: 'undoEnum' },
+    'make',
+    'delete',
+    'select',
+    'selectNoLayers',
+    'move',
+    'undoEvent',
+    'undoEnum',
 ];
 
 export const ContextManager = () => {
-    let getContextLayerIDs = useContextStore(
-        (state: ContextStoreState) => state.getContextLayerIDs
-    );
     let setAILayerContext = useContextStore(
         (state: ContextStoreState) => state.setAILayerContext
     );
@@ -54,32 +63,32 @@ export const ContextManager = () => {
         // layers based on that.  shit.
     }
 
-    useEffect(() => {
-        photoshop.action.addNotificationListener(events, onLayerChange);
-        return () => {
-            photoshop.action.removeNotificationListener(events, onLayerChange);
-        };
-    });
+    // useEffect(() => {
+    //     photoshop.action.addNotificationListener(events, onLayerChange);
+    //     return () => {
+    //         photoshop.action.removeNotificationListener(events, onLayerChange);
+    //     };
+    // });
 
-    // Only create the initial counts once.  Let the events figure out everythign else
-    useEffect(() => {
-        CreateInitialContexts();
-    }, []);
+    // // Only create the initial counts once.  Let the events figure out everythign else
+    // useEffect(() => {
+    //     CreateInitialContexts();
+    // }, []);
 
-    /**
-     * Create the initial contexts for the layers.  Should be done only once when the component first loads.
-     */
-    function CreateInitialContexts() {
-        try {
-            for (let layer of app.activeDocument.layers) {
-                if (!getAILayerContext(layer.id)) {
-                    setAILayerContext(layer.id, new LayerAIContext(layer));
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    // /**
+    //  * Create the initial contexts for the layers.  Should be done only once when the component first loads.
+    //  */
+    // function CreateInitialContexts() {
+    //     try {
+    //         for (let layer of app.activeDocument.layers) {
+    //             if (!getAILayerContext(layer.id)) {
+    //                 setAILayerContext(layer.id, new LayerAIContext(layer));
+    //             }
+    //         }
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    // }
 
     /**
      * This retrieves the documents contexts in order of the photoshop layers
@@ -122,9 +131,28 @@ export const ContextManager = () => {
         );
     }
 
+    async function createNewContext() {
+        let newLayer = await createNewLayer(
+            `Context: ${randomlyPickLayerName()}`
+        );
+        let newContext = new LayerAIContext(newLayer);
+        setAILayerContext(newLayer.id, newContext);
+        return newContext;
+    }
+
     return (
         <>
             <E2ETestingPanel></E2ETestingPanel>
+            <div>
+                <Button
+                    onClick={async () => {
+                        let newContext = await createNewContext();
+                        console.log(newContext);
+                    }}
+                >
+                    Create New Context
+                </Button>
+            </div>
             {createContextItems()}
         </>
     );

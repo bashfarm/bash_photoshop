@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Textarea } from 'react-uxp-spectrum';
-import { useContextStore } from '../store/contextStore';
+import { ContextStoreState, useContextStore } from '../store/contextStore';
 
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
@@ -17,7 +17,9 @@ export const ContextItem = (props: ContextItemProps) => {
     let [thisLayersContext, setThisLayersContext] = useState(
         props.layerContext
     );
-    let setAILayerContext = useContextStore((state) => state.setAILayerContext);
+    let setAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.setAILayerContext
+    );
 
     return (
         <div className="flex flex-col bg-brand-dark">
