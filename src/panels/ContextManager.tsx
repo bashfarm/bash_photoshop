@@ -23,6 +23,7 @@ const app = photoshop.app;
 const events = [
     'make',
     'select',
+    'delete',
     'selectNoLayers',
     'move',
     'undoEvent',
@@ -46,11 +47,7 @@ export const ContextManager = () => {
         (state: ContextStoreState) => state.getAILayerContext
     );
 
-    let removeAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.removeAILayerContext
-    );
-    // checking to see if we are setting everything correctly
-    let layerID2Contexts = useContextStore(
+    let layerID2Context = useContextStore(
         (state: ContextStoreState) => state.layerID2Context
     );
 
@@ -100,7 +97,7 @@ export const ContextManager = () => {
         return () => {
             photoshop.action.removeNotificationListener(deletEvent, onDelete);
         };
-    });
+    }, []);
 
     // Only create the initial counts once.  Let the events figure out everythign else
     useEffect(() => {
@@ -123,42 +120,23 @@ export const ContextManager = () => {
     }
 
     /**
-     * This retrieves the documents contexts in order of the photoshop layers
-     * @returns
-     */
-    function getContextsInLayerOrder() {
-        try {
-            let newOrderedContexts = [];
-            for (let layer of app.activeDocument.layers) {
-                let layerContext = getAILayerContext(layer.id);
-
-                if (layerContext && layerContext.layers.length > 0) {
-                    newOrderedContexts.push(layerContext);
-                }
-            }
-            return newOrderedContexts;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    /**
      * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
      * in the order the layers are found in the document.
      * @returns
      */
     function createContextItems() {
-        let contextList = getContextsInLayerOrder();
-        console.log(layerID2Contexts);
         return (
             <>
-                {contextList &&
-                    contextList.map((context) => (
-                        <ContextItem
-                            key={context.id}
-                            layerContext={context}
-                        ></ContextItem>
-                    ))}
+                {photoshop.app.activeDocument.layers &&
+                    photoshop.app.activeDocument.layers.map((layer) => {
+                        console.log(layer);
+                        return (
+                            <ContextItem
+                                key={layer.id}
+                                layerID={layer.id}
+                            ></ContextItem>
+                        );
+                    })}
             </>
         );
     }
