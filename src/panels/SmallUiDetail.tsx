@@ -1,5 +1,6 @@
-import { TagSelector } from 'components/TagSelector';
 import React, { useState } from 'react';
+import { TagSelector } from 'components/TagSelector';
+import AssetItem from 'components/SmallUiDetail/AssetItem';
 import {
     Textarea,
     ActionButton,
@@ -19,26 +20,26 @@ const dummyArray = [
     { id: 4, value: 30, src: 'img/cat.jpg' },
 ];
 
-export type AssetItemProps = {
-    src: string;
-};
+// export type AssetItemProps = {
+//     src: string;
+// };
 
-const AssetItem = (props: AssetItemProps) => {
-    const handleClick = async (src: string) => {
-        await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
-        await createNewLayerFromFile(`${src.slice(-3)}-img`);
-    };
-    return (
-        <div className="mx-5">
-            <img
-                className="rounded-sm w-[90px] hover:border"
-                src={props.src}
-                alt="Demo Image"
-                onClick={() => handleClick(props.src)}
-            />
-        </div>
-    );
-};
+// const AssetItem = (props: AssetItemProps) => {
+//     const handleClick = async (src: string) => {
+//         await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
+//         await createNewLayerFromFile(`${src.slice(-3)}-img`);
+//     };
+//     return (
+//         <div className="mx-5">
+//             <img
+//                 className="rounded-sm w-[90px] hover:border"
+//                 src={props.src}
+//                 alt="Demo Image"
+//                 onClick={() => handleClick(props.src)}
+//             />
+//         </div>
+//     );
+// };
 
 export const SmallUiDetail = () => {
     const [prompt, setPrompt] = useState('');

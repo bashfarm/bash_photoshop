@@ -8,7 +8,7 @@ import './style.css';
 entrypoints.setup({
     panels: {
         contextmanager: PanelController(<ContextManager />, {}),
-        // smalluidetail: PanelController(<SmallUiDetail />, {}),
-        // stylereferences: PanelController(<StyleReferences />, {}),
+        smalluidetail: PanelController(<SmallUiDetail />, {}),
+        stylereferences: PanelController(<StyleReferences />, {}),
     },
 });
