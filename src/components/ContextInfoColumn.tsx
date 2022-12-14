@@ -1,24 +1,27 @@
-import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextLabel } from './ContextLabel';
 
 export type ContextInfoColumnProps = {
-    layerContext: LayerAIContext;
+    layerID: number;
 };
 
 export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
+    let getAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.getAILayerContext
+    );
     return (
         <div className="flex flex-col bg-brand-dark">
             <ContextLabel
-                value={props.layerContext.layers[0].name}
+                value={getAILayerContext(props.layerID)?.layers[0].name}
                 labelText={'Layer Name:'}
             />
             <ContextLabel
-                value={props.layerContext.layers[0].id}
+                value={getAILayerContext(props.layerID)?.layers[0].id}
                 labelText={'Layer Id:'}
             />
             <ContextLabel
-                value={props.layerContext.id as number}
+                value={getAILayerContext(props.layerID)?.id}
                 labelText={'Context Id'}
             />
         </div>

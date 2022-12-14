@@ -8,12 +8,12 @@ import {
     getImageProcessingProgress,
 } from 'services/ai_service';
 import { deleteLayer, moveLayer } from 'services/layer_service';
-import { useContextStore } from 'store/contextStore';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
 
 export type RegenerationColumnProps = {
-    layerContext: LayerAIContext;
+    layerID: number;
 };
 
 /**
@@ -26,21 +26,19 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
 
     // When a new layer gets created we will need to see if it has an associated context with it.
     // So we need to have this layer2IdRegistry going.
-    let setAILayerContext = useContextStore((state) => state.setAILayerContext);
+    let setAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.setAILayerContext
+    );
+    let getAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.getAILayerContext
+    );
 
     async function regenerateLayer(width: number, height: number) {
         try {
-            props.layerContext = await generateAILayer(
-                width,
-                height,
-                props.layerContext
-            );
-            let oldLayer = props.layerContext.layers[1];
-            let newGeneratedLayer = props.layerContext.layers[0];
-
-            console.log(
-                `set old layer context contextID: ${props.layerContext.id}, LayerID: ${oldLayer.id} LayerName: ${oldLayer.name} to new layer, LayerName: ${newGeneratedLayer.name}, LayerID: ${newGeneratedLayer.id}`
-            );
+            let layerAIContext = getAILayerContext(props.layerID);
+            let newLayer = await generateAILayer(width, height, layerAIContext);
+            let oldLayer = layerAIContext.layers[0];
+            let newGeneratedLayer = newLayer;
 
             moveLayer(
                 newGeneratedLayer, // context now has the new layer as the first element
@@ -50,8 +48,8 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
 
             deleteLayer(oldLayer);
 
-            props.layerContext.layers = [newGeneratedLayer];
-            setAILayerContext(newGeneratedLayer.id, props.layerContext);
+            layerAIContext.layers = [newGeneratedLayer];
+            setAILayerContext(newGeneratedLayer.id, layerAIContext);
         } catch (e) {
             console.error(e);
         }

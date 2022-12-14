@@ -305,13 +305,7 @@ export async function generateAILayer(
             photoshop.app.activeDocument.layers
         );
 
-        // We regenerated the layer with the context, now we update the context with the
-        // new info and let the user do the process again!
-        // This just puts the new layer in front of the previous as the layer that we used to
-        // generate from, still exists at this point.
-        layerAIContext.layers = [generatedLayer, ...layerAIContext.layers];
-
-        return layerAIContext;
+        return generatedLayer;
     } catch (e) {
         console.error(e);
     }

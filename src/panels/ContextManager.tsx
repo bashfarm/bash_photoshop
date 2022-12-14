@@ -12,7 +12,6 @@ const app = photoshop.app;
 
 // const events = [
 //     { event: 'make' },
-//     { event: 'delete' },
 //     { event: 'select' },
 //     { event: 'selectNoLayers' },
 //     { event: 'move' },
@@ -20,32 +19,58 @@ const app = photoshop.app;
 //     { event: 'undoEnum' },
 // ];
 
+// const deletEvent = [
+// 	{ event: 'delete'}
+// ]
+
 const events = [
     'make',
-    'delete',
     'select',
+    'delete',
     'selectNoLayers',
     'move',
     'undoEvent',
     'undoEnum',
 ];
 
+const deletEvent = ['delete'];
+
 export const ContextManager = () => {
+    let syncPhotoshopLayersAndContexts = useContextStore(
+        (state: ContextStoreState) => state.syncPhotoshopLayersAndContexts
+    );
+
+    let retreiveContextFromCache = useContextStore(
+        (state: ContextStoreState) => state.retreiveContextFromCache
+    );
     let setAILayerContext = useContextStore(
         (state: ContextStoreState) => state.setAILayerContext
     );
     let getAILayerContext = useContextStore(
         (state: ContextStoreState) => state.getAILayerContext
     );
-    // checking to see if we are setting everything correctly
-    let layerID2Contexts = useContextStore(
+
+    let layerID2Context = useContextStore(
         (state: ContextStoreState) => state.layerID2Context
     );
 
+    function onDelete(something: any) {
+        console.log(something);
+        syncPhotoshopLayersAndContexts(app.activeDocument.layers);
+    }
+
     function onLayerChange() {
         for (let layer of app.activeDocument.layers) {
-            // Check if the layer is managed by a context
-            let layerContext: LayerAIContext = getAILayerContext(layer.id);
+            let layerContext: LayerAIContext = null;
+
+            // if the context is in the cache it must have been deleted.  The user must have done a `ctrl+z` for this to retrieve anything
+            // or the app is buggy lol ❤️‍🔥.
+            layerContext = retreiveContextFromCache(layer.id);
+
+            if (!layerContext) {
+                // Check if the layer is managed by an active context
+                layerContext = getAILayerContext(layer.id);
+            }
 
             if (!layerContext) {
                 // No layer context, lets create one then.
@@ -63,12 +88,19 @@ export const ContextManager = () => {
         // layers based on that.  shit.
     }
 
-    // useEffect(() => {
-    //     photoshop.action.addNotificationListener(events, onLayerChange);
-    //     return () => {
-    //         photoshop.action.removeNotificationListener(events, onLayerChange);
-    //     };
-    // });
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onLayerChange);
+        return () => {
+            photoshop.action.removeNotificationListener(events, onLayerChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(deletEvent, onDelete);
+        return () => {
+            photoshop.action.removeNotificationListener(deletEvent, onDelete);
+        };
+    }, []);
 
     // // Only create the initial counts once.  Let the events figure out everythign else
     // useEffect(() => {
@@ -91,42 +123,23 @@ export const ContextManager = () => {
     // }
 
     /**
-     * This retrieves the documents contexts in order of the photoshop layers
-     * @returns
-     */
-    function getContextsInLayerOrder() {
-        try {
-            let newOrderedContexts = [];
-            for (let layer of app.activeDocument.layers) {
-                let layerContext = getAILayerContext(layer.id);
-
-                if (layerContext && layerContext.layers.length > 0) {
-                    newOrderedContexts.push(layerContext);
-                }
-            }
-            return newOrderedContexts;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    /**
      * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
      * in the order the layers are found in the document.
      * @returns
      */
     function createContextItems() {
-        let contextList = getContextsInLayerOrder();
-        console.log(layerID2Contexts);
         return (
             <>
-                {contextList &&
-                    contextList.map((context) => (
-                        <ContextItem
-                            key={context.id}
-                            layerContext={context}
-                        ></ContextItem>
-                    ))}
+                {photoshop.app.activeDocument.layers &&
+                    photoshop.app.activeDocument.layers.map((layer) => {
+                        console.log(layer);
+                        return (
+                            <ContextItem
+                                key={layer.id}
+                                layerID={layer.id}
+                            ></ContextItem>
+                        );
+                    })}
             </>
         );
     }

@@ -132,7 +132,7 @@ export async function saveDocumentToPluginData(
  * Save the current document state as a PNG to the given file entry.
  */
 export async function saveDocumentAsPNG(fileRef: storage.File) {
-    executeInPhotoshop(
+    await executeInPhotoshop(
         async () =>
             await photoshop.app.activeDocument.saveAs.png(
                 fileRef,

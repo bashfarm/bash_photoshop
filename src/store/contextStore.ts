@@ -1,7 +1,8 @@
 import produce from 'immer';
 import LayerAIContext from 'models/LayerAIContext';
+import { Layer } from 'photoshop/dom/Layer';
 import create from 'zustand';
-
+import { immer } from 'zustand/middleware/immer';
 // // These are examples of what the objects that should be going in
 // let promptStyleRef = {
 // 	"id" : "id", // for figuring out the images and prompts used effeciently in a database and during analysis
@@ -38,45 +39,63 @@ import create from 'zustand';
 export type ContextStoreState = {
     // these contexts do not ever get removed in the app.  There will be no REMOVE context from app or whatever function
     layerID2Context: Record<number, LayerAIContext>;
+    contextCache: Record<number, LayerAIContext>;
     // this is a reverse lookup map to context to layers.  This is so we can keep the layers
     // in sync when we are detecting all the events
-    contextID2LayerIDs: Record<number, Array<number>>;
     setAILayerContext: (layerID: number, layerContext: LayerAIContext) => void;
     getAILayerContext: (layerId: number) => LayerAIContext;
-    getContextLayerIDs: (contextID: number) => Array<number>;
+    retreiveContextFromCache: (layerId: number) => LayerAIContext;
+    removeAILayerContext: (layerId: number) => void;
+    syncPhotoshopLayersAndContexts: (layers: Array<Layer>) => void;
 };
 
-// Immer store wrapper
-export const immer = (config: any) => (set: any, get: any) =>
-    config((fn: any) => set(produce(fn)), get);
-
-// Don't think I want a remove.  When the user does an undo, I want the context to be available when we detect that layer again.  The context just won't be
-// active without layers.
 export const useContextStore = create(
     immer((set: any, get: any) => ({
-        // these contexts do not ever get removed in the app
+        // this data structure is the main context store.  This is what we update the app with.
         layerID2Context: {},
-        contextID2LayerIDs: {},
+        // this data structure is the cache we used to restore from, the user will hit ctrl+z at some point.
+        contextCache: {},
         setAILayerContext: (layerID: number, layerContext: LayerAIContext) =>
             set((state: ContextStoreState) => {
                 state.layerID2Context[layerID] = layerContext;
-
-                // setAILayercontext gets
-                let layerIDs = state.contextID2LayerIDs[layerContext.id];
-
-                // Chekc if the context has layers registered.  If it does, well lets keep them
-                if (Array.isArray(layerIDs)) {
-                    layerIDs = [
-                        layerID,
-                        ...layerContext.layers.map((layer) => layer.id),
-                    ];
-                } else {
-                    layerIDs = [layerID];
-                }
-                state.contextID2LayerIDs[layerContext.id] = layerIDs;
             }),
         getAILayerContext: (layerID: number) => get().layerID2Context[layerID],
-        getContextLayerIDs: (contextID: number) =>
-            get().contextID2LayerIDs[contextID],
+        removeAILayerContext: (layerID: number) => {
+            let layerContext = get().getAILayerContext(layerID);
+            console.log('below is the context being removed');
+            console.log(layerContext);
+            set((state: ContextStoreState) => {
+                // making a copy for good measure
+                let newContext = {
+                    ...layerContext,
+                };
+                // storing previous version in cache for a back up in case of an undo.
+                state.contextCache[layerID] = newContext;
+                delete state.layerID2Context[layerID];
+            });
+        },
+        retreiveContextFromCache: (layerID: number) => {
+            return get().contextCache[layerID];
+        },
+        syncPhotoshopLayersAndContexts: (layers: Array<Layer>) => {
+            let activeLayerIDsWithContexts = Object.keys(
+                get().layerID2Context
+            ).map((key) => parseInt(key));
+            set((state: ContextStoreState) => {
+                let activeLayerIDsInApp = layers.map((layer) => layer.id);
+                let layerIDsToCache = activeLayerIDsWithContexts.filter(
+                    (x) => !activeLayerIDsInApp.includes(x)
+                );
+                console.log(layerIDsToCache);
+                console.log('🔥🔥🔥🔥🔥🔥🔥');
+                console.log(get().layerID2Context);
+                for (let layerID of layerIDsToCache) {
+                    // state.removeAILayerContext(layerID)
+                    state.setAILayerContext(layerID, null);
+                }
+                console.log(get().layerID2Context);
+                console.log('🔥🔥🔥🔥🔥🔥🔥');
+            });
+        },
     }))
 );

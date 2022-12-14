@@ -239,7 +239,7 @@ export async function createLayerMask(layer: Layer) {
  * This function selects the mask of the given layer if there is one.  This is needed to begin painting on the mask.
  */
 export async function selectLayerMask(layer: Layer) {
-    executeInPhotoshop(async () => {
+    await executeInPhotoshop(async () => {
         return await bp(
             [
                 {
@@ -523,16 +523,27 @@ export function replaceLayerContents(layer: Layer, data: storage.File) {
 }
 
 /**
- * ERROR: This is having ASYNC issues.  Every time one layer is executing the `convert to smart object` function, which
- * merges the selected layers and then at the same time we are selecting another layer so what ends up happening is all layers merge.
- * So we got timing issues, AKA ASYNC issues.  Need to make this `SYNCHRONOUS`
+ * Take in the array of photoshop layers and the context.  Convert all the layers to NEW smart object layers and remap those NEW layers
+ * to their respective contexts they had before.
  * @param layers
+ * @param layerContext
+ * @param setAILayerContext
  */
-export function convertLayersToSmartObjects(layers: Array<Layer>) {
-    executeInPhotoshop(async () => {
+export async function convertLayersToSmartObjects(
+    layers: Array<Layer>,
+    getAILayerContext: Function,
+    setAILayerContext: Function
+) {
+    await executeInPhotoshop(async () => {
         for (let layer of layers) {
-            console.log(layer);
-            await convertLayerToSmartObject(layer);
+            let newLayer = await convertLayerToSmartObject(layer);
+            let layerContext = getAILayerContext(layer.id);
+            let newContext = {
+                ...layerContext,
+                layers: [newLayer],
+            };
+            console.log(layers.map((layer) => layer));
+            setAILayerContext(newLayer.id, newContext);
         }
     });
 }
@@ -541,9 +552,10 @@ export async function convertLayerToSmartObject(layer: Layer) {
     let command = { _obj: 'newPlacedLayer' };
     return await executeInPhotoshop(async () => {
         layer.selected = true;
-        console.log(layer);
-        console.log(new Date().getTime());
         await bp([command], {});
+        let newLayer = getNewestLayer(photoshop.app.activeDocument.layers);
+        newLayer.selected = false;
+        return newLayer;
     });
 }
 
