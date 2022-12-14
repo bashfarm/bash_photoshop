@@ -558,3 +558,24 @@ export async function convertLayerToSmartObject(layer: Layer) {
         return newLayer;
     });
 }
+
+/**
+ * Creates a new layer given the new layer's name
+ * @param layerName
+ * @returns
+ */
+export async function createNewLayer(layerName: string) {
+    try {
+        return (await executeInPhotoshop(async () => {
+            if (photoshop.app.activeDocument) {
+                let newLayer: Layer =
+                    await photoshop.app.activeDocument.layers.add();
+
+                if (layerName) {
+                    newLayer.name = layerName;
+                }
+                return newLayer;
+            }
+        })) as Layer;
+    } catch (e) {}
+}

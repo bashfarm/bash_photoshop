@@ -1,5 +1,6 @@
 import React from 'react';
 import { ContextHistoryBar } from './ContextHistoryBar';
+import { ContextLayerBar } from './ContextLayerBar';
 import { ContextToolBar } from './ContextToolBar';
 
 export type ContexToolColumnProps = {

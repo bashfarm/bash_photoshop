@@ -2,9 +2,12 @@ import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';
+import { Button } from 'react-uxp-spectrum';
+import { createNewLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import photoshop from 'photoshop';
+import { randomlyPickLayerName } from 'utils/general_utils';
 const app = photoshop.app;
 
 // const events = [
@@ -99,25 +102,25 @@ export const ContextManager = () => {
         };
     }, []);
 
-    // Only create the initial counts once.  Let the events figure out everythign else
-    useEffect(() => {
-        CreateInitialContexts();
-    }, []);
+    // // Only create the initial counts once.  Let the events figure out everythign else
+    // useEffect(() => {
+    //     CreateInitialContexts();
+    // }, []);
 
-    /**
-     * Create the initial contexts for the layers.  Should be done only once when the component first loads.
-     */
-    function CreateInitialContexts() {
-        try {
-            for (let layer of app.activeDocument.layers) {
-                if (!getAILayerContext(layer.id)) {
-                    setAILayerContext(layer.id, new LayerAIContext(layer));
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    // /**
+    //  * Create the initial contexts for the layers.  Should be done only once when the component first loads.
+    //  */
+    // function CreateInitialContexts() {
+    //     try {
+    //         for (let layer of app.activeDocument.layers) {
+    //             if (!getAILayerContext(layer.id)) {
+    //                 setAILayerContext(layer.id, new LayerAIContext(layer));
+    //             }
+    //         }
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    // }
 
     /**
      * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
@@ -141,9 +144,28 @@ export const ContextManager = () => {
         );
     }
 
+    async function createNewContext() {
+        let newLayer = await createNewLayer(
+            `Context: ${randomlyPickLayerName()}`
+        );
+        let newContext = new LayerAIContext(newLayer);
+        setAILayerContext(newLayer.id, newContext);
+        return newContext;
+    }
+
     return (
         <>
             <E2ETestingPanel></E2ETestingPanel>
+            <div>
+                <Button
+                    onClick={async () => {
+                        let newContext = await createNewContext();
+                        console.log(newContext);
+                    }}
+                >
+                    Create New Context
+                </Button>
+            </div>
             {createContextItems()}
         </>
     );
