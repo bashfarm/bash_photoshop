@@ -1,6 +1,7 @@
 import React from 'react';
 import { Divider, Icon } from 'react-uxp-spectrum';
-import { ArtistDropdowns } from 'components/StyleReferences/ArtistDropdowns';
+
+import { ArtistDropdowns, StyleImages } from 'components/StyleReferences';
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
     { id: 2, value: 40, src: 'img/cat.jpg' },
@@ -12,28 +13,10 @@ const dummyArray = [
     { id: 4, value: 30, src: 'img/cat.jpg' },
 ];
 
-export type StyleImagesProps = {
-    src: string;
-};
-
-const StyleImages = (props: StyleImagesProps) => {
-    return (
-        <img
-            className="rounded-sm w-1/5 m-2"
-            src={props.src}
-            alt="Demo Image"
-            // onClick={() => handleClick(src)}
-        />
-    );
-};
-
 export const StyleReferences = () => {
     return (
         <div className="flex flex-col">
-            {/* <Heading size="XS" weight="light">
-                Artist List
-            </Heading> */}
-            <ArtistDropdowns />
+            {/* <ArtistDropdowns /> */}
 
             <Divider className="my-2" size="small" />
 

@@ -7,7 +7,8 @@ import MenuItem from 'react-uxp-spectrum/dist/MenuItem';
 import { getArtistCategories, getArtists } from 'services/ai_service';
 import { useArtistStore, ArtistState } from 'store/artistStore';
 
-export const ArtistDropdowns = () => {
+// TODO: kevmok - need to refactor for better error handling
+const ArtistDropdowns = () => {
     const { data: artists } = useAsyncEffect(getArtists);
     const { data: category, loading: categoryLoading } =
         useAsyncEffect(getArtistCategories);
@@ -73,3 +74,5 @@ export const ArtistDropdowns = () => {
         </div>
     );
 };
+
+export default ArtistDropdowns;
