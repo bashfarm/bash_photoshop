@@ -24,7 +24,7 @@ export const ContextItem = (props: ContextItemProps) => {
     return (
         <div className="flex flex-col bg-brand-dark">
             <div className="flex flex-row bg-brand">
-                {/* <ContextInfoColumn layerContext={thisLayersContext} /> */}
+                <ContextInfoColumn layerID={props.layerID} />
                 <ContextToolColumn layerID={props.layerID} />
                 <RegenerationColumn layerID={props.layerID} />
             </div>

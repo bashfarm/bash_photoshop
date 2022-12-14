@@ -4,19 +4,23 @@ import React, { useState } from 'react';
 import { ContextImage } from './ContextImage';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import { getContextHistoryFiles } from 'services/context_service';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 export type ContexHistoryBarProps = {
-    layerContext: LayerAIContext;
+    layerID: number;
 };
 
 export const ContextHistoryBar = (props: ContexHistoryBarProps) => {
+    let getAILayerContext = useContextStore(
+        (state: ContextStoreState) => state.getAILayerContext
+    );
+    let [imageProgress, setImageProgress] = useState(0);
     let [localContextHistoryFileEntries, setLocalContextHistoryFileEntries] =
         useState<Array<storage.File>>([]);
     const { data: historyFiles, loading: filesLoading } = useAsyncEffect(() =>
-        getContextHistoryFiles(props.layerContext)
+        getContextHistoryFiles(getAILayerContext(props.layerID))
     );
-    let files = historyFiles as Array<storage.File>;
-    setLocalContextHistoryFileEntries(files);
+    setLocalContextHistoryFileEntries(historyFiles);
 
     return (
         <div className="flex flex-row space-x-1">
