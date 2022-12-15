@@ -46,30 +46,35 @@ export const ContextManager = () => {
     }
 
     function updateAssignments() {
-        let currentLayerIDs = photoshop.app.activeDocument.layers.map(
-            (layer) => layer.id
-        );
-        let currentlyAssignedLayerIDs = Object.keys(layerAssignments);
-        let unassignedLayerIDs = currentLayerIDs.filter(
-            (layerID) => !currentlyAssignedLayerIDs.includes(layerID.toString())
-        );
+        try {
+            let currentLayerIDs = photoshop.app.activeDocument.layers.map(
+                (layer) => layer.id
+            );
+            let currentlyAssignedLayerIDs = Object.keys(layerAssignments);
+            let unassignedLayerIDs = currentLayerIDs.filter(
+                (layerID) =>
+                    !currentlyAssignedLayerIDs.includes(layerID.toString())
+            );
 
-        // for(let layerID of unassignedLayerIDs){
-        // 	let context = getContextFromStore(layerID.toString())
-        // 	context.currentLayer = null;
+            // for(let layerID of unassignedLayerIDs){
+            // 	let context = getContextFromStore(layerID.toString())
+            // 	context.currentLayer = null;
 
-        // }
-        for (let contextKey in Object.keys(contexts)) {
-            let context = getContextFromStore(contextKey);
-            let currentLayerFoundInPhotoshopLayers =
-                photoshop.app.activeDocument.layers.includes(
-                    context.currentLayer
-                );
-            if (!currentLayerFoundInPhotoshopLayers) {
-                let copyOfContext = context.copy();
-                copyOfContext.currentLayer = null;
-                saveContextToStore(copyOfContext);
+            // }
+            for (let contextKey in Object.keys(contexts)) {
+                let context = getContextFromStore(contextKey);
+                let currentLayerFoundInPhotoshopLayers =
+                    photoshop.app.activeDocument.layers
+                        .map((layer) => layer)
+                        .includes(context.currentLayer);
+                if (!currentLayerFoundInPhotoshopLayers) {
+                    let copyOfContext = context.copy();
+                    copyOfContext.currentLayer = null;
+                    saveContextToStore(copyOfContext);
+                }
             }
+        } catch (e) {
+            console.error(e);
         }
     }
 

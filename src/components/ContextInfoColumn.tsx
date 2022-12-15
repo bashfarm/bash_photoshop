@@ -5,6 +5,7 @@ import Spectrum from 'react-uxp-spectrum';
 import { Layer } from 'photoshop/dom/Layer';
 import photoshop from 'photoshop';
 import { string } from 'yargs';
+import LayerAIContext from 'models/LayerAIContext';
 
 export type ContextInfoColumnProps = {
     contextID: string;
@@ -14,6 +15,16 @@ export interface UnassignedLayer {
     name: string;
     id: number;
 }
+
+const events = [
+    'make',
+    'select',
+    'delete',
+    'selectNoLayers',
+    'move',
+    'undoEvent',
+    'undoEnum',
+];
 
 export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     let saveLayerAssignment = useContextStore(
@@ -29,19 +40,44 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     let [unassignedLayers, setUnassignedLayers] = useState<
         Array<UnassignedLayer>
     >([]);
+    let [thisContext, setThisContext] = useState<LayerAIContext>(null);
 
     useEffect(() => {
         setUnassignedLayers(getUnassignedLayers());
     }, []);
 
+    function onLayerChange() {
+        setUnassignedLayers(getUnassignedLayers());
+    }
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onLayerChange);
+        return () => {
+            photoshop.action.removeNotificationListener(events, onLayerChange);
+        };
+    }, []);
+
     function onDropDownSelect(layer: UnassignedLayer) {
+        console.log(layer);
+        let context = getContextFromStore(props.contextID);
+        console.log(context);
         let copyOfContext = getContextFromStore(props.contextID).copy();
-        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.find(
-            (psLayer) => (layer.id = psLayer.id)
+        console.log(
+            photoshop.app.activeDocument.layers.filter(
+                (psLayer) => layer.id == psLayer.id
+            )[0]
         );
+        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.filter(
+            (psLayer) => layer.id == psLayer.id
+        )[0];
+        console.log(copyOfContext);
+        console.log(photoshop.app.activeDocument.layers.map((layer) => layer));
+
         saveContextToStore(copyOfContext);
         saveLayerAssignment(layer?.id, props.contextID);
         setUnassignedLayers(getUnassignedLayers());
+        setThisContext(copyOfContext);
+        console.log(thisContext);
     }
 
     /**
@@ -71,7 +107,7 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
                         unassignedLayers.map((layer) => {
                             return (
                                 <Spectrum.MenuItem
-                                    key={layer.id}
+                                    key={layer.name}
                                     onClick={() => onDropDownSelect(layer)}
                                 >
                                     {layer.name}
@@ -81,15 +117,15 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ContextLabel
-                value={getContextFromStore(props.contextID)?.currentLayer?.name}
+                value={thisContext?.currentLayer?.name}
                 labelText={'Layer Name:'}
             />
             <ContextLabel
-                value={getContextFromStore(props.contextID)?.currentLayer?.id}
+                value={thisContext?.currentLayer?.id}
                 labelText={'Layer Id:'}
             />
             <ContextLabel
-                value={getContextFromStore(props.contextID)?.id}
+                value={thisContext?.currentLayer?.id}
                 labelText={'Context Id'}
             />
         </div>
