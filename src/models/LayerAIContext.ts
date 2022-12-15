@@ -16,6 +16,7 @@ import photoshop from 'photoshop';
 
 export default class LayerAIContext extends BashfulObject {
     id: string; // this should be the id number of the layer
+    name: string;
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
     currentLayer: Layer; // the layer that the context is assigned to
@@ -23,11 +24,13 @@ export default class LayerAIContext extends BashfulObject {
 
     constructor(
         currentLayer: Layer = null,
+        name: string = null,
         smallDetails: Array<SmallDetailContext> = [],
         currentPrompt: string = '',
         history: Array<LayerAIContextHistory> = []
     ) {
         super();
+        this.name = name;
         this.id = this.createAILayerContextId();
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
