@@ -8,6 +8,7 @@ import { ContextItem } from '../components/ContextItem';
 import { randomlyPickLayerName } from 'utils/general_utils';
 import photoshop from 'photoshop';
 import { Button } from 'react-uxp-spectrum';
+import { ContextRecycleBin } from 'components/ContextRecycleBin';
 const app = photoshop.app;
 
 const events = [
@@ -121,6 +122,8 @@ export const ContextManager = () => {
 
     return (
         <>
+            <ContextRecycleBin />
+
             <E2ETestingPanel></E2ETestingPanel>
 
             <div>

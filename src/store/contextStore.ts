@@ -47,6 +47,7 @@ export type ContextStoreState = {
     retreiveContextFromCache: (layerId: number) => LayerAIContext;
     removeAILayerContext: (layerId: number) => void;
     syncPhotoshopLayersAndContexts: (layers: Array<Layer>) => void;
+    cacheDeattachedContexts: (layers: Array<Layer>) => Array<LayerAIContext>;
 };
 
 export const useContextStore = create(
@@ -62,12 +63,14 @@ export const useContextStore = create(
         getAILayerContext: (layerID: number) => get().layerID2Context[layerID],
         removeAILayerContext: (layerID: number) => {
             let layerContext = get().getAILayerContext(layerID);
-            console.log('below is the context being removed');
-            console.log(layerContext);
             set((state: ContextStoreState) => {
                 // making a copy for good measure
-                state.contextCache[layerID] = layerContext.copy();
-                delete state.layerID2Context[layerID];
+                if (layerContext) {
+                    console.log('below is the context being removed');
+                    console.log(layerContext);
+                    state.contextCache[layerID] = layerContext.copy();
+                    delete state.layerID2Context[layerID];
+                }
             });
         },
         retreiveContextFromCache: (layerID: number) => {
@@ -86,11 +89,27 @@ export const useContextStore = create(
                 console.log('🔥🔥🔥🔥🔥🔥🔥');
                 console.log(get().layerID2Context);
                 for (let layerID of layerIDsToCache) {
-                    // state.removeAILayerContext(layerID)
-                    state.setAILayerContext(layerID, null);
+                    state.removeAILayerContext(layerID);
+                    // state.setAILayerContext(layerID, null);
                 }
                 console.log(get().layerID2Context);
                 console.log('🔥🔥🔥🔥🔥🔥🔥');
+            });
+        },
+        cacheDeattachedContexts: (layers: Array<Layer>) => {
+            let currentLayerIDs = layers.map((layer) => layer.id);
+            let layerID2Context = get().layerID2Context;
+
+            let layerIDsWithContexts = Object.keys(layerID2Context).map((id) =>
+                parseInt(id)
+            );
+            let detachedIDs = currentLayerIDs.filter(
+                (x) => !layerIDsWithContexts.includes(x)
+            );
+            set((state: ContextStoreState) => {
+                for (let id of detachedIDs) {
+                    state.removeAILayerContext(id);
+                }
             });
         },
     }))
