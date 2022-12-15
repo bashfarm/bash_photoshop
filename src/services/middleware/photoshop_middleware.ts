@@ -1,4 +1,5 @@
 import photoshop from 'photoshop';
+import { logBashfulCute } from 'utils/logging_utils';
 
 const executeAsModal = photoshop.core.executeAsModal;
 
@@ -14,9 +15,18 @@ let isExecuting: boolean = false;
  * @param {photoshopCallback} callback - function applied against elements
  * @return {*} anything the callback was supposed to return
  */
-export async function executeInPhotoshop(func: Function): Promise<any> {
+export async function executeInPhotoshop(
+    caller: Function,
+    executingFunction: Function
+): Promise<any> {
+    logBashfulCute(
+        `We are executing the function ❤️‍🔥${caller.name}🔥 within photoshop!`
+    );
     try {
-        startExecution(func);
+        startExecution(executingFunction);
+
+        // ok so sometimes we get the `unknown target document error` and sometimes we don't.  Async issue
+        // console.log(func) // unsure why this started working all of a sudden if I put this here
 
         let result = await executeAsModal(
             async (executionContext: any) => {
@@ -36,10 +46,9 @@ export async function executeInPhotoshop(func: Function): Promise<any> {
                         );
                     }
                 }
-
                 // console.log(func)
-                let result = await func();
-                stopExecution(func);
+                let result = await executingFunction();
+                stopExecution(executingFunction);
 
                 // We are going to have to rerun this function after we do a lock
                 if (!isExecuting) {

@@ -133,6 +133,7 @@ export async function saveDocumentToPluginData(
  */
 export async function saveDocumentAsPNG(fileRef: storage.File) {
     await executeInPhotoshop(
+        saveDocumentAsPNG,
         async () =>
             await photoshop.app.activeDocument.saveAs.png(
                 fileRef,
@@ -149,17 +150,21 @@ export async function saveDocumentAsPNG(fileRef: storage.File) {
  * @return
  */
 export async function saveLayerToPluginData(fileName: string, layer: Layer) {
+    if (!layer) {
+        console.warn(
+            `Tried to save an undefined layerin ${saveLayerToPluginData.name}`
+        );
+    }
+
     try {
         const visibleLayers: Layer[] = getVisibleLayers(
             photoshop.app.activeDocument.layers
         );
         console.log(visibleLayers);
         const prevVisibility = layer.visible;
-
-        await executeInPhotoshop(async () => {
+        await executeInPhotoshop(saveLayerToPluginData, async () => {
             // Make layers inivisible so we only export the document with the the selected layer
             await makeLayersInvisible(visibleLayers);
-            console.log('made layers invisible');
 
             // Cause we want only the layer that was passed to us to be visible when we export
             layer.visible = true;
@@ -167,7 +172,6 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             // so now we need to export the document
             // We can just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
             await saveDocumentToPluginData(fileName);
-            console.log('saved document');
 
             // make the given layers visible again
             makeLayersVisible(visibleLayers);

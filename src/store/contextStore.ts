@@ -66,11 +66,7 @@ export const useContextStore = create(
             console.log(layerContext);
             set((state: ContextStoreState) => {
                 // making a copy for good measure
-                let newContext = {
-                    ...layerContext,
-                };
-                // storing previous version in cache for a back up in case of an undo.
-                state.contextCache[layerID] = newContext;
+                state.contextCache[layerID] = layerContext.copy();
                 delete state.layerID2Context[layerID];
             });
         },

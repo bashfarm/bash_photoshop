@@ -13,11 +13,11 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     return (
         <div className="flex flex-col bg-brand-dark">
             <ContextLabel
-                value={getAILayerContext(props.layerID)?.layers[0].name}
+                value={getAILayerContext(props.layerID)?.layers[0]?.name}
                 labelText={'Layer Name:'}
             />
             <ContextLabel
-                value={getAILayerContext(props.layerID)?.layers[0].id}
+                value={getAILayerContext(props.layerID)?.layers[0]?.id}
                 labelText={'Layer Id:'}
             />
             <ContextLabel

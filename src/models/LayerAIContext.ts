@@ -11,9 +11,11 @@ import LayerAIContextHistory from './LayerAIHistory';
 import SmallDetailContext from './SmallDetailContext';
 import bashful from 'bashful';
 import { ContextHistoryEnum } from '../constants';
-const photoshop = require('photoshop');
+import { BashfulObject } from './BashfulObject';
+import _ from 'lodash';
 
-export default class LayerAIContext {
+import photoshop from 'photoshop';
+export default class LayerAIContext extends BashfulObject {
     id: number; // this should be the id number of the layer
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
@@ -27,6 +29,7 @@ export default class LayerAIContext {
         layers: Array<Layer> = [],
         history: Array<LayerAIContextHistory> = []
     ) {
+        super();
         this.id = createAILayerContextId(layer);
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
@@ -35,10 +38,18 @@ export default class LayerAIContext {
     }
 
     /**
-     * Retreive the next available context history file name.
-     * @param {LayerAIContext} layerContext
+     * Return a copy of the context
+     * @returns
      */
-    public async getNextAvailableHistoryFileName(userFileLimit: Number = 5) {
+    public copy() {
+        return _.cloneDeep(this);
+    }
+
+    /**
+     * Retreive the next available context history file name.
+     * @param {number} userFileLimit
+     */
+    public async getNextAvailableHistoryFileName(userFileLimit: number = 5) {
         let fileNumber = 0;
         let fileEntries = await this.getContextHistoryFileEntries();
 
@@ -49,7 +60,11 @@ export default class LayerAIContext {
         );
 
         if (latestContextFileInfo) {
-            if (latestContextFileInfo.fileNumber >= userFileLimit) {
+            // -1 will mean no limit on files.
+            if (
+                !(userFileLimit == -1) &&
+                latestContextFileInfo.fileNumber >= userFileLimit
+            ) {
                 console.warn(
                     `We have run out of historical file storage for this user ${userFileLimit}, the user needs to delete a file or do inplace regneration`
                 );
@@ -76,7 +91,7 @@ export default class LayerAIContext {
      */
     public async saveLayerContexttoHistory() {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName();
+            let fileName = await this.getNextAvailableHistoryFileName(-1);
             console.log(`trying to save layer with file name ${fileName}`);
             if (!fileName) {
                 return;
@@ -113,7 +128,7 @@ export default class LayerAIContext {
      */
     public async createNewContextHistoryFile(imgData: string | Uint8Array) {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName();
+            let fileName = await this.getNextAvailableHistoryFileName(-1);
             console.log(`Saving file with name ${fileName}`);
             if (!fileName) {
                 alert('Please delete a file or use inplace image regeneration');
@@ -122,7 +137,7 @@ export default class LayerAIContext {
             // Bad coding.  This should be a one liner and this should be like `serializeData()` or something
             // using getFileSerializer in it.
             let serializer: bashful.io.Serializer = getFileSerializer(imgData);
-            serializer(fileName, imgData);
+            await serializer(fileName, imgData);
             return fileName;
         } catch (e) {
             console.error(e);

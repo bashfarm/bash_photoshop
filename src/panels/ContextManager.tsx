@@ -2,29 +2,16 @@ import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';
-import { Button } from 'react-uxp-spectrum';
 import { createNewLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
-import photoshop from 'photoshop';
 import { randomlyPickLayerName } from 'utils/general_utils';
+import photoshop from 'photoshop';
+import { Button } from 'react-uxp-spectrum';
 const app = photoshop.app;
 
-// const events = [
-//     { event: 'make' },
-//     { event: 'select' },
-//     { event: 'selectNoLayers' },
-//     { event: 'move' },
-//     { event: 'undoEvent' },
-//     { event: 'undoEnum' },
-// ];
-
-// const deletEvent = [
-// 	{ event: 'delete'}
-// ]
-
 const events = [
-    'make',
+    // 'make',
     'select',
     'delete',
     'selectNoLayers',
@@ -102,25 +89,25 @@ export const ContextManager = () => {
         };
     }, []);
 
-    // // Only create the initial counts once.  Let the events figure out everythign else
-    // useEffect(() => {
-    //     CreateInitialContexts();
-    // }, []);
+    // Only create the initial counts once.  Let the events figure out everythign else
+    useEffect(() => {
+        CreateInitialContexts();
+    }, []);
 
-    // /**
-    //  * Create the initial contexts for the layers.  Should be done only once when the component first loads.
-    //  */
-    // function CreateInitialContexts() {
-    //     try {
-    //         for (let layer of app.activeDocument.layers) {
-    //             if (!getAILayerContext(layer.id)) {
-    //                 setAILayerContext(layer.id, new LayerAIContext(layer));
-    //             }
-    //         }
-    //     } catch (e) {
-    //         console.error(e);
-    //     }
-    // }
+    /**
+     * Create the initial contexts for the layers.  Should be done only once when the component first loads.
+     */
+    function CreateInitialContexts() {
+        try {
+            for (let layer of app.activeDocument.layers) {
+                if (!getAILayerContext(layer.id)) {
+                    setAILayerContext(layer.id, new LayerAIContext(layer));
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
@@ -135,6 +122,7 @@ export const ContextManager = () => {
     return (
         <>
             <E2ETestingPanel></E2ETestingPanel>
+
             <div>
                 <Button
                     onClick={async () => {

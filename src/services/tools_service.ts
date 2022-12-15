@@ -10,7 +10,7 @@ import { executeInPhotoshop } from './middleware/photoshop_middleware';
  * @param {string} toolStr a tool string given the enums from photoshop tool constants
  */
 export async function selectTool(toolStr: string) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(selectTool, async () => {
         await bp([{ _obj: 'select', _target: [{ _ref: toolStr }] }], {
             commandName: 'Select Tool',
         });
@@ -41,7 +41,7 @@ export async function toggleOnContextHidingTool(layerContext: LayerAIContext) {
     black.rgb.red = 0;
     black.rgb.green = 0;
     black.rgb.blue = 0;
-    await executeInPhotoshop(() => {
+    await executeInPhotoshop(toggleOnContextHidingTool, () => {
         photoshop.app.foregroundColor = black;
     });
 }
@@ -60,7 +60,7 @@ export async function toggleOffContextHidingTool(layerContext: LayerAIContext) {
     white.rgb.red = 255;
     white.rgb.green = 255;
     white.rgb.blue = 255;
-    await executeInPhotoshop(() => {
+    await executeInPhotoshop(toggleOffContextHidingTool, () => {
         photoshop.app.foregroundColor = white;
     });
 }
