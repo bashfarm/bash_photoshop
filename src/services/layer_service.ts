@@ -65,11 +65,6 @@ export async function createNewLayerFromFile(
                         target: { _path: tkn, _kind: 'local' },
                         linked: true,
                     },
-                    // {
-                    //     // _obj: 'placeEvent',
-                    //     // null: { _kind: 'local', _path: fileEntry.nativePath },
-                    //     //     linked: true,
-                    // },
                 ],
                 {}
             );
@@ -84,22 +79,6 @@ export async function createNewLayerFromFile(
         // { commandName: 'open File' }
     );
 }
-
-// async function actionCommands() {
-//     let command;
-//     let result;
-//     let psAction = require("photoshop").action;
-
-//     // Place
-//     command = {"ID":2,"_obj":"placeEvent","null":{"_kind":"local","_path":"C:\\Users\\benja\\OneDrive\\Documents\\stachologos\\anime_art\\icantrelax_no_media_logo.png"}}};
-//     result = await psAction.batchPlay([command], {});
-// }
-
-// async function runModalFunction() {
-//     await require("photoshop").core.executeAsModal(actionCommands, {"commandName": "Action Commands"});
-// }
-
-// await runModalFunction();
 
 /**
  * Selects all the visible layers and returns a list of the selected layers
@@ -540,7 +519,7 @@ export async function convertLayersToSmartObjects(
             let newLayer = await convertLayerToSmartObject(layer);
             let layerContext = getAILayerContext(layer.id) as LayerAIContext;
             let copyOfContext = layerContext.copy();
-            copyOfContext.layers = [newLayer];
+            copyOfContext.currentLayer = newLayer;
             setAILayerContext(newLayer.id, copyOfContext);
         }
     });

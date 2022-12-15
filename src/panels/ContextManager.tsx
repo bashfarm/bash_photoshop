@@ -24,64 +24,54 @@ const events = [
 const deletEvent = ['delete'];
 
 export const ContextManager = () => {
-    const syncPhotoshopLayersAndContexts = useContextStore(
-        (state: ContextStoreState) => state.syncPhotoshopLayersAndContexts
+    const layerAssignments = useContextStore(
+        (state: ContextStoreState) => state.layerAssignments
     );
 
-    const retreiveContextFromCache = useContextStore(
-        (state: ContextStoreState) => state.retreiveContextFromCache
-    );
-    const setAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.setAILayerContext
-    );
-    const getAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.getAILayerContext
+    const getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
     );
 
-    const layerID2Context = useContextStore(
-        (state: ContextStoreState) => state.layerID2Context
+    const saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
+    );
+
+    const contexts = useContextStore(
+        (state: ContextStoreState) => state.contexts
     );
 
     function onDelete(something: any) {
         console.log(something);
-        syncPhotoshopLayersAndContexts(app.activeDocument.layers);
+        updateAssignments();
     }
 
-    function onLayerChange() {
-        for (const layer of app.activeDocument.layers) {
-            let layerContext: LayerAIContext = null;
+    function updateAssignments() {
+        let currentLayerIDs = photoshop.app.activeDocument.layers.map(
+            (layer) => layer.id
+        );
+        let currentlyAssignedLayerIDs = Object.keys(layerAssignments);
+        let unassignedLayerIDs = currentLayerIDs.filter(
+            (layerID) => !currentlyAssignedLayerIDs.includes(layerID.toString())
+        );
 
-            // if the context is in the cache it must have been deleted.  The user must have done a `ctrl+z` for this to retrieve anything
-            // or the app is buggy lol ❤️‍🔥.
-            layerContext = retreiveContextFromCache(layer.id);
+        // for(let layerID of unassignedLayerIDs){
+        // 	let context = getContextFromStore(layerID.toString())
+        // 	context.currentLayer = null;
 
-            if (!layerContext) {
-                // Check if the layer is managed by an active context
-                layerContext = getAILayerContext(layer.id);
-            }
-
-            if (!layerContext) {
-                // No layer context, lets create one then.
-                layerContext = new LayerAIContext(layer);
-
-                // Add the reference to our store so we can always get back to it.  undo and etc.
-                // also need to have this set so we render the contextItem(s) properly
-                setAILayerContext(layer.id, layerContext);
+        // }
+        for (let contextKey in Object.keys(contexts)) {
+            let context = getContextFromStore(contextKey);
+            let currentLayerFoundInPhotoshopLayers =
+                photoshop.app.activeDocument.layers.includes(
+                    context.currentLayer
+                );
+            if (!currentLayerFoundInPhotoshopLayers) {
+                let copyOfContext = context.copy();
+                copyOfContext.currentLayer = null;
+                saveContextToStore(copyOfContext);
             }
         }
-
-        // We won't remove any context.  What if the user deletes one and then does an `undo`?  We will have lost the context
-        // so this function should just end.  We add contexts if they aren't there.  The other functions will have to manage the layers in the context
-        // ... that is a problem.  WE can't detect and undo event.  We will have to sense the references to the layer from the store and update
-        // layers based on that.  shit.
     }
-
-    useEffect(() => {
-        photoshop.action.addNotificationListener(events, onLayerChange);
-        return () => {
-            photoshop.action.removeNotificationListener(events, onLayerChange);
-        };
-    }, []);
 
     useEffect(() => {
         photoshop.action.addNotificationListener(deletEvent, onDelete);
@@ -90,41 +80,18 @@ export const ContextManager = () => {
         };
     }, []);
 
-    // Only create the initial counts once.  Let the events figure out everythign else
-    useEffect(() => {
-        CreateInitialContexts();
-    }, []);
-
-    /**
-     * Create the initial contexts for the layers.  Should be done only once when the component first loads.
-     */
-    function CreateInitialContexts() {
-        try {
-            for (let layer of app.activeDocument.layers) {
-                if (!getAILayerContext(layer.id)) {
-                    setAILayerContext(layer.id, new LayerAIContext(layer));
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
-        const newLayer = await createNewLayer(
-            `Context: ${randomlyPickLayerName()}`
-        );
-        const newContext = new LayerAIContext(newLayer);
-        setAILayerContext(newLayer.id, newContext);
-        return newContext;
+        let context = new LayerAIContext();
+        saveContextToStore(context);
+        return context;
     }
 
     return (
         <>
-            <ContextRecycleBin />
+            {/* <ContextRecycleBin />
 
-            <E2ETestingPanel></E2ETestingPanel>
+			<E2ETestingPanel></E2ETestingPanel> */}
 
             <div>
                 <Button
@@ -148,15 +115,18 @@ export const ContextManager = () => {
  */
 // TODO: move to its own file or something else - needs refactoring though
 function ContextItems() {
+    const contexts = useContextStore(
+        (state: ContextStoreState) => state.contexts
+    );
     return (
         <>
-            {photoshop.app.activeDocument.layers &&
-                photoshop.app.activeDocument.layers.map((layer) => {
-                    console.log(layer);
+            {contexts &&
+                Object.keys(contexts).map((key) => {
+                    let context = contexts[key];
                     return (
                         <ContextItem
-                            key={layer.id}
-                            layerID={layer.id}
+                            key={context.id}
+                            contextID={context.id}
                         ></ContextItem>
                     );
                 })}

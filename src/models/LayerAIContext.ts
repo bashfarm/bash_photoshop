@@ -2,7 +2,6 @@ import { Layer } from 'photoshop/dom/Layer';
 import { getContextFileEntries } from 'services/context_service';
 import { getFileSerializer, saveLayerToPluginData } from 'services/io_service';
 import {
-    createAILayerContextId,
     createContextHistoryFileName,
     getLatestContextHistoryFileInfo,
 } from 'utils/context_utils';
@@ -12,28 +11,27 @@ import SmallDetailContext from './SmallDetailContext';
 import bashful from 'bashful';
 import { ContextHistoryEnum } from '../constants';
 import { BashfulObject } from './BashfulObject';
-import _ from 'lodash';
-
+import _, { uniqueId } from 'lodash';
 import photoshop from 'photoshop';
+
 export default class LayerAIContext extends BashfulObject {
-    id: number; // this should be the id number of the layer
+    id: string; // this should be the id number of the layer
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
-    layers: Array<Layer>; // the layers that belong to the context
+    currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
 
     constructor(
-        layer: Layer,
+        currentLayer: Layer = null,
         smallDetails: Array<SmallDetailContext> = [],
         currentPrompt: string = '',
-        layers: Array<Layer> = [],
         history: Array<LayerAIContextHistory> = []
     ) {
         super();
-        this.id = createAILayerContextId(layer);
+        this.id = this.createAILayerContextId();
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
-        this.layers = [layer, ...layers];
+        this.currentLayer = currentLayer;
         this.history = history;
     }
 
@@ -98,7 +96,7 @@ export default class LayerAIContext extends BashfulObject {
             }
             let historyImgEntry = await saveLayerToPluginData(
                 fileName,
-                this.layers[0]
+                this.currentLayer
             );
             return historyImgEntry;
         } catch (e) {
@@ -166,6 +164,10 @@ export default class LayerAIContext extends BashfulObject {
             values.some((v: any) => arr.includes(v));
 
         let docLayers = photoshop.app.activeDocument.layers;
-        return includesAny(this.layers, docLayers);
+        return includesAny([this.currentLayer], docLayers);
+    }
+
+    public createAILayerContextId() {
+        return uniqueId();
     }
 }

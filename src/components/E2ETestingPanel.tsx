@@ -9,11 +9,12 @@ import photoshop from 'photoshop';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 export function E2ETestingPanel() {
-    let setAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.setAILayerContext
+    const getLayerAssignment = useContextStore(
+        (state: ContextStoreState) => state.getLayerAssignment
     );
-    let getAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.getAILayerContext
+
+    const saveLayerAssignment = useContextStore(
+        (state: ContextStoreState) => state.saveLayerAssignment
     );
     return (
         <div>
@@ -21,8 +22,8 @@ export function E2ETestingPanel() {
             <Button
                 onClick={() =>
                     convertAllLayersToSmartObjects(
-                        getAILayerContext,
-                        setAILayerContext
+                        getLayerAssignment,
+                        saveLayerAssignment
                     )
                 }
             >
@@ -43,9 +44,9 @@ function convertTopLayerToSmartObject() {
 }
 
 function convertAllLayersToSmartObjects(
-    getAILayerContext: Function,
-    setAILayerContext: Function
+    getLayerAssignment: Function,
+    setLayerAssignment: Function
 ) {
     let layers = photoshop.app.activeDocument.layers;
-    convertLayersToSmartObjects(layers, getAILayerContext, setAILayerContext);
+    convertLayersToSmartObjects(layers, getLayerAssignment, setLayerAssignment);
 }

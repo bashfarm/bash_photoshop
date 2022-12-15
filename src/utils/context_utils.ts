@@ -10,7 +10,7 @@ import { ContextHistoryEnum } from '../constants';
 export function getContextInfoFromFileName(fname: string) {
     let splitFName = fname.split('_');
     let fileFlag = splitFName[0];
-    let layerContextId = parseInt(splitFName[1]);
+    let layerContextId = splitFName[1];
     let fileNumber = parseInt(splitFName.splice(-1)[0].split('.')[0]);
     if (layerContextId) {
         return { fileFlag, layerContextId, fileNumber };
@@ -59,12 +59,8 @@ export function getLatestContextHistoryFileInfo(fileNames: Array<string>) {
  * @returns
  */
 export function createContextHistoryFileName(
-    contextId: Number,
-    fileNumber: Number
+    contextId: string,
+    fileNumber: number
 ) {
     return `${ContextHistoryEnum.HISTORY_FILE_FLAG}_${contextId}_${fileNumber}.png`;
-}
-
-export function createAILayerContextId(layer: Layer) {
-    return parseInt(`${layer.id}${layer.document.id}`);
 }
