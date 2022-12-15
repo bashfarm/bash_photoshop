@@ -10,8 +10,8 @@ export const ContextRecycleBin = () => {
     let contextCache = useContextStore(
         (state: ContextStoreState) => state.contextCache
     );
-    const layerID2Context = useContextStore(
-        (state: ContextStoreState) => state.layerID2Context
+    const layerAssignments = useContextStore(
+        (state: ContextStoreState) => state.layerAssignments
     );
 
     console.log(contextCache);

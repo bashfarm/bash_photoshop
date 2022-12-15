@@ -13,7 +13,7 @@ import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
 
 export type RegenerationColumnProps = {
-    layerID: number;
+    contextID: string;
 };
 
 /**
@@ -24,19 +24,18 @@ export type RegenerationColumnProps = {
 export const RegenerationColumn = (props: RegenerationColumnProps) => {
     let [imageProgress, setImageProgress] = useState(0);
 
-    let setAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.setAILayerContext
+    let saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
     );
-    let getAILayerContext = useContextStore(
-        (state: ContextStoreState) => state.getAILayerContext
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
     );
 
     async function regenerateLayer(width: number, height: number) {
         try {
-            let layerAIContext = getAILayerContext(props.layerID);
-            let test = layerAIContext.copy();
+            let layerAIContext = getContextFromStore(props.contextID);
             let newLayer = await generateAILayer(width, height, layerAIContext);
-            let oldLayer = layerAIContext.layers[0];
+            let oldLayer = layerAIContext.currentLayer;
 
             moveLayer(
                 newLayer,
@@ -46,10 +45,10 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
 
             deleteLayer(oldLayer);
 
-            layerAIContext.layers = [newLayer];
+            layerAIContext.currentLayer = newLayer;
             let copyOfContext = layerAIContext.copy();
-            copyOfContext.layers = [newLayer];
-            setAILayerContext(newLayer.id, copyOfContext);
+            copyOfContext.currentLayer = newLayer;
+            saveContextToStore(copyOfContext);
         } catch (e) {
             console.error(e);
         }

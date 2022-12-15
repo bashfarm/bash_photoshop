@@ -33,7 +33,7 @@ export async function setBrushTool() {
  * @param {LayerAIContext} layerContext
  */
 export async function toggleOnContextHidingTool(layerContext: LayerAIContext) {
-    let primaryLayer = layerContext.layers[0];
+    let primaryLayer = layerContext.currentLayer;
     await createLayerMask(primaryLayer);
     await selectLayerMask(primaryLayer);
     await setBrushTool();
@@ -52,7 +52,7 @@ export async function toggleOnContextHidingTool(layerContext: LayerAIContext) {
  * @param {LayerAIContext} layerContext
  */
 export async function toggleOffContextHidingTool(layerContext: LayerAIContext) {
-    let primaryLayer = layerContext.layers[0];
+    let primaryLayer = layerContext.currentLayer;
     await createLayerMask(primaryLayer);
     await selectLayerMask(primaryLayer);
     await setBrushTool();
