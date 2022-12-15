@@ -54,6 +54,7 @@ export async function createNewLayerFromFile(
     // const tkn = lfs.createSessionToken(fileEntry);
 
     await executeInPhotoshop(
+        createNewLayerFromFile,
         async () => {
             await bp(
                 [
@@ -63,9 +64,9 @@ export async function createNewLayerFromFile(
                     //     linked: true,
                     // },
                     {
-                        ID: 2,
                         _obj: 'placeEvent',
                         null: { _kind: 'local', _path: fileEntry.nativePath },
+                        //     linked: true,
                     },
                 ],
                 {}
@@ -103,7 +104,7 @@ export async function createNewLayerFromFile(
  * @returns {Array}
  */
 async function selectAllVisibleLayers(): Promise<Layer[]> {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(selectAllVisibleLayers, async () => {
         getVisibleLayers(app.activeDocument.layers).forEach((layer) => {
             layer.selected = true;
         });
@@ -153,7 +154,7 @@ export async function moveLayer(
     placement: ElementPlacement = photoshop.constants.ElementPlacement
         .PLACEBEFORE
 ): Promise<void> {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(moveLayer, async () => {
         layer.move(relativeLayer, placement);
     });
 }
@@ -162,7 +163,7 @@ export async function moveLayer(
  * Create a newly merged layer given all the visible layers.
  */
 export async function createMergedLayer(): Promise<void> {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(createMergedLayer, async () => {
         selectAllVisibleLayers();
 
         const selectedLayers = getSelectedLayers(app.activeDocument.layers);
@@ -170,7 +171,7 @@ export async function createMergedLayer(): Promise<void> {
             if (layer.visible) {
                 const newLayer = await duplicateLayer(
                     layer,
-                    undefined,
+                    layer,
                     photoshop.constants.ElementPlacement.PLACEBEFORE
                 );
                 newLayer.selected = false;
@@ -194,7 +195,7 @@ export async function createMergedLayer(): Promise<void> {
  * Merge the visible layers in the app and return the merged layer.
  */
 export async function mergeVisibleLayers() {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(mergeVisibleLayers, async () => {
         // Merge all visible layers
         await photoshop.app.activeDocument.mergeVisibleLayers();
 
@@ -207,7 +208,7 @@ export async function mergeVisibleLayers() {
  * Deselect all layers in the app.
  */
 export async function deselectLayers() {
-    await executeInPhotoshop(() => {
+    await executeInPhotoshop(deselectLayers, () => {
         getSelectedLayers(app.activeDocument.layers).forEach((layer) => {
             layer.selected = false;
         });
@@ -218,7 +219,7 @@ export async function deselectLayers() {
  * Creates a layer mask to hide and unhide details on the given layer.
  */
 export async function createLayerMask(layer: Layer) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(createLayerMask, async () => {
         await deselectLayers();
         layer.selected = true;
         await app.batchPlay(
@@ -239,7 +240,7 @@ export async function createLayerMask(layer: Layer) {
  * This function selects the mask of the given layer if there is one.  This is needed to begin painting on the mask.
  */
 export async function selectLayerMask(layer: Layer) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(selectLayerMask, async () => {
         return await bp(
             [
                 {
@@ -269,11 +270,9 @@ async function duplicateLayer(
     insertionLocation?: ElementPlacement,
     name?: string
 ) {
-    await executeInPhotoshop(async () => {
-        await layer.duplicate(relativeObject, insertionLocation, name);
+    return await executeInPhotoshop(duplicateLayer, async () => {
+        return await layer.duplicate(relativeObject, insertionLocation, name);
     });
-    // TODO: (kmok) we may need to remove the line below since layer.duplicate already returns the newest layer, so we just set the return on the wrapper above
-    return getNewestLayer(photoshop.app.activeDocument.layers);
 }
 
 /**
@@ -289,7 +288,7 @@ export function getNewestLayer(layers: Layer[]) {
  * Given photoshop layers, make the given invisible
  */
 export async function makeLayersInvisible(layers: Layer[]) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(makeLayersInvisible, async () => {
         layers.forEach((layer) => {
             layer.visible = false;
         });
@@ -300,7 +299,7 @@ export async function makeLayersInvisible(layers: Layer[]) {
  * Given photoshop layers, make the given invisible
  */
 export async function makeLayersVisible(layers: Layer[]) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(makeLayersVisible, async () => {
         layers.forEach((layer) => {
             layer.visible = true;
         });
@@ -311,7 +310,7 @@ export async function makeLayersVisible(layers: Layer[]) {
  * Deletes this layer from the document.
  */
 export async function deleteLayer(layer: Layer) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(deleteLayer, async () => {
         layer.delete();
     });
 }
@@ -332,7 +331,7 @@ export async function flipLayer(
     layer: Layer,
     axis: 'horizontal' | 'vertical' | 'both'
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(flipLayer, async () => {
         layer.flip(axis);
     });
 }
@@ -341,7 +340,7 @@ export async function flipLayer(
  * Clears the layer pixels and does not copy to the clipboard. If no pixel selection is found, select all pixels and clear.
  */
 export async function clearLayer(layer: Layer) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(clearLayer, async () => {
         layer.clear();
     });
 }
@@ -350,7 +349,7 @@ export async function clearLayer(layer: Layer) {
  * Copies the layer to the clipboard. When the optional argument is set to true, a merged copy is performed (that is, all visible layers are copied to the clipboard).
  */
 export async function copyLayer(layer: Layer, merge: boolean = false) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(copyLayer, async () => {
         layer.copy(merge);
     });
 }
@@ -359,7 +358,7 @@ export async function copyLayer(layer: Layer, merge: boolean = false) {
  * Moves the layer to a position above the topmost layer or group.
  */
 export async function bringLayerToFront(layer: Layer) {
-    await executeInPhotoshop(() => {
+    await executeInPhotoshop(bringLayerToFront, () => {
         layer.bringToFront();
     });
 }
@@ -367,7 +366,7 @@ export async function bringLayerToFront(layer: Layer) {
  * Moves the layer to the bottom. If the bottom layer is the background, it will move the layer to the position above the background. If it is in a group, it will move to the bottom of the group.
  */
 export async function sendLayerToBack(layer: Layer) {
-    await executeInPhotoshop(() => {
+    await executeInPhotoshop(sendLayerToBack, () => {
         layer.sendToBack();
     });
 }
@@ -387,7 +386,7 @@ export async function linkLayers(
     originalLayer: Layer,
     targetLayer: Layer
 ): Promise<Layer[]> {
-    return await executeInPhotoshop(async () => {
+    return await executeInPhotoshop(linkLayers, async () => {
         return originalLayer.link(targetLayer);
     });
 }
@@ -395,7 +394,7 @@ export async function linkLayers(
  * Unlinks the layer from any existing links.
  */
 export async function unlinkLayers(layer: Layer): Promise<Layer[]> {
-    return await executeInPhotoshop(async () => {
+    return await executeInPhotoshop(unlinkLayers, async () => {
         return layer.unlink();
     });
 }
@@ -404,7 +403,7 @@ export async function unlinkLayers(layer: Layer): Promise<Layer[]> {
  * Merges layers. This operates on the currently selected layers. If multiple layers are selected, they will be merged together. If one layer is selected, it is merged down with the layer beneath. In this case, the layer below must be a pixel layer. The merged layer will now be the active layer.
  */
 export async function mergeSelectedLayer(layer: Layer): Promise<Layer> {
-    return await executeInPhotoshop(async () => {
+    return await executeInPhotoshop(mergeSelectedLayer, async () => {
         return layer.merge();
     });
 }
@@ -412,7 +411,7 @@ export async function mergeSelectedLayer(layer: Layer): Promise<Layer> {
  * Converts the targeted contents in the layer into a flat, raster image.
  */
 export async function rasterizeLayer(layer: Layer, type: RasterizeType) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(rasterizeLayer, async () => {
         layer.rasterize(type);
     });
 }
@@ -438,7 +437,7 @@ export async function rotateLayer(
     anchor?: AnchorPosition,
     options?: { interpolation?: ResampleMethod }
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(rotateLayer, async () => {
         layer.rotate(angle, anchor, options);
     });
 }
@@ -465,7 +464,7 @@ export async function scaleLayer(
     anchor?: AnchorPosition,
     options?: { interpolation?: ResampleMethod }
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(scaleLayer, async () => {
         layer.scale(width, height, anchor, options);
     });
 }
@@ -487,7 +486,7 @@ export async function skewLayer(
     angleV: number | AngleValue,
     options?: { interpolation?: ResampleMethod }
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(skewLayer, async () => {
         layer.skew(angleH, angleV, options);
     });
 }
@@ -511,7 +510,7 @@ export async function translateLayer(
     horizontal: number | PercentValue | PixelValue,
     vertical: number | PercentValue | PixelValue
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(translateLayer, async () => {
         layer.translate(horizontal, vertical);
     });
 }
@@ -534,7 +533,7 @@ export async function convertLayersToSmartObjects(
     getAILayerContext: Function,
     setAILayerContext: Function
 ) {
-    await executeInPhotoshop(async () => {
+    await executeInPhotoshop(convertLayersToSmartObjects, async () => {
         for (let layer of layers) {
             let newLayer = await convertLayerToSmartObject(layer);
             let layerContext = getAILayerContext(layer.id);
@@ -550,7 +549,7 @@ export async function convertLayersToSmartObjects(
 
 export async function convertLayerToSmartObject(layer: Layer) {
     let command = { _obj: 'newPlacedLayer' };
-    return await executeInPhotoshop(async () => {
+    return await executeInPhotoshop(convertLayerToSmartObject, async () => {
         layer.selected = true;
         await bp([command], {});
         let newLayer = getNewestLayer(photoshop.app.activeDocument.layers);
@@ -566,7 +565,7 @@ export async function convertLayerToSmartObject(layer: Layer) {
  */
 export async function createNewLayer(layerName: string) {
     try {
-        return (await executeInPhotoshop(async () => {
+        return (await executeInPhotoshop(createNewLayer, async () => {
             if (photoshop.app.activeDocument) {
                 let newLayer: Layer =
                     await photoshop.app.activeDocument.layers.add();

@@ -49,7 +49,11 @@ export default class LayerAIContext {
         );
 
         if (latestContextFileInfo) {
-            if (latestContextFileInfo.fileNumber >= userFileLimit) {
+            // -1 will mean no limit on files.
+            if (
+                !(userFileLimit == -1) &&
+                latestContextFileInfo.fileNumber >= userFileLimit
+            ) {
                 console.warn(
                     `We have run out of historical file storage for this user ${userFileLimit}, the user needs to delete a file or do inplace regneration`
                 );
@@ -76,7 +80,7 @@ export default class LayerAIContext {
      */
     public async saveLayerContexttoHistory() {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName();
+            let fileName = await this.getNextAvailableHistoryFileName(-1);
             console.log(`trying to save layer with file name ${fileName}`);
             if (!fileName) {
                 return;
@@ -113,7 +117,7 @@ export default class LayerAIContext {
      */
     public async createNewContextHistoryFile(imgData: string | Uint8Array) {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName();
+            let fileName = await this.getNextAvailableHistoryFileName(-1);
             console.log(`Saving file with name ${fileName}`);
             if (!fileName) {
                 alert('Please delete a file or use inplace image regeneration');
@@ -122,7 +126,7 @@ export default class LayerAIContext {
             // Bad coding.  This should be a one liner and this should be like `serializeData()` or something
             // using getFileSerializer in it.
             let serializer: bashful.io.Serializer = getFileSerializer(imgData);
-            serializer(fileName, imgData);
+            await serializer(fileName, imgData);
             return fileName;
         } catch (e) {
             console.error(e);

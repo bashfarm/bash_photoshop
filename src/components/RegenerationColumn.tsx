@@ -38,18 +38,17 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
             let layerAIContext = getAILayerContext(props.layerID);
             let newLayer = await generateAILayer(width, height, layerAIContext);
             let oldLayer = layerAIContext.layers[0];
-            let newGeneratedLayer = newLayer;
 
             moveLayer(
-                newGeneratedLayer, // context now has the new layer as the first element
-                oldLayer, // the context now has two layers it is managing, 0 being the generated, 1 being the old layer
+                newLayer,
+                oldLayer,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
 
             deleteLayer(oldLayer);
 
-            layerAIContext.layers = [newGeneratedLayer];
-            setAILayerContext(newGeneratedLayer.id, layerAIContext);
+            layerAIContext.layers = [newLayer];
+            setAILayerContext(newLayer.id, layerAIContext);
         } catch (e) {
             console.error(e);
         }

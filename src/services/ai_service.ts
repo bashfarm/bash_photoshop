@@ -10,6 +10,8 @@ import {
     ArtistCategories,
 } from '../common/types';
 import LayerAIContext from 'models/LayerAIContext';
+import { alert } from './alert_service';
+import { sleep } from 'utils/general_utils';
 const photoshop = require('photoshop');
 
 const myHeaders = new Headers();
@@ -58,9 +60,9 @@ export async function img2Img(
             override_settings: {},
             sampler_index: 'Euler',
             include_init_images: false,
-            mask: '',
+            mask: null,
             styles: [],
-            sampler_name: '',
+            sampler_name: null,
         };
 
         const requestOptions: RequestInit = {
@@ -69,10 +71,12 @@ export async function img2Img(
             body: JSON.stringify(raw),
             redirect: 'follow',
         };
+        console.log(requestOptions);
         const response = await fetch(
             `${process.env.API_URL}/sdapi/v1/img2img`,
             requestOptions
         );
+        console.log(response);
 
         return await response.json();
     } catch (e) {
@@ -235,6 +239,7 @@ export async function generateImage(
             width,
             prompt
         );
+        console.log(generatedImageResponse);
         return formatBase64Image(generatedImageResponse['images'][0]);
     } catch (e) {
         console.log(e);
@@ -261,22 +266,21 @@ export async function generateAILayer(
         // This will save the current layer to plugin folder as a history file
         // We save in the beginning to make sure we capture all changes that could have occurred to the layer
         // before we send it off to the AI for regeneration.
+        console.log(layerAIContext);
         let contextHistoryFileEntry =
-            layerAIContext.saveLayerContexttoHistory();
+            await layerAIContext.saveLayerContexttoHistory();
 
         // No available file entry.  The user needs to remove some history or do inplace regeneration TODO(Might not happen)
         if (!contextHistoryFileEntry) {
             return;
         }
-        console.log(`Save File Entry`);
-        console.log(contextHistoryFileEntry);
 
         // Retrieve the base64 string representation of the image given the name of the image.
         let b64Data = await getDataFolderImageBase64ImgStr(
-            (
-                await contextHistoryFileEntry
-            ).name
+            contextHistoryFileEntry.name
         );
+
+        console.log(b64Data);
 
         // So we send off the new image that we saved and got it's string representation for 👏
         // What we will get back from the ai is an image.  The string representation in base64 encoding!
@@ -286,6 +290,9 @@ export async function generateAILayer(
             width,
             layerAIContext.currentPrompt
         );
+
+        console.log(`retrieved b64 image`);
+        console.log(b64Data);
 
         // So we save the newly generated file as the next historical file
         // remember people will be editing this stuff and will want to go back to earlier
@@ -304,10 +311,14 @@ export async function generateAILayer(
         let generatedLayer = getNewestLayer(
             photoshop.app.activeDocument.layers
         );
+        console.log(generatedLayer);
 
         return generatedLayer;
     } catch (e) {
         console.error(e);
+        alert(
+            `Something is wrong with retrieving information from the API.  Please check that your installation is working properly https://github.com/AUTOMATIC1111/stable-diffusion-webui`
+        );
     }
 }
 

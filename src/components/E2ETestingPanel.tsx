@@ -16,7 +16,7 @@ export function E2ETestingPanel() {
         (state: ContextStoreState) => state.getAILayerContext
     );
     return (
-        <>
+        <div>
             <h1>TEST NAME: Convert All Layers To Smart Objects</h1>
             <Button
                 onClick={() =>
@@ -28,7 +28,7 @@ export function E2ETestingPanel() {
             >
                 Test
             </Button>
-        </>
+        </div>
     );
 }
 
