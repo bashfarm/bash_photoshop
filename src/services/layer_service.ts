@@ -13,6 +13,7 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 
+const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
 const app = photoshop.app;
 
@@ -51,23 +52,23 @@ export async function createNewLayerFromFile(
 ): Promise<void> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
-    // const tkn = lfs.createSessionToken(fileEntry);
+    const tkn = lfs.createSessionToken(fileEntry);
 
     await executeInPhotoshop(
         createNewLayerFromFile,
         async () => {
             await bp(
                 [
-                    // {
-                    //     _obj: 'placeEvent',
-                    //     target: { _path: tkn, _kind: 'local' },
-                    //     linked: true,
-                    // },
                     {
                         _obj: 'placeEvent',
-                        null: { _kind: 'local', _path: fileEntry.nativePath },
-                        //     linked: true,
+                        target: { _path: tkn, _kind: 'local' },
+                        linked: true,
                     },
+                    // {
+                    //     // _obj: 'placeEvent',
+                    //     // null: { _kind: 'local', _path: fileEntry.nativePath },
+                    //     //     linked: true,
+                    // },
                 ],
                 {}
             );

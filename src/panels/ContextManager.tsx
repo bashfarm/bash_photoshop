@@ -11,7 +11,7 @@ import { Button } from 'react-uxp-spectrum';
 const app = photoshop.app;
 
 const events = [
-    'make',
+    // 'make',
     'select',
     'delete',
     'selectNoLayers',
