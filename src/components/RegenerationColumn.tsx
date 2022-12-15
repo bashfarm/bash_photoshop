@@ -24,8 +24,6 @@ export type RegenerationColumnProps = {
 export const RegenerationColumn = (props: RegenerationColumnProps) => {
     let [imageProgress, setImageProgress] = useState(0);
 
-    // When a new layer gets created we will need to see if it has an associated context with it.
-    // So we need to have this layer2IdRegistry going.
     let setAILayerContext = useContextStore(
         (state: ContextStoreState) => state.setAILayerContext
     );
@@ -36,6 +34,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     async function regenerateLayer(width: number, height: number) {
         try {
             let layerAIContext = getAILayerContext(props.layerID);
+            let test = layerAIContext.copy();
             let newLayer = await generateAILayer(width, height, layerAIContext);
             let oldLayer = layerAIContext.layers[0];
 
@@ -48,7 +47,9 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
             deleteLayer(oldLayer);
 
             layerAIContext.layers = [newLayer];
-            setAILayerContext(newLayer.id, layerAIContext);
+            let copyOfContext = layerAIContext.copy();
+            copyOfContext.layers = [newLayer];
+            setAILayerContext(newLayer.id, copyOfContext);
         } catch (e) {
             console.error(e);
         }

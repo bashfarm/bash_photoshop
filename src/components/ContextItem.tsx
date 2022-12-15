@@ -34,11 +34,8 @@ export const ContextItem = (props: ContextItemProps) => {
                     onInput={(event) => {
                         // update the current prompt of the context given the user inputs in this text area component
                         let layerContext = getAILayerContext(props.layerID);
-                        console.log(layerContext);
-                        let newContext: any = {
-                            ...layerContext,
-                            currentPrompt: event.target.value,
-                        };
+                        let copyOfContext = layerContext.copy();
+                        copyOfContext.currentPrompt = event.target.value;
 
                         // Well we will need to get the context, I think we should be able to just keep
                         // pulling the context by the layer id.  the layers will update before anything since
@@ -46,7 +43,7 @@ export const ContextItem = (props: ContextItemProps) => {
 
                         // ^^ above said. The logic should be 1. set the context by layer id in the context store 2. trigger a rerender of this component
                         // by resetting the component context
-                        setAILayerContext(props.layerID, newContext);
+                        setAILayerContext(props.layerID, copyOfContext);
                     }}
                     className="w-full"
                 ></Textarea>

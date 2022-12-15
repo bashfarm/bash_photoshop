@@ -12,6 +12,7 @@ import photoshop from 'photoshop';
 import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
+import LayerAIContext from 'models/LayerAIContext';
 
 const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
@@ -537,13 +538,10 @@ export async function convertLayersToSmartObjects(
     await executeInPhotoshop(convertLayersToSmartObjects, async () => {
         for (let layer of layers) {
             let newLayer = await convertLayerToSmartObject(layer);
-            let layerContext = getAILayerContext(layer.id);
-            let newContext = {
-                ...layerContext,
-                layers: [newLayer],
-            };
-            console.log(layers.map((layer) => layer));
-            setAILayerContext(newLayer.id, newContext);
+            let layerContext = getAILayerContext(layer.id) as LayerAIContext;
+            let copyOfContext = layerContext.copy();
+            copyOfContext.layers = [newLayer];
+            setAILayerContext(newLayer.id, copyOfContext);
         }
     });
 }

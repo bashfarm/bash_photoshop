@@ -11,9 +11,11 @@ import LayerAIContextHistory from './LayerAIHistory';
 import SmallDetailContext from './SmallDetailContext';
 import bashful from 'bashful';
 import { ContextHistoryEnum } from '../constants';
-const photoshop = require('photoshop');
+import { BashfulObject } from './BashfulObject';
+import _ from 'lodash';
 
-export default class LayerAIContext {
+import photoshop from 'photoshop';
+export default class LayerAIContext extends BashfulObject {
     id: number; // this should be the id number of the layer
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
@@ -27,6 +29,7 @@ export default class LayerAIContext {
         layers: Array<Layer> = [],
         history: Array<LayerAIContextHistory> = []
     ) {
+        super();
         this.id = createAILayerContextId(layer);
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
@@ -35,10 +38,18 @@ export default class LayerAIContext {
     }
 
     /**
-     * Retreive the next available context history file name.
-     * @param {LayerAIContext} layerContext
+     * Return a copy of the context
+     * @returns
      */
-    public async getNextAvailableHistoryFileName(userFileLimit: Number = 5) {
+    public copy() {
+        return _.cloneDeep(this);
+    }
+
+    /**
+     * Retreive the next available context history file name.
+     * @param {number} userFileLimit
+     */
+    public async getNextAvailableHistoryFileName(userFileLimit: number = 5) {
         let fileNumber = 0;
         let fileEntries = await this.getContextHistoryFileEntries();
 
