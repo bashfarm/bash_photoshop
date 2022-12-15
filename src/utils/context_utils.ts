@@ -1,3 +1,4 @@
+import LayerAIContext from 'models/LayerAIContext';
 import { Layer } from 'photoshop/dom/Layer';
 import { ContextHistoryEnum } from '../constants';
 
