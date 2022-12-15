@@ -1,19 +1,15 @@
 import LayerAIContext from 'models/LayerAIContext';
-import { Layer } from 'photoshop/dom/Layer';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
 export type ContextStoreState = {
-    layerAssignments: Record<number, LayerAIContext>;
+    layerAssignments: Record<number, string>;
     contextCache: Record<string, LayerAIContext>;
     contexts: Record<string, LayerAIContext>;
     saveContextToStore: (layerContext: LayerAIContext) => void;
     removeContextFromStore: (contextID: string) => void;
-    getLayerAssignment: (layerID: number) => LayerAIContext;
-    saveLayerAssignment: (
-        layerID: number,
-        layerContext: LayerAIContext
-    ) => void;
+    getLayerAssignment: (layerID: number) => string;
+    saveLayerAssignment: (layerID: number, contextID: string) => void;
     getContextFromCache: (contextID: string) => LayerAIContext;
     getContextFromStore: (contextID: string) => LayerAIContext;
 };
@@ -39,9 +35,9 @@ export const useContextStore = create(
         },
         getLayerAssignment: (layerID: number) =>
             get().layerAssignments[layerID],
-        saveLayerAssignment: (layerID: number, layerContext: LayerAIContext) =>
+        saveLayerAssignment: (layerID: number, contextID: string) =>
             set((state: ContextStoreState) => {
-                state.layerAssignments[layerID] = layerContext;
+                state.layerAssignments[layerID] = contextID;
             }),
         getContextFromCache: (contextID: string) => {
             return get().contextCache[contextID];

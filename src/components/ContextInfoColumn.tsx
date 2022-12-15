@@ -4,11 +4,16 @@ import { ContextLabel } from './ContextLabel';
 import Spectrum from 'react-uxp-spectrum';
 import { Layer } from 'photoshop/dom/Layer';
 import photoshop from 'photoshop';
+import { string } from 'yargs';
 
 export type ContextInfoColumnProps = {
-    onSelect: Function;
     contextID: string;
 };
+
+export interface UnassignedLayer {
+    name: string;
+    id: number;
+}
 
 export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     let saveLayerAssignment = useContextStore(
@@ -21,24 +26,22 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
+    let [unassignedLayers, setUnassignedLayers] = useState<
+        Array<UnassignedLayer>
+    >([]);
 
-    let layerAssignments = useContextStore(
-        (state: ContextStoreState) => state.layerAssignments
-    );
+    useEffect(() => {
+        setUnassignedLayers(getUnassignedLayers());
+    }, []);
 
-    let [thisContext, setThisContext] = useState(
-        getContextFromStore(props.contextID)
-    );
-
-    function onDropDownSelect(layer: Layer) {
-        let copyOfContext = thisContext.copy();
-        copyOfContext.currentLayer = layer;
+    function onDropDownSelect(layer: UnassignedLayer) {
+        let copyOfContext = getContextFromStore(props.contextID).copy();
+        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.find(
+            (psLayer) => (layer.id = psLayer.id)
+        );
         saveContextToStore(copyOfContext);
-        saveLayerAssignment(layer?.id, getContextFromStore(props.contextID));
-        setThisContext(copyOfContext);
-
-        // let the top level know about this selection.
-        props.onSelect(layer);
+        saveLayerAssignment(layer?.id, props.contextID);
+        setUnassignedLayers(getUnassignedLayers());
     }
 
     /**
@@ -51,18 +54,12 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
         // This filters out the layers with no contexts
         // let layers = docLayers.filter(x => !Object.keys(layerAssignments).includes(x.id.toString()))
         // remove this if you are working on this function
-        let layers = docLayers;
-        return layers.map((layer) => {
-            return (
-                <>
-                    <Spectrum.MenuItem
-                        key={layer.id}
-                        onClick={() => onDropDownSelect(layer)}
-                    >
-                        {layer.name}
-                    </Spectrum.MenuItem>
-                </>
-            );
+        // let layers = docLayers.filter(layer => layer?.name !== getContextFromStore(props.contextID).currentLayer?.name);
+        return docLayers.map((layer) => {
+            return {
+                name: layer.name,
+                id: layer.id,
+            } as UnassignedLayer;
         });
     }
 
@@ -70,23 +67,17 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
         <div className="flex flex-col bg-brand-dark">
             <Spectrum.Dropdown>
                 <Spectrum.Menu>
-                    {photoshop.app.activeDocument.layers && [
-                        <Spectrum.MenuItem
-                            key={getContextFromStore(props.contextID)?.id}
-                            onClick={() =>
-                                onDropDownSelect(
-                                    getContextFromStore(props.contextID)
-                                        .currentLayer
-                                )
-                            }
-                        >
-                            {
-                                getContextFromStore(props.contextID)
-                                    .currentLayer?.name
-                            }
-                        </Spectrum.MenuItem>,
-                        ...getUnassignedLayers(),
-                    ]}
+                    {photoshop.app.activeDocument.layers &&
+                        unassignedLayers.map((layer) => {
+                            return (
+                                <Spectrum.MenuItem
+                                    key={layer.id}
+                                    onClick={() => onDropDownSelect(layer)}
+                                >
+                                    {layer.name}
+                                </Spectrum.MenuItem>
+                            );
+                        })}
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ContextLabel

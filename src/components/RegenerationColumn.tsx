@@ -31,24 +31,31 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
         (state: ContextStoreState) => state.getContextFromStore
     );
 
+    let saveLayerAssignment = useContextStore(
+        (state: ContextStoreState) => state.saveLayerAssignment
+    );
+
     async function regenerateLayer(width: number, height: number) {
         try {
             let layerAIContext = getContextFromStore(props.contextID);
             let newLayer = await generateAILayer(width, height, layerAIContext);
+            console.log('after regenerating image');
             let oldLayer = layerAIContext.currentLayer;
+            let copyOfContext = layerAIContext.copy();
 
-            moveLayer(
+            copyOfContext.currentLayer = newLayer;
+            saveContextToStore(copyOfContext);
+            saveLayerAssignment(
+                copyOfContext.currentLayer.id,
+                copyOfContext.id
+            );
+
+            await moveLayer(
                 newLayer,
                 oldLayer,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
-
-            deleteLayer(oldLayer);
-
-            layerAIContext.currentLayer = newLayer;
-            let copyOfContext = layerAIContext.copy();
-            copyOfContext.currentLayer = newLayer;
-            saveContextToStore(copyOfContext);
+            await deleteLayer(oldLayer);
         } catch (e) {
             console.error(e);
         }

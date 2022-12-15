@@ -1,4 +1,4 @@
-import { E2ETestingPanel } from 'components/E2ETestingPanel';
+// import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useEffect } from 'react';

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Textarea } from 'react-uxp-spectrum';
 import { ContextStoreState, useContextStore } from '../store/contextStore';
 
-import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 
 import { ContextInfoColumn } from './ContextInfoColumn';
@@ -15,21 +14,17 @@ export type ContextItemProps = {
 };
 
 export const ContextItem = (props: ContextItemProps) => {
-    let getLayerAssignment = useContextStore((state: ContextStoreState) => {
-        return state.getLayerAssignment;
+    let saveContextToStore = useContextStore((state: ContextStoreState) => {
+        return state.saveContextToStore;
     });
-    let saveLayerAssignment = useContextStore((state: ContextStoreState) => {
-        return state.saveLayerAssignment;
+    let getContextFromStore = useContextStore((state: ContextStoreState) => {
+        return state.getContextFromStore;
     });
-    let [selectedLayer, setSelectedLayer] = useState<Layer>(null);
 
     return (
         <div className="flex flex-col bg-brand-dark">
             <div className="flex flex-row bg-brand">
-                <ContextInfoColumn
-                    onSelect={setSelectedLayer}
-                    contextID={props.contextID}
-                />
+                <ContextInfoColumn contextID={props.contextID} />
                 <ContextToolColumn contextID={props.contextID} />
                 <RegenerationColumn contextID={props.contextID} />
             </div>
@@ -38,9 +33,9 @@ export const ContextItem = (props: ContextItemProps) => {
                     placeholder="Enter a description of the content in this layer"
                     onInput={(event) => {
                         // update the current prompt of the context given the user inputs in this text area component
-                        if (selectedLayer) {
-                            let layerContext = getLayerAssignment(
-                                selectedLayer.id
+                        try {
+                            let layerContext = getContextFromStore(
+                                props.contextID
                             );
                             let copyOfContext = layerContext.copy();
                             copyOfContext.currentPrompt = event.target.value;
@@ -51,17 +46,14 @@ export const ContextItem = (props: ContextItemProps) => {
 
                             // ^^ above said. The logic should be 1. set the context by layer id in the context store 2. trigger a rerender of this component
                             // by resetting the component context
-                            saveLayerAssignment(
-                                selectedLayer.id,
-                                copyOfContext
-                            );
+                            saveContextToStore(copyOfContext);
+                        } catch (e) {
+                            console.log(e);
                         }
                     }}
                     className="w-full"
                 ></Textarea>
-                <div>
-                    {getLayerAssignment(selectedLayer?.id)?.currentPrompt}
-                </div>
+                <div>{getContextFromStore(props.contextID)?.currentPrompt}</div>
             </div>
         </div>
     );
