@@ -10,31 +10,19 @@ export type ContexHistoryBarProps = {
     contextID: string;
 };
 
-interface HistoryFilesHook {
-    data: Array<storage.File>;
-    loading: boolean;
-}
-
 export const ContextHistoryBar = (props: ContexHistoryBarProps) => {
-    let getContextFromStore = useContextStore(
-        (state: ContextStoreState) => state.getContextFromStore
+    let layerContext = useContextStore((state: ContextStoreState) =>
+        state.getContextFromStore(props.contextID)
     );
-    let [imageProgress, setImageProgress] = useState(0);
-    let [localContextHistoryFileEntries, setLocalContextHistoryFileEntries] =
-        useState<Array<storage.File>>([]);
 
-    const { data: historyFiles, loading: filesLoading }: HistoryFilesHook =
-        useAsyncEffect(
-            async () =>
-                await getContextHistoryFiles(
-                    getContextFromStore(props.contextID)
-                )
-        );
+    const { value: historyFiles, loading: filesLoading } = useAsyncEffect(
+        async () => await getContextHistoryFiles(layerContext)
+    );
 
     return (
         <div className="flex flex-row space-x-1">
             {!filesLoading &&
-                historyFiles.map((fEntry, index) => {
+                historyFiles.map((fEntry: storage.File, index: number) => {
                     return (
                         <ContextImage
                             key={index}

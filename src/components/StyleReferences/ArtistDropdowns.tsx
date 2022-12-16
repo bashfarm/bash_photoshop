@@ -9,8 +9,8 @@ import { useArtistStore, ArtistState } from 'store/artistStore';
 
 // TODO: kevmok - need to refactor for better error handling
 const ArtistDropdowns = () => {
-    const { data: artists } = useAsyncEffect(getArtists);
-    const { data: category, loading: categoryLoading } =
+    const { value: artists } = useAsyncEffect(getArtists);
+    const { value: category, loading: categoryLoading } =
         useAsyncEffect(getArtistCategories);
 
     const { selectedCategory, selectedArtist, selectCategory, selectArtist } =

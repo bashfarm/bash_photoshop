@@ -496,12 +496,6 @@ export async function translateLayer(
     });
 }
 
-export function regenerateLayer(layer: Layer) {}
-
-export function replaceLayerContents(layer: Layer, data: storage.File) {
-    // layer.
-}
-
 /**
  * Take in the array of photoshop layers and the context.  Convert all the layers to NEW smart object layers and remap those NEW layers
  * to their respective contexts they had before.
@@ -509,21 +503,21 @@ export function replaceLayerContents(layer: Layer, data: storage.File) {
  * @param layerContext
  * @param setAILayerContext
  */
-export async function convertLayersToSmartObjects(
-    layers: Array<Layer>,
-    getAILayerContext: Function,
-    setAILayerContext: Function
-) {
-    await executeInPhotoshop(convertLayersToSmartObjects, async () => {
-        for (let layer of layers) {
-            let newLayer = await convertLayerToSmartObject(layer);
-            let layerContext = getAILayerContext(layer.id) as LayerAIContext;
-            let copyOfContext = layerContext.copy();
-            copyOfContext.currentLayer = newLayer;
-            setAILayerContext(newLayer.id, copyOfContext);
-        }
-    });
-}
+// export async function convertLayersToSmartObjects(
+//     layers: Array<Layer>,
+//     getLayerAssignment: Function,
+//     setLayerAssignment: Function
+// ) {
+//     await executeInPhotoshop(convertLayersToSmartObjects, async () => {
+//         for (let layer of layers) {
+//             let newLayer = await convertLayerToSmartObject(layer);
+//             let layerContextID = getLayerAssignment(layer.id) as string;
+//             let copyOfContext = layerContext.copy();
+//             copyOfContext.currentLayer = newLayer;
+//             setLayerAssignment(newLayer.id, copyOfContext);
+//         }
+//     });
+// }
 
 export async function convertLayerToSmartObject(layer: Layer) {
     let command = { _obj: 'newPlacedLayer' };
