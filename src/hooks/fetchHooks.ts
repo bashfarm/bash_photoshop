@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
-
-
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * @typedef {Object} HookType
@@ -10,10 +8,10 @@ import { useState, useEffect } from 'react';
  */
 
 /**
- * 
- * @param makeFetchRequest 
- * @param arg 
- * @returns 
+ *
+ * @param makeFetchRequest
+ * @param arg
+ * @returns
  */
 export const useFetchOnClick = (makeFetchRequest: Function, ...arg: any[]) => {
     const [clicked, setClicked] = useState<boolean>(false);
@@ -42,9 +40,9 @@ export const useFetchOnClick = (makeFetchRequest: Function, ...arg: any[]) => {
 };
 
 /**
- * 
- * @param url 
- * @returns 
+ *
+ * @param url
+ * @returns
  */
 export const useFetch = async (url: string) => {
     const [data, setData] = useState(null);
@@ -69,11 +67,11 @@ export const useFetch = async (url: string) => {
 };
 
 /**
- * 
+ *
  * @param makeFetchRequest Fetches data from the api
- * @returns 
+ * @returns
  */
-export const useAsyncEffect = (makeFetchRequest: Function) => {
+export const useAsyncEffectOLd = (makeFetchRequest: Function) => {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<any>(null);
@@ -94,3 +92,31 @@ export const useAsyncEffect = (makeFetchRequest: Function) => {
     }, [makeFetchRequest]);
     return { data, loading, error };
 };
+
+interface AsyncHookEffect {
+    error: any;
+    loading: boolean;
+    value: any;
+}
+
+export function useAsyncEffect(callback: Function, dependencies: any = []) {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
+    const [value, setValue] = useState();
+
+    const callbackMemoized = useCallback(() => {
+        setLoading(true);
+        setError(undefined);
+        setValue(undefined);
+        callback()
+            .then(setValue)
+            .catch(setError)
+            .finally(() => setLoading(false));
+    }, dependencies);
+
+    useEffect(() => {
+        callbackMemoized();
+    }, [callbackMemoized]);
+
+    return { loading, error, value } as AsyncHookEffect;
+}
