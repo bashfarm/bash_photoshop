@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Textarea } from 'react-uxp-spectrum';
 import { ContextStoreState, useContextStore } from '../store/contextStore';
 
@@ -7,7 +6,6 @@ import React from 'react';
 import { ContextInfoColumn } from './ContextInfoColumn';
 import { ContextToolColumn } from './ContextToolColumn';
 import { RegenerationColumn } from './RegenerationColumn';
-import { Layer } from 'photoshop/dom/Layer';
 
 export type ContextItemProps = {
     contextID: string;
@@ -19,6 +17,12 @@ export const ContextItem = (props: ContextItemProps) => {
     });
     let getContextFromStore = useContextStore((state: ContextStoreState) => {
         return state.getContextFromStore;
+    });
+    let contexts = useContextStore((state: ContextStoreState) => {
+        return state.contexts;
+    });
+    let layerAssignments = useContextStore((state: ContextStoreState) => {
+        return state.layerAssignments;
     });
 
     return (
@@ -37,8 +41,14 @@ export const ContextItem = (props: ContextItemProps) => {
                             let layerContext = getContextFromStore(
                                 props.contextID
                             );
+                            console.warn(`❤️‍🔥❤️‍🔥`);
+                            console.log(layerContext);
+
                             let copyOfContext = layerContext.copy();
+                            console.warn(`❤️‍🔥❤️‍🔥`);
                             copyOfContext.currentPrompt = event.target.value;
+                            console.warn(`💀💀`);
+                            console.log(layerContext);
 
                             // Well we will need to get the context, I think we should be able to just keep
                             // pulling the context by the layer id.  the layers will update before anything since
@@ -46,7 +56,10 @@ export const ContextItem = (props: ContextItemProps) => {
 
                             // ^^ above said. The logic should be 1. set the context by layer id in the context store 2. trigger a rerender of this component
                             // by resetting the component context
+                            console.log(contexts);
+                            console.log(layerAssignments);
                             saveContextToStore(copyOfContext);
+                            console.warn(`💀💀`);
                         } catch (e) {
                             console.log(e);
                         }

@@ -35,6 +35,22 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
         (state: ContextStoreState) => state.saveLayerAssignment
     );
 
+    let removeLayerAssignment = useContextStore(
+        (state: ContextStoreState) => state.removeLayerAssignment
+    );
+
+    let getLayerAssignment = useContextStore(
+        (state: ContextStoreState) => state.getLayerAssignment
+    );
+
+    let layerAssignments = useContextStore(
+        (state: ContextStoreState) => state.layerAssignments
+    );
+
+    let contexts = useContextStore(
+        (state: ContextStoreState) => state.contexts
+    );
+
     async function regenerateLayer(width: number, height: number) {
         try {
             let layerAIContext = getContextFromStore(props.contextID);
@@ -45,10 +61,36 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
 
             copyOfContext.currentLayer = newLayer;
             saveContextToStore(copyOfContext);
+            console.log('Assignments');
+            console.log(layerAssignments);
+
+            console.log('Context');
+            console.log(layerAIContext);
+
+            console.log('Copy Context');
+            console.log(copyOfContext);
             saveLayerAssignment(
                 copyOfContext.currentLayer.id,
                 copyOfContext.id
             );
+            console.log('Assignments');
+            console.log(layerAssignments);
+
+            console.log('retrieving the layers assignment');
+            console.log(getLayerAssignment(oldLayer.id));
+            removeLayerAssignment(oldLayer.id);
+
+            console.log('NEW LAYER');
+            console.log(newLayer);
+
+            console.log('OLD LAYER');
+            console.log(oldLayer);
+
+            console.log('Assignments');
+            console.log(layerAssignments);
+
+            console.log('Contexts');
+            console.log(contexts);
 
             await moveLayer(
                 newLayer,

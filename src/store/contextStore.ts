@@ -10,6 +10,7 @@ export type ContextStoreState = {
     removeContextFromStore: (contextID: string) => void;
     getLayerAssignment: (layerID: number) => string;
     saveLayerAssignment: (layerID: number, contextID: string) => void;
+    removeLayerAssignment: (layerID: number) => void;
     getContextFromCache: (contextID: string) => LayerAIContext;
     getContextFromStore: (contextID: string) => LayerAIContext;
 };
@@ -28,6 +29,11 @@ export const useContextStore = create(
             set((state: ContextStoreState) => {
                 state.contextCache[contextID] = get().contexts[contextID];
                 delete state.contexts[contextID];
+            });
+        },
+        removeLayerAssignment: (layerID: number) => {
+            set((state: ContextStoreState) => {
+                delete state.layerAssignments[layerID];
             });
         },
         getContextFromStore: (contextID: string) => {

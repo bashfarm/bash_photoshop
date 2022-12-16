@@ -11,11 +11,6 @@ export type ContextInfoColumnProps = {
     contextID: string;
 };
 
-export interface UnassignedLayer {
-    name: string;
-    id: number;
-}
-
 const events = [
     'make',
     'select',
@@ -37,13 +32,16 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-    let [unassignedLayers, setUnassignedLayers] = useState<
-        Array<UnassignedLayer>
-    >([]);
+
+    let contexts = useContextStore(
+        (state: ContextStoreState) => state.contexts
+    );
+    let [unassignedLayers, setUnassignedLayers] = useState<Array<Layer>>([]);
     let [thisContext, setThisContext] = useState<LayerAIContext>(null);
 
     useEffect(() => {
         setUnassignedLayers(getUnassignedLayers());
+        setThisContext(getContextFromStore(props.contextID));
     }, []);
 
     function onLayerChange() {
@@ -57,21 +55,12 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
         };
     }, []);
 
-    function onDropDownSelect(layer: UnassignedLayer) {
+    function onDropDownSelect(layer: Layer) {
         console.log(layer);
         let context = getContextFromStore(props.contextID);
         console.log(context);
         let copyOfContext = getContextFromStore(props.contextID).copy();
-        console.log(
-            photoshop.app.activeDocument.layers.filter(
-                (psLayer) => layer.id == psLayer.id
-            )[0]
-        );
-        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.filter(
-            (psLayer) => layer.id == psLayer.id
-        )[0];
-        console.log(copyOfContext);
-        console.log(photoshop.app.activeDocument.layers.map((layer) => layer));
+        copyOfContext.currentLayer = layer;
 
         saveContextToStore(copyOfContext);
         saveLayerAssignment(layer?.id, props.contextID);
@@ -91,19 +80,14 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
         // let layers = docLayers.filter(x => !Object.keys(layerAssignments).includes(x.id.toString()))
         // remove this if you are working on this function
         // let layers = docLayers.filter(layer => layer?.name !== getContextFromStore(props.contextID).currentLayer?.name);
-        return docLayers.map((layer) => {
-            return {
-                name: layer.name,
-                id: layer.id,
-            } as UnassignedLayer;
-        });
+        return docLayers;
     }
 
     return (
         <div className="flex flex-col bg-brand-dark">
             <Spectrum.Dropdown>
                 <Spectrum.Menu>
-                    {photoshop.app.activeDocument.layers &&
+                    {unassignedLayers &&
                         unassignedLayers.map((layer) => {
                             return (
                                 <Spectrum.MenuItem
