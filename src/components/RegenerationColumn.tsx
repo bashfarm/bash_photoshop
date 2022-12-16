@@ -67,6 +67,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     }
 
     function onLayerChange() {
+        setUnSelectedLayers(getUnselectedLayerNames());
         // setUnassignedLayers(getUnassignedLayers());
     }
 
@@ -85,9 +86,9 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     function onDropDownSelect(layerName: string) {
         setSelectedLayerName(layerName);
         let copyOfContext = layerContext.copy();
-        copyOfContext.currentLayer = photoshop.app.activeDocument.layers
-            .map((layer) => layer)
-            .filter((layer) => selectedLayerName == layer.name)[0];
+        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.filter(
+            (layer) => layerName == layer.name
+        )[0];
 
         saveContextToStore(copyOfContext);
     }
