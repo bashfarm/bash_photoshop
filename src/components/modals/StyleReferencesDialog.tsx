@@ -5,6 +5,7 @@ import { ArtistDropdowns, StyleImage } from 'components/StyleReferences';
 import LayerAIContext from 'models/LayerAIContext';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
+import _ from 'lodash';
 
 const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', 'img/cat.jpg', [], [], []),
@@ -65,7 +66,8 @@ export const StyleReferencesDialog = (props: ModalProps) => {
                         src={item.src}
                         onSelect={() => {
                             console.log('Selected: ', item);
-                            setSelectedStyles([item, ...selectedStyles]);
+
+                            setSelectedStyles(_.concat(selectedStyles, item));
                         }}
                     />
                 ))}
