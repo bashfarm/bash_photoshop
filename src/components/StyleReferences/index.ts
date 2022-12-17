@@ -1,9 +1,9 @@
 import ArtistDropdowns from './ArtistDropdowns';
-import StyleImages from './StyleImages';
+import StyleImage from './StyleImage';
 
-export { ArtistDropdowns, StyleImages };
+export { ArtistDropdowns, StyleImage };
 
 export const StyleReferences = {
     ArtistDropdowns: ArtistDropdowns,
-    StyleImages: StyleImages,
+    StyleImage: StyleImage,
 };

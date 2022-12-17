@@ -13,6 +13,7 @@ import { ContextHistoryEnum } from '../constants';
 import { BashfulObject } from './BashfulObject';
 import _, { uniqueId } from 'lodash';
 import photoshop from 'photoshop';
+import StyleReference from './StyleReference';
 
 export default class LayerAIContext extends BashfulObject {
     id: string; // this should be the id number of the layer
@@ -21,13 +22,15 @@ export default class LayerAIContext extends BashfulObject {
     currentPrompt: string;
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
+    styles: Array<StyleReference>; // the hisory of the context
 
     constructor(
         currentLayer: Layer = null,
         name: string = null,
         smallDetails: Array<SmallDetailContext> = [],
         currentPrompt: string = '',
-        history: Array<LayerAIContextHistory> = []
+        history: Array<LayerAIContextHistory> = [],
+        styles: Array<StyleReference> = []
     ) {
         super();
         this.name = name;

@@ -1,7 +1,7 @@
 import { ProgressResponse } from 'common/types/sdapi';
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Spectrum, { Progressbar } from 'react-uxp-spectrum';
 import {
     generateAILayer,
@@ -12,6 +12,9 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
+import ReactDOM from 'react-dom';
+import { StyleReferencesDialog } from './modals/StyleReferencesDialog';
+import { RegenerationToolbar } from './RegenerationToolbar';
 
 const events = [
     'make',
@@ -39,6 +42,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
+    const popupRef = useRef<HTMLDialogElement | null>(); // Reference for the <dialog> element
 
     let [imageProgress, setImageProgress] = useState(0);
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
@@ -68,11 +72,9 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
 
     function onLayerChange() {
         setUnSelectedLayers(getUnselectedLayerNames());
-        // setUnassignedLayers(getUnassignedLayers());
     }
 
     useEffect(() => {
-        // setUnassignedLayers(getUnassignedLayers());
         photoshop.action.addNotificationListener(events, onLayerChange);
         return () => {
             photoshop.action.removeNotificationListener(events, onLayerChange);
@@ -94,13 +96,13 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     }
 
     function getUnselectedLayerNames() {
-        // return photoshop.app.activeDocument.layers.filter(layer => layer.id != selectedLayer.id)
         return photoshop.app.activeDocument.layers.map((layer) => layer.name);
     }
 
     return (
         <>
             <div className="flex flex-col justify-between">
+                <RegenerationToolbar contextID={props.contextID} />
                 <ProgressButton
                     // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                     //  512x512 is the cheapest.  We will have to have a final step of upscaling
