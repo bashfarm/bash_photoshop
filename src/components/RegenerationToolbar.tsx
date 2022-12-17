@@ -4,17 +4,20 @@ import { Button } from 'react-uxp-spectrum';
 
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { StyleReferencesDialog } from './modals/StyleReferencesDialog';
+import { ExtendedHTMLDialogElement } from 'common/types';
 
 export type RegenerationToolbarProps = {
     contextID: string;
 };
 
 export const RegenerationToolbar = (props: RegenerationToolbarProps) => {
-    const popupRef = useRef<any>(); // Reference for the <dialog> element
+    const popupRef = useRef<ExtendedHTMLDialogElement>(); // Reference for the <dialog> element
 
     const popUpModal = async () => {
         if (!popupRef.current) {
-            popupRef.current = document.createElement('dialog');
+            popupRef.current = document.createElement(
+                'dialog'
+            ) as ExtendedHTMLDialogElement;
             ReactDOM.render(
                 <StyleReferencesDialog
                     handle={popupRef.current}
@@ -24,7 +27,6 @@ export const RegenerationToolbar = (props: RegenerationToolbarProps) => {
             );
         }
         document.body.appendChild(popupRef.current);
-
         await popupRef.current.uxpShowModal({
             title: 'Please authenticate...',
             resize: 'both',

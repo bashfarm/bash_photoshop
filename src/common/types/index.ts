@@ -7,6 +7,8 @@ import {
     ArtistCategories,
 } from './sdapi';
 
+import { ExtendedHTMLDialogElement } from './htmlTypes';
+
 export {
     Text2ImgRequest,
     Img2ImgRequest,
@@ -14,4 +16,5 @@ export {
     ProgressResponse,
     ArtistType,
     ArtistCategories,
+    ExtendedHTMLDialogElement,
 };

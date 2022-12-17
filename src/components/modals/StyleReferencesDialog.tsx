@@ -6,6 +6,8 @@ import LayerAIContext from 'models/LayerAIContext';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
 import _ from 'lodash';
+import { ExtendedHTMLDialogElement } from 'common/types';
+import { style } from '@mui/system';
 
 const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', 'img/cat.jpg', [], [], []),
@@ -13,9 +15,8 @@ const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', 'img/cat.jpg', [], [], []),
     new StyleReference('kitty', 'img/cat.jpg', [], [], []),
 ];
-
 interface ModalProps {
-    handle: any;
+    handle: ExtendedHTMLDialogElement;
     contextID: string;
 }
 
@@ -29,7 +30,16 @@ export const StyleReferencesDialog = (props: ModalProps) => {
     );
 
     // TODO(bgarrard): We will want to have styles be more than just strings at some point.
-    let [selectedStyles, setSelectedStyles] = useState<Array<StyleReference>>();
+    let [selectedStyles, setSelectedStyles] = useState<StyleReference[]>([]);
+
+    const toggleStyleSelected = (style: StyleReference) => {
+        if (selectedStyles.find((i) => i.id === style.id)) {
+            setSelectedStyles(selectedStyles.filter((i) => i.id !== style.id));
+        } else {
+            setSelectedStyles([...selectedStyles, style]);
+        }
+        console.log(selectedStyles);
+    };
 
     const buttonHandler = (actionString: string) => {
         let retObj = { message: '', save: false };
@@ -51,7 +61,8 @@ export const StyleReferencesDialog = (props: ModalProps) => {
         copyOfContext.styles = selectedStyles;
         saveContextToStore(copyOfContext);
 
-        props.handle.close(retObj);
+        //TODO: This can only return a string not an object
+        // props.handle.close(retObj);
     };
     return (
         <div className="flex flex-col">
@@ -67,7 +78,7 @@ export const StyleReferencesDialog = (props: ModalProps) => {
                         onSelect={() => {
                             console.log('Selected: ', item);
 
-                            setSelectedStyles(_.concat(selectedStyles, item));
+                            toggleStyleSelected(item);
                         }}
                     />
                 ))}
