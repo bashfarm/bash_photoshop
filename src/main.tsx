@@ -1,14 +1,12 @@
 import React from 'react';
 import PanelController from './controllers/PanelController';
 import { entrypoints } from 'uxp';
-import { SmallUiDetail, ContextManager } from './panels';
+import { ContextManager } from './panels';
 
 import './style.css';
 
 entrypoints.setup({
     panels: {
         contextmanager: PanelController(<ContextManager />, {}),
-        // smalluidetail: PanelController(<SmallUiDetail />, {}),
-        // stylereferences: PanelController(<StyleReferences />, {}),
     },
 });

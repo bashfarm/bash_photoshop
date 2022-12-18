@@ -2,18 +2,16 @@ import React, { useState } from 'react';
 import { Button, Divider, Icon } from 'react-uxp-spectrum';
 
 import { ArtistDropdowns, StyleImage } from 'components/StyleReferences';
-import LayerAIContext from 'models/LayerAIContext';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
 import _ from 'lodash';
 import { ExtendedHTMLDialogElement } from 'common/types';
-import { style } from '@mui/system';
 
 const StyleReferences: Array<StyleReference> = [
-    new StyleReference('kitty', 'img/cat.jpg', [], [], []),
-    new StyleReference('kitty', 'img/cat.jpg', [], [], []),
-    new StyleReference('kitty', 'img/cat.jpg', [], [], []),
-    new StyleReference('kitty', 'img/cat.jpg', [], [], []),
+    new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
+    new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
+    new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
+    new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
 ];
 interface ModalProps {
     handle: ExtendedHTMLDialogElement;
@@ -66,11 +64,12 @@ export const StyleReferencesDialog = (props: ModalProps) => {
     };
     return (
         <div className="flex flex-col">
-            {/* <ArtistDropdowns /> */}
+            <ArtistDropdowns />
 
             <Divider className="my-2" size="small" />
 
-            <div className="flex flex-wrap mb-4 w-full justify-center">
+            {/* ❤️‍🔥 TODO:MAKE IMAGES REFERENCE STYLES. The images in the dialog to be displayed! ❤️‍🔥  */}
+            {/* <div className="flex flex-wrap mb-4 w-full justify-center">
                 {StyleReferences.map((item) => (
                     <StyleImage
                         key={`asset-item-${item.id}`}
@@ -82,7 +81,8 @@ export const StyleReferencesDialog = (props: ModalProps) => {
                         }}
                     />
                 ))}
-            </div>
+            </div> */}
+            {/* ❤️‍🔥 The images in the dialog to be displayed! ❤️‍🔥  */}
 
             <div className="flex w-1/4 justify-between mx-auto">
                 <Icon size="m" name="ui:ChevronLeftMedium"></Icon>

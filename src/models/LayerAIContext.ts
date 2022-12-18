@@ -20,6 +20,13 @@ export default class LayerAIContext extends BashfulObject {
     name: string;
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
+    negativePrompt: string;
+    stylingStrength: number;
+    consistencyStrength: number;
+    imageHeight: number;
+    imageWidth: number;
+    batchSize: number;
+    seed: number;
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
     styles: Array<StyleReference>; // the hisory of the context
@@ -30,7 +37,14 @@ export default class LayerAIContext extends BashfulObject {
         smallDetails: Array<SmallDetailContext> = [],
         currentPrompt: string = '',
         history: Array<LayerAIContextHistory> = [],
-        styles: Array<StyleReference> = []
+        styles: Array<StyleReference> = [],
+        stylingStrength: number = 70,
+        generationConsistencyString: number = 85,
+        imageHeight: number = 512,
+        imageWidth: number = 512,
+        seed: number = -1,
+        negativePrompt: string = '',
+        batchSize: number = 1
     ) {
         super();
         this.name = name;
@@ -39,6 +53,14 @@ export default class LayerAIContext extends BashfulObject {
         this.currentPrompt = currentPrompt;
         this.currentLayer = currentLayer;
         this.history = history;
+        this.styles = styles;
+        this.stylingStrength = stylingStrength;
+        this.consistencyStrength = generationConsistencyString;
+        this.imageHeight = imageHeight;
+        this.imageWidth = imageWidth;
+        this.seed = seed;
+        this.negativePrompt = negativePrompt;
+        this.batchSize = batchSize;
     }
 
     /**
@@ -175,5 +197,9 @@ export default class LayerAIContext extends BashfulObject {
 
     public createAILayerContextId() {
         return uniqueId();
+    }
+
+    public getStylingStrength() {
+        return this.stylingStrength / 100;
     }
 }
