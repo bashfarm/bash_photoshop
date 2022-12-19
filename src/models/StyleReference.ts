@@ -5,6 +5,7 @@ import _ from 'lodash';
 export default class StyleReference {
     id: string;
     prompt: string;
+    name: string;
     categories: string[];
     moods: string[];
     artists: string[];
@@ -12,6 +13,7 @@ export default class StyleReference {
 
     constructor(
         prompt: string,
+        name: string,
         src: string,
         categories: string[],
         moods: string[],
@@ -23,6 +25,7 @@ export default class StyleReference {
         this.moods = moods;
         this.artists = artists;
         this.src = src;
+        this.name = name;
     }
 
     public copy(): StyleReference {

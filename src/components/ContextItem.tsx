@@ -1,4 +1,4 @@
-import { Textarea } from 'react-uxp-spectrum';
+import { Slider, Textarea } from 'react-uxp-spectrum';
 import { ContextStoreState, useContextStore } from '../store/contextStore';
 
 import React from 'react';
@@ -6,6 +6,7 @@ import React from 'react';
 import { ContextInfoColumn } from './ContextInfoColumn';
 import { ContextToolColumn } from './ContextToolColumn';
 import { RegenerationColumn } from './RegenerationColumn';
+import { ContextLabel } from './ContextLabel';
 
 export type ContextItemProps = {
     contextID: string;
@@ -40,7 +41,37 @@ export const ContextItem = (props: ContextItemProps) => {
                     }}
                     className="w-full"
                 ></Textarea>
-                <div>{layerContext?.currentPrompt}</div>
+                {/* <ContextLabel value={''} labelText={'Styling Strength'} /> */}
+                <Slider
+                    variant="filled"
+                    min={0}
+                    max={100}
+                    value={layerContext.stylingStrength}
+                    onChange={(event) => {
+                        let copyOfContext = layerContext.copy();
+                        copyOfContext.stylingStrength = parseInt(
+                            event.target.value
+                        );
+                        saveContextToStore(copyOfContext);
+                    }}
+                >
+                    <sp-label slot="label">Styling Strength</sp-label>
+                </Slider>
+                <Slider
+                    variant="filled"
+                    min={0}
+                    max={30}
+                    value={layerContext.consistencyStrength}
+                    onChange={(event) => {
+                        let copyOfContext = layerContext.copy();
+                        copyOfContext.consistencyStrength = parseInt(
+                            event.target.value
+                        );
+                        saveContextToStore(copyOfContext);
+                    }}
+                >
+                    <sp-label slot="label">Consistency Strength</sp-label>
+                </Slider>
             </div>
         </div>
     );

@@ -8,6 +8,7 @@ export type ProgressButtonProps = {
     pollingSeconds: number;
     queryResponseParser: Function;
     progressSetter: Function;
+    disabled: boolean;
     children: any;
 };
 
@@ -24,6 +25,7 @@ export const ProgressButton = (props: ProgressButtonProps) => {
     return (
         <>
             <Button
+                disabled={props.disabled}
                 onClick={async () => {
                     props.longRunningFunction();
                     let timeout =

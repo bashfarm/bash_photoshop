@@ -21,10 +21,7 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
                 value={layerContext.currentLayer?.id}
                 labelText={'Layer Id:'}
             />
-            <ContextLabel
-                value={layerContext.currentLayer?.id}
-                labelText={'Context Id'}
-            />
+            <ContextLabel value={layerContext.id} labelText={'Context Id'} />
         </div>
     );
 };

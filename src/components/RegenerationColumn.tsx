@@ -11,9 +11,6 @@ import { deleteLayer, moveLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
-import { Layer } from 'photoshop/dom/Layer';
-import ReactDOM from 'react-dom';
-import { StyleReferencesDialog } from './modals/StyleReferencesDialog';
 import { RegenerationToolbar } from './RegenerationToolbar';
 
 const events = [
@@ -42,15 +39,14 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-    const popupRef = useRef<HTMLDialogElement | null>(); // Reference for the <dialog> element
 
     let [imageProgress, setImageProgress] = useState(0);
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
     let [unSelecedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
-    async function regenerateLayer(width: number, height: number) {
+    async function regenerateLayer() {
         try {
-            let newLayer = await generateAILayer(width, height, layerContext);
+            let newLayer = await generateAILayer(layerContext);
             console.log('after regenerating image');
             let oldLayer = layerContext.currentLayer;
             let copyOfContext = layerContext.copy();
@@ -104,11 +100,12 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
             <div className="flex flex-col justify-between">
                 <RegenerationToolbar contextID={props.contextID} />
                 <ProgressButton
+                    disabled={false}
                     // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
                     //  512x512 is the cheapest.  We will have to have a final step of upscaling
                     longRunningFunction={async () => {
                         console.log('before regenerate');
-                        await regenerateLayer(512, 512);
+                        await regenerateLayer();
                         console.log('after regenerate');
                     }}
                     progressQueryFunction={getImageProcessingProgress}
