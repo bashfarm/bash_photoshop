@@ -29,7 +29,7 @@ export async function img2img(
         const raw: Img2ImgRequest = {
             init_images: [imgb64Str],
             resize_mode: 0,
-            denoising_strength: layerContext.consistencyStrength,
+            denoising_strength: layerContext.getConsistencyStrength(),
             mask_blur: 4,
             inpainting_fill: 0,
             inpaint_full_res: true,
@@ -93,7 +93,7 @@ export const txt2img = async (
         firstphase_width: 0,
         firstphase_height: 0,
         prompt: layerContext.currentPrompt,
-        styles: layerContext.styles.map((s: StyleReference) => s.name),
+        styles: layerContext.styleReferences.map((s: StyleReference) => s.name),
         seed: -1,
         subseed: -1,
         subseed_strength: 0,
@@ -198,7 +198,7 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
  */
 export async function generateAILayer(layerContext: LayerAIContext) {
     // If the user doesn't want the new image to be consistent with another image than just generate a new one.
-    if (layerContext.consistencyStrength == 0) {
+    if (layerContext.getConsistencyStrength() == 0) {
         return await generateImageLayerUsingOnlyContext(layerContext);
     }
 

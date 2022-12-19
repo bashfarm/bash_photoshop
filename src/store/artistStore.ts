@@ -1,4 +1,5 @@
 import create from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 export interface ArtistState {
     artist: string;
@@ -7,11 +8,15 @@ export interface ArtistState {
     selectCategory: (categorySelected: string) => void;
 }
 
-export const useArtistStore = create((set) => ({
-    artist: '',
-    category: '',
-    selectArtist: (artistSelected: string) => set({ artist: artistSelected }),
-    selectCategory: (categorySelected: string) =>
-        set({ category: categorySelected }),
-    // increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
-}));
+// Log every time state is changed
+const log = (config: any) => (set: Function, get: Function, api: any) =>
+    config(
+        (...args: any) => {
+            set(...args);
+            console.log('👊ARTIST STORE👊 NEW STATE:', get());
+        },
+        get,
+        api
+    );
+
+export const useArtistStore = create(immer(log((set: any, get: any) => ({}))));

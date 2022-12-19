@@ -1,8 +1,7 @@
-import { getContextInfoFromFileName } from 'utils/context_utils';
-import { storage } from 'uxp';
 import _ from 'lodash';
+import { BashfulObject } from './BashfulObject';
 
-export default class StyleReference {
+export default class StyleReference extends BashfulObject {
     id: string;
     prompt: string;
     name: string;
@@ -12,13 +11,14 @@ export default class StyleReference {
     src: string;
 
     constructor(
-        prompt: string,
-        name: string,
-        src: string,
-        categories: string[],
-        moods: string[],
-        artists: string[]
+        prompt: string = '',
+        name: string = '',
+        src: string = '',
+        categories: string[] = [],
+        moods: string[] = [],
+        artists: string[] = []
     ) {
+        super();
         this.id = _.uniqueId();
         this.prompt = prompt;
         this.categories = categories;
@@ -26,9 +26,5 @@ export default class StyleReference {
         this.artists = artists;
         this.src = src;
         this.name = name;
-    }
-
-    public copy(): StyleReference {
-        return _.cloneDeep(this);
     }
 }

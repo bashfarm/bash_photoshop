@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Divider, Icon } from 'react-uxp-spectrum';
 
-import { ArtistDropdowns, StyleImage } from 'components/StyleReferences';
+import { ArtistDropdowns } from 'components/StyleReferences';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
-import _ from 'lodash';
 import { ExtendedHTMLDialogElement } from 'common/types';
+import _ from 'lodash';
 
 const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
@@ -27,44 +27,62 @@ export const StyleReferencesDialog = (props: ModalProps) => {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    // TODO(bgarrard): We will want to have styles be more than just strings at some point.
-    let [selectedStyles, setSelectedStyles] = useState<StyleReference[]>([]);
+    const [dropDownIDs, setDropDownIDs] = React.useState<Array<string>>([]);
 
-    const toggleStyleSelected = (style: StyleReference) => {
-        if (selectedStyles.find((i) => i.id === style.id)) {
-            setSelectedStyles(selectedStyles.filter((i) => i.id !== style.id));
-        } else {
-            setSelectedStyles([...selectedStyles, style]);
-        }
-        console.log(selectedStyles);
-    };
+    // const modalButtonOptionsHandler = (actionString: string) => {
+    // 	let retObj = { message: '', save: false };
 
-    const buttonHandler = (actionString: string) => {
-        let retObj = { message: '', save: false };
+    // 	switch (actionString) {
+    // 		case 'cancel':
+    // 			retObj.message = 'Canceled Dialog';
+    // 			break;
+    // 		case 'saveStyles':
+    // 			retObj.message = 'Styles Saved';
+    // 			retObj.save = true;
+    // 			props.handle.close();
+    // 			break;
 
-        switch (actionString) {
-            case 'cancel':
-                retObj.message = 'Canceled Dialog';
-                break;
-            case 'saveStyles':
-                retObj.message = 'Styles Saved';
-                retObj.save = true;
-                props.handle.close();
-                break;
+    // 		default:
+    // 			break;
+    // 	}
 
-            default:
-                break;
-        }
+    //TODO: This can only return a string not an object
+    // props.handle.close(retObj);
+    // };
+
+    function removeStyleReference(styleRef: StyleReference) {
+        let newStyleReferences = layerContext.styleReferences.filter(
+            (contextStyleRef: StyleReference) =>
+                contextStyleRef.id !== styleRef.id
+        );
         let copyOfContext = layerContext.copy();
-        copyOfContext.styles = selectedStyles;
+        copyOfContext.styleReferences = newStyleReferences;
         saveContextToStore(copyOfContext);
+    }
 
-        //TODO: This can only return a string not an object
-        // props.handle.close(retObj);
-    };
+    function createContextStyleRef() {
+        let newStyleReferences = layerContext.styleReferences;
+        newStyleReferences.push(new StyleReference());
+        let copyOfContext = layerContext.copy();
+        copyOfContext.styleReferences = newStyleReferences;
+        saveContextToStore(copyOfContext);
+    }
+
     return (
         <div className="flex flex-col">
-            <ArtistDropdowns />
+            <Button onClick={createContextStyleRef}>Add new artist</Button>
+
+            {layerContext.styleReferences &&
+                layerContext.styleReferences.map((styleRef: StyleReference) => (
+                    <ArtistDropdowns
+                        key={styleRef.id}
+                        contextID={props.contextID}
+                        styleRef={styleRef}
+                        removeStyleReference={() =>
+                            removeStyleReference(styleRef)
+                        }
+                    />
+                ))}
 
             <Divider className="my-2" size="small" />
 
@@ -88,15 +106,6 @@ export const StyleReferencesDialog = (props: ModalProps) => {
                 <Icon size="m" name="ui:ChevronLeftMedium"></Icon>
                 <Icon size="m" name="ui:ChevronRightMedium"></Icon>
             </div>
-            <Button variant="secondary" onClick={() => buttonHandler('cancel')}>
-                Cancel
-            </Button>
-            <Button
-                variant="primary"
-                onClick={() => buttonHandler('saveStyles')}
-            >
-                Save Styles
-            </Button>
         </div>
     );
 };

@@ -29,7 +29,7 @@ export default class LayerAIContext extends BashfulObject {
     seed: number;
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
-    styles: Array<StyleReference>; // the hisory of the context
+    styleReferences: Array<StyleReference>; // the hisory of the context
 
     constructor(
         currentLayer: Layer = null,
@@ -37,9 +37,9 @@ export default class LayerAIContext extends BashfulObject {
         smallDetails: Array<SmallDetailContext> = [],
         currentPrompt: string = '',
         history: Array<LayerAIContextHistory> = [],
-        styles: Array<StyleReference> = [],
+        styleReferences: Array<StyleReference> = [],
         stylingStrength: number = 70,
-        generationConsistencyString: number = 85,
+        generationConsistencyStrength: number = 0.85,
         imageHeight: number = 512,
         imageWidth: number = 512,
         seed: number = -1,
@@ -53,9 +53,9 @@ export default class LayerAIContext extends BashfulObject {
         this.currentPrompt = currentPrompt;
         this.currentLayer = currentLayer;
         this.history = history;
-        this.styles = styles;
+        this.styleReferences = styleReferences;
         this.stylingStrength = stylingStrength;
-        this.consistencyStrength = generationConsistencyString;
+        this.consistencyStrength = generationConsistencyStrength;
         this.imageHeight = imageHeight;
         this.imageWidth = imageWidth;
         this.seed = seed;
@@ -201,5 +201,15 @@ export default class LayerAIContext extends BashfulObject {
 
     public getStylingStrength() {
         return this.stylingStrength / 100;
+    }
+
+    /**
+     * The consistency strength is just the amount of denoising will occur.  30 is the max amount of noise in the API.  So we are letting the user
+     * set the percentage of noise they want to have.  The higher the number the more noise, it is confusing so we are inversing that for the user and calling it
+     * `consistency strength`.  So for the most noise, we will set the consistency strength to 0. for the least noise, we will set the consistency strength to 1.
+     * @returns
+     */
+    public getConsistencyStrength() {
+        return 30 - 30 * this.consistencyStrength;
     }
 }
