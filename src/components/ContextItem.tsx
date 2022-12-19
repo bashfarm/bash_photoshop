@@ -60,11 +60,11 @@ export const ContextItem = (props: ContextItemProps) => {
                 <Slider
                     variant="filled"
                     min={0}
-                    max={30}
+                    max={1}
                     value={layerContext.consistencyStrength}
                     onChange={(event) => {
                         let copyOfContext = layerContext.copy();
-                        copyOfContext.consistencyStrength = parseInt(
+                        copyOfContext.consistencyStrength = parseFloat(
                             event.target.value
                         );
                         saveContextToStore(copyOfContext);

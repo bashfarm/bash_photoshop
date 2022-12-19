@@ -17,7 +17,7 @@ const log = (config: any) => (set: Function, get: Function, api: any) =>
     config(
         (...args: any) => {
             set(...args);
-            console.log('  new state', get());
+            console.log('CONTEXT STORE👊 NEW STATE:', get());
         },
         get,
         api
