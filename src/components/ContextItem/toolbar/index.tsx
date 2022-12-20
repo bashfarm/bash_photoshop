@@ -1,10 +1,12 @@
-import React, { ReactElement } from 'react';
-import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
-
-type ToolProps = {
-    icon?: ReactElement;
-    label?: string;
-};
+import React, { FC, useState } from 'react';
+import {
+    VisibilityOffRounded,
+    VisibilityRounded,
+    PaletteIcon,
+    GridViewIcon,
+    RefreshIcon,
+} from 'components/Icons';
+import Tool from './Tool';
 
 const ToolbarDivider = () => {
     return (
@@ -12,26 +14,29 @@ const ToolbarDivider = () => {
     );
 };
 
-const Tool = (props: ToolProps) => {
-    const iconComponent = props?.icon;
-    return (
-        <div className="flex items-center">
-            {props.icon &&
-                React.cloneElement(iconComponent, {
-                    fontSize: 'small',
-                    className: 'hover:border',
-                })}
-            {props?.label}
-        </div>
-    );
+interface ToolSectionProps {
+    children: React.ReactNode;
+}
+const ToolSection: FC<ToolSectionProps> = ({ children }) => {
+    return <div className="flex items-center justify-between">{children}</div>;
 };
 
 const ContextToolbar = () => {
     return (
-        <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center">
-            <div>ContextToolbar</div>
+        <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
+            <ToolSection>
+                <Tool icon={VisibilityOffRounded} label="Mask" />
+                <Tool icon={VisibilityRounded} label="Unmask" />
+            </ToolSection>
             <ToolbarDivider />
-            <Tool icon={<VisibilityOffRounded />} label="Hide" />
+            <ToolSection>
+                <Tool icon={PaletteIcon} label="Styles" />
+                <Tool icon={GridViewIcon} label="Small Details" />
+            </ToolSection>
+            <ToolbarDivider />
+            <ToolSection>
+                <Tool icon={RefreshIcon} label="Regenerate Layer" />
+            </ToolSection>
         </div>
     );
 };

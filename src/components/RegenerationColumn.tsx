@@ -17,7 +17,7 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
 import { RegenerationToolbar } from './RegenerationToolbar';
-import BlenderIcon from '@mui/icons-material/Blender';
+import { BlenderIcon } from 'components/Icons';
 
 const events = [
     'make',
