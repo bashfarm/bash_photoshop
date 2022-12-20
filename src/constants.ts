@@ -2,6 +2,7 @@ export const B64_IMAGE_HEADER: string = 'data:image/png;base64, ';
 
 export const enum ContextHistoryEnum {
     HISTORY_FILE_FLAG = 'history',
+    TEMP_FILE_FLAG = 'temp',
 }
 
 export const enum PhotoshopTool {

@@ -75,7 +75,14 @@ export default class LayerAIContext extends BashfulObject {
      * Retreive the next available context history file name.
      * @param {number} userFileLimit
      */
-    public async getNextAvailableHistoryFileName(userFileLimit: number = 5) {
+    public async getNextAvailableHistoryFileName(
+        userFileLimit: number = 5,
+        temp: boolean = false
+    ) {
+        if (temp) {
+            return `${ContextHistoryEnum.TEMP_FILE_FLAG}_${this.id}_0.png`;
+        }
+
         let fileNumber = 0;
         let fileEntries = await this.getContextHistoryFileEntries();
 
@@ -115,9 +122,9 @@ export default class LayerAIContext extends BashfulObject {
      * @param layerAIContext
      * @returns
      */
-    public async saveLayerContexttoHistory() {
+    public async saveLayerContexttoHistory(temp: boolean = false) {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName(-1);
+            let fileName = await this.getNextAvailableHistoryFileName(-1, temp);
             console.log(`trying to save layer with file name ${fileName}`);
             if (!fileName) {
                 return;
