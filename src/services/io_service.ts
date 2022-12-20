@@ -122,7 +122,8 @@ export async function saveDocumentToPluginData(
     fileName: string
 ): Promise<void> {
     try {
-        saveDocumentAsPNG(await createDataFolderEntry(fileName));
+        let entry = await createDataFolderEntry(fileName);
+        saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
     }
@@ -152,7 +153,7 @@ export async function saveDocumentAsPNG(fileRef: storage.File) {
 export async function saveLayerToPluginData(fileName: string, layer: Layer) {
     if (!layer) {
         console.warn(
-            `Tried to save an undefined layerin ${saveLayerToPluginData.name}`
+            `Tried to save an undefined layer in ${saveLayerToPluginData.name}`
         );
     }
 
@@ -160,7 +161,6 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
         const visibleLayers: Layer[] = getVisibleLayers(
             photoshop.app.activeDocument.layers
         );
-        console.log(visibleLayers);
         const prevVisibility = layer.visible;
         await executeInPhotoshop(saveLayerToPluginData, async () => {
             // Make layers inivisible so we only export the document with the the selected layer

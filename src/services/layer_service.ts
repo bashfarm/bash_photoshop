@@ -452,44 +452,39 @@ export async function scaleLayer(
     });
 }
 
-export async function scaleLayerToCanvas(layer: Layer) {
-    await executeInPhotoshop(scaleLayer, async () => {
-        console.log('yolo');
-        let widthScale = getWidthScale(
-            layer.bounds.width,
-            photoshop.app.activeDocument.width
-        );
-        let heightScale = getHeightScale(
-            layer.bounds.height,
-            photoshop.app.activeDocument.height
-        );
-
-        console.log(widthScale);
-        console.log(heightScale);
-
-        await layer.scale(
-            widthScale,
-            heightScale,
-            photoshop.constants.AnchorPosition.MIDDLECENTER
-        );
+export async function scaleAndFitLayerToCanvas(layer: Layer) {
+    return await executeInPhotoshop(scaleAndFitLayerToCanvas, async () => {
+        await scaleLayerToCanvas(layer);
+        await fitLayerPositionToCanvas(layer);
     });
 }
 
-// async function actionCommands() {
-//     let command;
-//     let result;
-//     let psAction = require("photoshop").action;
+export async function scaleLayerToCanvas(layer: Layer) {
+    await executeInPhotoshop(scaleLayer, async () => {
+        let widthScale = getWidthScale(
+            layer.bounds.width,
+            layer.document.width
+        );
+        let heightScale = getHeightScale(
+            layer.bounds.height,
+            layer.document.height
+        );
 
-//     // Transform current layer
-//     command = {"_obj":"transform","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"freeTransformCenterState":{"_enum":"quadCenterState","_value":"QCSAverage"},"height":{"_unit":"percentUnit","_value":103.66837857666913},"interfaceIconFrameDimmed":{"_enum":"interpolationType","_value":"bicubic"},"offset":{"_obj":"offset","horizontal":{"_unit":"pixelsUnit","_value":0.0},"vertical":{"_unit":"pixelsUnit","_value":24.999999999999966}}};
-//     result = await psAction.batchPlay([command], {});
-// }
+        try {
+            await layer.scale(
+                widthScale,
+                heightScale,
+                photoshop.constants.AnchorPosition.MIDDLECENTER
+            );
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
 
-// async function runModalFunction() {
-//     await require("photoshop").core.executeAsModal(actionCommands, {"commandName": "Action Commands"});
-// }
-
-// await runModalFunction();
+export async function fitLayerPositionToCanvas(layer: Layer) {
+    return await translateLayer(layer, -layer.bounds.left, -layer.bounds.top);
+}
 
 /**
  * Applies a skew to the layer.

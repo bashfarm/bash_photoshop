@@ -7,7 +7,12 @@ import {
     generateAILayer,
     getImageProcessingProgress,
 } from 'services/ai_service';
-import { deleteLayer, moveLayer } from 'services/layer_service';
+import {
+    deleteLayer,
+    moveLayer,
+    scaleAndFitLayerToCanvas,
+    scaleLayerToCanvas,
+} from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
@@ -74,6 +79,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
                 await deleteLayer(oldLayer);
             }
             setSelectedLayerName(newLayer.name);
+            await scaleAndFitLayerToCanvas(newLayer);
         } catch (e) {
             console.error(e);
         }
