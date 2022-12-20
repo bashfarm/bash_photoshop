@@ -24,6 +24,8 @@ const events = [
     'undoEnum',
 ];
 
+const deleteEvent = ['delete'];
+
 export type RegenerationColumnProps = {
     contextID: string;
 };
@@ -41,14 +43,22 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
+    let contexts = useContextStore(
+        (state: ContextStoreState) => state.contexts
+    );
+
     let [imageProgress, setImageProgress] = useState(0);
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
     let [unSelecedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
-    async function regenerateLayer() {
+    /**
+     * This will regenerate the layer in the context item.  This will also move the layer to the top of the layer stack.
+     * If the deleteOldLayer is set to true, then the old layer will be deleted.
+     * @param deleteOldLayer
+     */
+    async function regenerateLayer(deleteOldLayer: boolean = false) {
         try {
             let newLayer = await generateAILayer(layerContext);
-            console.log('after regenerating image');
             let oldLayer = layerContext.currentLayer;
             let copyOfContext = layerContext.copy();
 
@@ -60,7 +70,9 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
                 oldLayer,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
-            await deleteLayer(oldLayer);
+            if (deleteOldLayer) {
+                await deleteLayer(oldLayer);
+            }
             setSelectedLayerName(newLayer.name);
         } catch (e) {
             console.error(e);
@@ -71,10 +83,36 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
         setUnSelectedLayers(getUnselectedLayerNames());
     }
 
+    /**
+     * This function is used as an event handler for the delete event.  This is used to delete the context from the store if the layer is deleted
+     * from the active documents layers.
+     */
+    function onDelete() {
+        try {
+            for (let context of Object.values(contexts)) {
+                if (
+                    !photoshop.app.activeDocument.layers.includes(
+                        context.currentLayer
+                    )
+                ) {
+                    let copyOfContext = context.copy();
+                    copyOfContext.currentLayer = null;
+                    saveContextToStore(copyOfContext);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        setUnSelectedLayers(getUnselectedLayerNames());
+    }
+
     useEffect(() => {
         photoshop.action.addNotificationListener(events, onLayerChange);
+        photoshop.action.addNotificationListener(deleteEvent, onDelete);
         return () => {
             photoshop.action.removeNotificationListener(events, onLayerChange);
+            photoshop.action.removeNotificationListener(deleteEvent, onDelete);
         };
     }, []);
 
@@ -92,6 +130,12 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
         saveContextToStore(copyOfContext);
     }
 
+    /**
+     * This retrieves the unselected layers through all the context items.  This isn't really implemented as of yet.
+     *
+     * TODO(): Implement this
+     * @returns
+     */
     function getUnselectedLayerNames() {
         return photoshop.app.activeDocument.layers.map((layer) => layer.name);
     }
@@ -106,7 +150,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
                     //  512x512 is the cheapest.  We will have to have a final step of upscaling
                     longRunningFunction={async () => {
                         console.log('before regenerate');
-                        await regenerateLayer();
+                        await regenerateLayer(false);
                         console.log('after regenerate');
                     }}
                     progressQueryFunction={getImageProcessingProgress}

@@ -7,7 +7,6 @@ import { ContextInfoColumn } from './ContextInfoColumn';
 import { ContextToolColumn } from './ContextToolColumn';
 import { RegenerationColumn } from './RegenerationColumn';
 import ContextToolbar from './ContextItem/toolbar';
-import { ContextLabel } from './ContextLabel';
 
 export type ContextItemProps = {
     contextID: string;
@@ -48,12 +47,11 @@ export const ContextItem = (props: ContextItemProps) => {
                     variant="filled"
                     min={0}
                     max={100}
-                    value={layerContext.stylingStrength}
+                    value={100 * layerContext.stylingStrength}
                     onChange={(event) => {
                         let copyOfContext = layerContext.copy();
-                        copyOfContext.stylingStrength = parseInt(
-                            event.target.value
-                        );
+                        copyOfContext.stylingStrength =
+                            parseInt(event.target.value) / 100;
                         saveContextToStore(copyOfContext);
                     }}
                 >
@@ -62,13 +60,12 @@ export const ContextItem = (props: ContextItemProps) => {
                 <Slider
                     variant="filled"
                     min={0}
-                    max={1}
-                    value={layerContext.consistencyStrength}
+                    max={100}
+                    value={100 * layerContext.consistencyStrength}
                     onChange={(event) => {
                         let copyOfContext = layerContext.copy();
-                        copyOfContext.consistencyStrength = parseFloat(
-                            event.target.value
-                        );
+                        copyOfContext.consistencyStrength =
+                            parseInt(event.target.value) / 100;
                         saveContextToStore(copyOfContext);
                     }}
                 >

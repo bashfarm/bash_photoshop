@@ -27,4 +27,18 @@ export default class StyleReference extends BashfulObject {
         this.src = src;
         this.name = name;
     }
+
+    public generateStylePrompt(): string {
+        let prompt = this.prompt;
+        if (this.categories.length > 0) {
+            prompt += `. With styles like ${this.categories.join(', ')}`;
+        }
+        if (this.moods.length > 0) {
+            prompt += ` With moods like ${this.moods.join(', ')}`;
+        }
+        if (this.artists.length > 0) {
+            prompt += `By the artists ${this.artists.join(', ')}`;
+        }
+        return prompt;
+    }
 }

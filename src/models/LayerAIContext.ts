@@ -38,7 +38,7 @@ export default class LayerAIContext extends BashfulObject {
         currentPrompt: string = '',
         history: Array<LayerAIContextHistory> = [],
         styleReferences: Array<StyleReference> = [],
-        stylingStrength: number = 70,
+        stylingStrength: number = 0.7,
         generationConsistencyStrength: number = 0.85,
         imageHeight: number = 512,
         imageWidth: number = 512,
@@ -200,7 +200,7 @@ export default class LayerAIContext extends BashfulObject {
     }
 
     public getStylingStrength() {
-        return this.stylingStrength / 100;
+        return 20 * this.stylingStrength;
     }
 
     /**
@@ -209,7 +209,31 @@ export default class LayerAIContext extends BashfulObject {
      * `consistency strength`.  So for the most noise, we will set the consistency strength to 0. for the least noise, we will set the consistency strength to 1.
      * @returns
      */
-    public getConsistencyStrength() {
-        return 30 - 30 * this.consistencyStrength;
+    public getDenoisingStrength() {
+        return 1 - this.consistencyStrength;
+    }
+
+    public generateContextualizedPrompt() {
+        let prompt: string = this.currentPrompt;
+        let categories: Array<string> = [];
+        let moods: Array<string> = [];
+        let artists: Array<string> = [];
+
+        for (let styleRef of this.styleReferences) {
+            categories = [...categories, ...styleRef.categories];
+            moods = [...moods, ...styleRef.moods];
+            artists = [...artists, ...styleRef.artists];
+        }
+
+        if (categories.length > 0) {
+            prompt += ` With styles like ${categories.join(', and ')}.`;
+        }
+        if (moods.length > 0) {
+            prompt += ` With moods like ${moods.join(', and ')}.`;
+        }
+        if (artists.length > 0) {
+            prompt += ` By the artists ${artists.join(', and ')}.`;
+        }
+        return prompt;
     }
 }
