@@ -1,5 +1,4 @@
 import React, { useState, useEffect, ReactElement } from 'react';
-import BlenderIcon from '@mui/icons-material/Blender';
 import { Button } from 'react-uxp-spectrum';
 
 export type ProgressButtonProps = {
