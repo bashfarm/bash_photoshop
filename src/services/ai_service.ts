@@ -257,7 +257,7 @@ export async function generateImageLayerUsingLayer(
         // We save in the beginning to make sure we capture all changes that could have occurred to the layer
         // before we send it off to the AI for regeneration.
         let contextHistoryFileEntry =
-            await layerContext.saveLayerContexttoHistory();
+            await layerContext.saveLayerContexttoHistory(true);
 
         // No available file entry.  The user needs to remove some history or do inplace regeneration TODO(Might not happen)
         if (!contextHistoryFileEntry) {
