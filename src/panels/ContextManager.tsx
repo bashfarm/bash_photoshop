@@ -5,6 +5,13 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import photoshop from 'photoshop';
 import { Button, Divider } from 'react-uxp-spectrum';
+import {
+    getTopLayer,
+    scaleLayer,
+    scaleLayerToCanvas,
+} from '../services/layer_service';
+import { getWidthScale } from 'utils/layer_utils';
+
 const app = photoshop.app;
 
 export const ContextManager = () => {
@@ -24,7 +31,9 @@ export const ContextManager = () => {
             {/* <ContextRecycleBin />
 
 			<E2ETestingPanel></E2ETestingPanel> */}
-
+            <Button onClick={() => scaleLayerToCanvas(getTopLayer())}>
+                Upscale and Resize Layer
+            </Button>
             <div className="mb-1">
                 <Button
                     onClick={async () => {

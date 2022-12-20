@@ -13,6 +13,7 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import LayerAIContext from 'models/LayerAIContext';
+import { getHeightScale, getWidthScale } from 'utils/layer_utils';
 
 const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
@@ -446,9 +447,49 @@ export async function scaleLayer(
     options?: { interpolation?: ResampleMethod }
 ) {
     await executeInPhotoshop(scaleLayer, async () => {
-        layer.scale(width, height, anchor, options);
+        console.log('yolo');
+        await layer.scale(width, height, anchor, options);
     });
 }
+
+export async function scaleLayerToCanvas(layer: Layer) {
+    await executeInPhotoshop(scaleLayer, async () => {
+        console.log('yolo');
+        let widthScale = getWidthScale(
+            layer.bounds.width,
+            photoshop.app.activeDocument.width
+        );
+        let heightScale = getHeightScale(
+            layer.bounds.height,
+            photoshop.app.activeDocument.height
+        );
+
+        console.log(widthScale);
+        console.log(heightScale);
+
+        await layer.scale(
+            widthScale,
+            heightScale,
+            photoshop.constants.AnchorPosition.MIDDLECENTER
+        );
+    });
+}
+
+// async function actionCommands() {
+//     let command;
+//     let result;
+//     let psAction = require("photoshop").action;
+
+//     // Transform current layer
+//     command = {"_obj":"transform","_target":[{"_enum":"ordinal","_ref":"layer","_value":"targetEnum"}],"freeTransformCenterState":{"_enum":"quadCenterState","_value":"QCSAverage"},"height":{"_unit":"percentUnit","_value":103.66837857666913},"interfaceIconFrameDimmed":{"_enum":"interpolationType","_value":"bicubic"},"offset":{"_obj":"offset","horizontal":{"_unit":"pixelsUnit","_value":0.0},"vertical":{"_unit":"pixelsUnit","_value":24.999999999999966}}};
+//     result = await psAction.batchPlay([command], {});
+// }
+
+// async function runModalFunction() {
+//     await require("photoshop").core.executeAsModal(actionCommands, {"commandName": "Action Commands"});
+// }
+
+// await runModalFunction();
 
 /**
  * Applies a skew to the layer.
