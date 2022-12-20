@@ -12,6 +12,7 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
 import { RegenerationToolbar } from './RegenerationToolbar';
+import BlenderIcon from '@mui/icons-material/Blender';
 
 const events = [
     'make',
@@ -114,6 +115,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
                     }
                     progressSetter={setImageProgress}
                     pollingSeconds={1}
+                    icon={<BlenderIcon />}
                 >
                     Regenerate Layer
                 </ProgressButton>
@@ -121,7 +123,7 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
                     min={0}
                     max={1}
                     value={imageProgress}
-                    className="py-2"
+                    className="py-2 w-full"
                 ></Progressbar>
                 <Spectrum.Dropdown>
                     <Spectrum.Menu slot="options">

@@ -1,49 +1,26 @@
-import React, { useRef } from 'react';
+import React, { ReactElement, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Button } from 'react-uxp-spectrum';
-
-import { StyleReferencesDialog } from './modals/StyleReferencesDialog';
+import { StyleReferencesDialog, SmallUIDetailsDialog } from './modals';
 import { ExtendedHTMLDialogElement } from 'common/types';
-import { SmallUIDetailsDialog } from './modals/SmallUIDetailsDialog';
 
 export type RegenerationToolbarProps = {
     contextID: string;
 };
 
 export const RegenerationToolbar = (props: RegenerationToolbarProps) => {
-    const popupRef = useRef<ExtendedHTMLDialogElement>(); // Reference for the <dialog> element
+    const popupRef = useRef<ExtendedHTMLDialogElement>();
 
-    function getModal(modalName: string) {
-        switch (modalName) {
-            case 'styles':
-                return (
-                    <StyleReferencesDialog
-                        handle={popupRef.current}
-                        contextID={props.contextID}
-                    />
-                );
-            case 'UIDetail':
-                return (
-                    <SmallUIDetailsDialog
-                        handle={popupRef.current}
-                        contextID={props.contextID}
-                    />
-                );
-            default:
-                break;
-        }
-    }
-
-    const popUpModal = async (modalName: string) => {
+    const popUpModal = async (modalComponent: ReactElement, title: string) => {
         if (!popupRef.current) {
             popupRef.current = document.createElement(
                 'dialog'
             ) as ExtendedHTMLDialogElement;
-            ReactDOM.render(getModal(modalName), popupRef.current);
+            ReactDOM.render(modalComponent, popupRef.current);
         }
         document.body.appendChild(popupRef.current);
         await popupRef.current.uxpShowModal({
-            title: modalName,
+            title: title,
             resize: 'both',
             size: {
                 width: 800,
@@ -55,8 +32,30 @@ export const RegenerationToolbar = (props: RegenerationToolbarProps) => {
     };
     return (
         <div className="flex flex-row space-x-1">
-            <Button onClick={() => popUpModal('styles')}>Styling</Button>
-            <Button onClick={() => popUpModal('UIDetail')}>
+            <Button
+                onClick={() =>
+                    popUpModal(
+                        <StyleReferencesDialog
+                            handle={popupRef.current}
+                            contextID={props.contextID}
+                        />,
+                        'Styles'
+                    )
+                }
+            >
+                Styling
+            </Button>
+            <Button
+                onClick={() =>
+                    popUpModal(
+                        <SmallUIDetailsDialog
+                            handle={popupRef.current}
+                            contextID={props.contextID}
+                        />,
+                        'UI Details'
+                    )
+                }
+            >
                 Small Details
             </Button>
         </div>

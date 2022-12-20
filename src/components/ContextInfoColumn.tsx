@@ -12,7 +12,7 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
     );
 
     return (
-        <div className="flex flex-col bg-brand-dark">
+        <div className="flex flex-col min-w-fit justify-center">
             <ContextLabel
                 value={layerContext.currentLayer?.name}
                 labelText={'Layer Name:'}
@@ -21,7 +21,7 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
                 value={layerContext.currentLayer?.id}
                 labelText={'Layer Id:'}
             />
-            <ContextLabel value={layerContext.id} labelText={'Context Id'} />
+            <ContextLabel value={layerContext.id} labelText={'Context ID:'} />
         </div>
     );
 };

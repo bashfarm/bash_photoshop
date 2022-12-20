@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { TagSelector } from 'components/TagSelector';
 import AssetItem from 'components/SmallUiDetail/AssetItem';
-import {
-    Textarea,
-    ActionButton,
-    Icon,
-    Divider,
-    Heading,
-} from 'react-uxp-spectrum';
+import { Textarea, Icon, Divider, Heading } from 'react-uxp-spectrum';
 import { getImageProcessingProgress, txt2img } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
