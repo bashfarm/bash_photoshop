@@ -26,16 +26,16 @@ export async function img2img(
     layerContext: LayerAIContext
 ): Promise<ImageResponse> {
     try {
-        const raw: Img2ImgRequest = {
+        const payload: Img2ImgRequest = {
             init_images: [imgb64Str],
             resize_mode: 0,
-            denoising_strength: layerContext.getConsistencyStrength(),
+            denoising_strength: layerContext.getDenoisingStrength(),
             mask_blur: 4,
             inpainting_fill: 0,
             inpaint_full_res: true,
             inpaint_full_res_padding: 0,
             inpainting_mask_invert: 0,
-            prompt: layerContext.currentPrompt,
+            prompt: layerContext.generateContextualizedPrompt(),
             seed: layerContext.seed,
             subseed: -1,
             subseed_strength: 0,
@@ -43,8 +43,8 @@ export async function img2img(
             seed_resize_from_w: -1,
             batch_size: 1,
             n_iter: 1,
-            steps: 20,
-            cfg_scale: layerContext.stylingStrength,
+            steps: 25,
+            cfg_scale: layerContext.getStylingStrength(),
             width: layerContext.imageWidth,
             height: layerContext.imageHeight,
             restore_faces: false,
@@ -62,11 +62,12 @@ export async function img2img(
             styles: [],
             sampler_name: null,
         };
+        console.log(payload);
 
         const requestOptions: RequestInit = {
             method: 'POST',
             headers: myHeaders,
-            body: JSON.stringify(raw),
+            body: JSON.stringify(payload),
             redirect: 'follow',
         };
         const response = await fetch(
@@ -92,9 +93,9 @@ export const txt2img = async (
         denoising_strength: 0,
         firstphase_width: 0,
         firstphase_height: 0,
-        prompt: layerContext.currentPrompt,
+        prompt: layerContext.generateContextualizedPrompt(),
         styles: layerContext.styleReferences.map((s: StyleReference) => s.name),
-        seed: -1,
+        seed: layerContext.seed,
         subseed: -1,
         subseed_strength: 0,
         seed_resize_from_h: -1,
@@ -102,8 +103,8 @@ export const txt2img = async (
         sampler_name: '',
         batch_size: layerContext.batchSize,
         n_iter: 1,
-        steps: 50,
-        cfg_scale: 7,
+        steps: 25,
+        cfg_scale: layerContext.getStylingStrength(),
         width: layerContext.imageWidth,
         height: layerContext.imageHeight,
         restore_faces: false,
@@ -117,6 +118,8 @@ export const txt2img = async (
         override_settings: {},
         sampler_index: 'Euler',
     };
+
+    console.log(payload);
 
     const requestOptions: RequestInit = {
         method: 'POST',
@@ -198,7 +201,7 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
  */
 export async function generateAILayer(layerContext: LayerAIContext) {
     // If the user doesn't want the new image to be consistent with another image than just generate a new one.
-    if (layerContext.getConsistencyStrength() == 0) {
+    if (layerContext.consistencyStrength == 0) {
         return await generateImageLayerUsingOnlyContext(layerContext);
     }
 
@@ -220,9 +223,6 @@ export async function generateImageLayerUsingOnlyContext(
             console.log(e);
             throw e;
         }
-
-        console.log(`retrieved b64 image`);
-        console.log(genb64Str);
 
         if (genb64Str) {
             // So we save the newly generated file as the next historical file
@@ -277,15 +277,11 @@ export async function generateImageLayerUsingLayer(
                 formatBase64Image(b64Data),
                 layerContext
             );
-            console.log(response);
             genb64Str = formatBase64Image(response['images'][0]);
         } catch (e) {
             console.log(e);
             throw e;
         }
-
-        console.log(`retrieved b64 image`);
-        console.log(b64Data);
 
         if (genb64Str) {
             // So we save the newly generated file as the next historical file
