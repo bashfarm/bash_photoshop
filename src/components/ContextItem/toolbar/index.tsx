@@ -1,6 +1,5 @@
-import React, { FC, ReactElement, useState } from 'react';
-import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
-import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
+import React, { FC, useState } from 'react';
+import { VisibilityOffRounded, VisibilityRounded } from 'components/Icons';
 
 type ToolProps = {
     icon?: FC<any>;
