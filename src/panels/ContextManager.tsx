@@ -4,7 +4,7 @@ import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import photoshop from 'photoshop';
-import { Button } from 'react-uxp-spectrum';
+import { Button, Divider } from 'react-uxp-spectrum';
 const app = photoshop.app;
 
 export const ContextManager = () => {
@@ -25,7 +25,7 @@ export const ContextManager = () => {
 
 			<E2ETestingPanel></E2ETestingPanel> */}
 
-            <div>
+            <div className="mb-1">
                 <Button
                     onClick={async () => {
                         let newContext = await createNewContext();
@@ -56,10 +56,13 @@ function ContextItems() {
                 Object.keys(contexts).map((key) => {
                     let context = contexts[key];
                     return (
-                        <ContextItem
-                            key={context.id}
-                            contextID={context.id}
-                        ></ContextItem>
+                        <>
+                            <ContextItem
+                                key={context.id}
+                                contextID={context.id}
+                            ></ContextItem>
+                            <Divider className="my-2" size="small" />
+                        </>
                     );
                 })}
         </>

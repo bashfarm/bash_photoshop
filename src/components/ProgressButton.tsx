@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import BlenderIcon from '@mui/icons-material/Blender';
 import { Button } from 'react-uxp-spectrum';
 
@@ -9,6 +9,7 @@ export type ProgressButtonProps = {
     queryResponseParser: Function;
     progressSetter: Function;
     disabled: boolean;
+    icon?: ReactElement;
     children: any;
 };
 
@@ -65,10 +66,10 @@ export const ProgressButton = (props: ProgressButtonProps) => {
                     );
                 }}
             >
-                <span>
-                    <BlenderIcon></BlenderIcon>
-                </span>
-                {props.children}
+                <div className="flex items-center">
+                    <span>{props?.icon}</span>
+                    {props.children}
+                </div>
             </Button>
         </>
     );
