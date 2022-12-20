@@ -1,47 +1,12 @@
 import React, { FC, useState } from 'react';
-import { VisibilityOffRounded, VisibilityRounded } from 'components/Icons';
-
-type ToolProps = {
-    icon?: FC<any>;
-    label?: string;
-};
-
-const Tool = (props: ToolProps) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    return (
-        <div
-            className="flex items-center mr-1"
-            onMouseLeave={() => setIsHovered(false)}
-            onMouseEnter={() => setIsHovered(true)}
-        >
-            {props.icon && (
-                <props.icon
-                    {...{
-                        style: {
-                            color: isHovered
-                                ? 'var(--uxp-host-text-color-secondary)'
-                                : 'var(--uxp-host-text-color)',
-                        },
-                        fontSize: 'small',
-                    }}
-                />
-            )}
-            {props.label && (
-                <div
-                    className="ml-1"
-                    style={{
-                        color: isHovered
-                            ? 'var(--uxp-host-text-color-secondary)'
-                            : 'var(--uxp-host-label-text-color)',
-                    }}
-                >
-                    {props.label}
-                </div>
-            )}
-        </div>
-    );
-};
+import {
+    VisibilityOffRounded,
+    VisibilityRounded,
+    PaletteIcon,
+    GridViewIcon,
+    RefreshIcon,
+} from 'components/Icons';
+import Tool from './Tool';
 
 const ToolbarDivider = () => {
     return (
@@ -49,12 +14,29 @@ const ToolbarDivider = () => {
     );
 };
 
+interface ToolSectionProps {
+    children: React.ReactNode;
+}
+const ToolSection: FC<ToolSectionProps> = ({ children }) => {
+    return <div className="flex items-center justify-between">{children}</div>;
+};
+
 const ContextToolbar = () => {
     return (
-        <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center">
-            <Tool icon={VisibilityRounded} label="Unhide" />
-            <Tool icon={VisibilityOffRounded} label="Hide" />
+        <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
+            <ToolSection>
+                <Tool icon={VisibilityOffRounded} label="Mask" />
+                <Tool icon={VisibilityRounded} label="Unmask" />
+            </ToolSection>
             <ToolbarDivider />
+            <ToolSection>
+                <Tool icon={PaletteIcon} label="Styles" />
+                <Tool icon={GridViewIcon} label="Small Details" />
+            </ToolSection>
+            <ToolbarDivider />
+            <ToolSection>
+                <Tool icon={RefreshIcon} label="Regenerate Layer" />
+            </ToolSection>
         </div>
     );
 };
