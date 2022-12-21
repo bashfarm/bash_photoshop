@@ -331,3 +331,33 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
         throw error;
     }
 }
+
+export async function upScaleImage(
+    b64UnformattedImage: string,
+    downScaleFirst: boolean = true
+) {
+    let payload = {
+        upscaler_name: 'ESRGAN_4x',
+        src_img: b64UnformattedImage, // probably should stay 512x512
+        downscale_first: downScaleFirst,
+    };
+
+    const requestOptions: RequestInit = {
+        method: 'POST',
+        headers: myHeaders,
+        redirect: 'follow',
+        body: JSON.stringify(payload),
+    };
+
+    try {
+        const response = await fetch(
+            `${process.env.API_URL}/sdapi/interpause/upscale`,
+            requestOptions
+        );
+
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

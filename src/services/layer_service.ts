@@ -13,6 +13,7 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import LayerAIContext from 'models/LayerAIContext';
+import { getHeightScale, getWidthScale } from 'utils/layer_utils';
 
 const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
@@ -446,8 +447,43 @@ export async function scaleLayer(
     options?: { interpolation?: ResampleMethod }
 ) {
     await executeInPhotoshop(scaleLayer, async () => {
-        layer.scale(width, height, anchor, options);
+        console.log('yolo');
+        await layer.scale(width, height, anchor, options);
     });
+}
+
+export async function scaleAndFitLayerToCanvas(layer: Layer) {
+    return await executeInPhotoshop(scaleAndFitLayerToCanvas, async () => {
+        await scaleLayerToCanvas(layer);
+        await fitLayerPositionToCanvas(layer);
+    });
+}
+
+export async function scaleLayerToCanvas(layer: Layer) {
+    await executeInPhotoshop(scaleLayer, async () => {
+        let widthScale = getWidthScale(
+            layer.bounds.width,
+            layer.document.width
+        );
+        let heightScale = getHeightScale(
+            layer.bounds.height,
+            layer.document.height
+        );
+
+        try {
+            await layer.scale(
+                widthScale,
+                heightScale,
+                photoshop.constants.AnchorPosition.MIDDLECENTER
+            );
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
+
+export async function fitLayerPositionToCanvas(layer: Layer) {
+    return await translateLayer(layer, -layer.bounds.left, -layer.bounds.top);
 }
 
 /**

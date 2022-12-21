@@ -5,6 +5,16 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import photoshop from 'photoshop';
 import { Button, Divider } from 'react-uxp-spectrum';
+import {
+    fitLayerPositionToCanvas,
+    getTopLayer,
+    scaleAndFitLayerToCanvas,
+    scaleLayer,
+    scaleLayerToCanvas,
+    translateLayer,
+} from '../services/layer_service';
+import { getWidthScale } from 'utils/layer_utils';
+
 const app = photoshop.app;
 
 export const ContextManager = () => {
@@ -24,6 +34,15 @@ export const ContextManager = () => {
             {/* <ContextRecycleBin />
 
 			<E2ETestingPanel></E2ETestingPanel> */}
+            <Button
+                onClick={async () => {
+                    alert(
+                        'implement the upscale function.  Let users enhance the image'
+                    );
+                }}
+            >
+                Upscale
+            </Button>
 
             <div className="mb-1">
                 <Button
