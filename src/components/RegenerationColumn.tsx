@@ -1,7 +1,6 @@
 import { ProgressResponse } from 'common/types/sdapi';
-import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Spectrum, { Progressbar } from 'react-uxp-spectrum';
 import {
     generateAILayer,
@@ -11,7 +10,6 @@ import {
     deleteLayer,
     moveLayer,
     scaleAndFitLayerToCanvas,
-    scaleLayerToCanvas,
 } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
@@ -43,6 +41,10 @@ export type RegenerationColumnProps = {
 export const RegenerationColumn = (props: RegenerationColumnProps) => {
     let layerContext = useContextStore((state: ContextStoreState) =>
         state.getContextFromStore(props.contextID)
+    );
+
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
     );
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
@@ -95,19 +97,14 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
      */
     function onDelete() {
         try {
-            for (let context of Object.values(contexts)) {
-                if (
-                    !photoshop.app.activeDocument.layers.includes(
-                        context.currentLayer
-                    )
-                ) {
-                    let copyOfContext = context.copy();
-                    copyOfContext.currentLayer = null;
-                    saveContextToStore(copyOfContext);
-                }
-            }
+            getContextFromStore(props.contextID).currentLayer.id;
         } catch (e) {
             console.error(e);
+            let copyOfContext = getContextFromStore(props.contextID).copy();
+            console.log(copyOfContext);
+
+            copyOfContext.currentLayer = null;
+            saveContextToStore(copyOfContext);
         }
 
         setUnSelectedLayers(getUnselectedLayerNames());
