@@ -16,7 +16,6 @@ import {
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ProgressButton } from './ProgressButton';
 import photoshop from 'photoshop';
-import { RegenerationToolbar } from './RegenerationToolbar';
 import { BlenderIcon } from 'components/Icons';
 
 const events = [
@@ -149,7 +148,6 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     return (
         <>
             <div className="flex flex-col justify-between">
-                <RegenerationToolbar contextID={props.contextID} />
                 <ProgressButton
                     disabled={false}
                     // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
