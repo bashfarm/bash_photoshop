@@ -1,28 +1,40 @@
 import gsap from 'gsap';
 
-export function performSaveAnimation(
+export function getSaveAnimationTimeline(
     someRef: React.MutableRefObject<HTMLDivElement>,
     color: string = '#7e4dfb'
 ) {
-    gsap.timeline()
-        .to(someRef.current, {
-            duration: 0.2,
-            repeat: 0,
-            ease: 'elastic.out(1, 0.3)',
-            autoAlpha: 1,
+    let prevOpacity = someRef.current.style.opacity;
+    let prevBackgroundColor = someRef.current.style.backgroundColor;
+    let preBorderColor = someRef.current.style.borderColor;
+    let prevBorderWidth = someRef.current.style.borderWidth;
+    console.log(gsap);
+
+    let tl = gsap
+        .timeline({
+            defaults: { duration: 0.2, delay: 0.1, repeat: 1, yoyo: true },
         })
+        // .set(someRef.current, {
+        // 	borderColor: color,
+        // 	borderWidth: '2px',
+        // })
         .to(someRef.current, {
-            duration: 0.2,
-            backgroundColor: color,
-            ease: 'none',
-            delay: 0.5,
-        })
-        .to(someRef.current, {
-            duration: 0.2,
-            backgroundColor: 'transparent',
-            ease: 'none',
-            delay: 0.5,
+            delay: 0,
+            opacity: 0.5,
+            duration: 1,
+            borderColor: color,
+            borderWidth: '2px',
         });
+    // .to(someRef.current, {
+    // 	duration: 1,
+    // 	opacity: prevOpacity,
+    // 	backgroundColor: prevBackgroundColor,
+    // 	borderColor: preBorderColor,
+    // 	borderWidth: prevBorderWidth,
+
+    // })
+    tl.paused(true);
+    return tl;
 }
 
 export function performHeaderAnimation(

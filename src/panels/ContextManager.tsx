@@ -5,7 +5,7 @@ import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
-import { performSaveAnimation } from 'utils/animation_utils';
+import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
 export const ContextManager = () => {
     const saveContextToStore = useContextStore(
@@ -25,7 +25,7 @@ export const ContextManager = () => {
 
     useEffect(() => {
         console.log('state changed detected');
-        performSaveAnimation(someRef, 'green');
+        getSaveAnimationTimeline(someRef, 'green');
     });
 
     return (
