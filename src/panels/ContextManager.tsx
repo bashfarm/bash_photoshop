@@ -1,16 +1,18 @@
 // import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
-import { SaveStateIconFooter } from 'components/SaveStateIconFooter';
+import { performSaveAnimation } from 'utils/animation_utils';
 
 export const ContextManager = () => {
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );
+
+    const contextStore = useContextStore();
 
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
@@ -19,21 +21,17 @@ export const ContextManager = () => {
         return context;
     }
 
+    let someRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        console.log('state changed detected');
+        performSaveAnimation(someRef, 'green');
+    });
+
     return (
         <>
             <BashfulHeader />
-            <SaveStateIconFooter />
-            <Button
-                onClick={async () => {
-                    alert(
-                        'implement the upscale function.  Let users enhance the image'
-                    );
-                }}
-            >
-                Upscale
-            </Button>
-
-            <div className="mb-1">
+            <div ref={someRef} className="mb-1">
                 <Button
                     onClick={async () => {
                         let newContext = await createNewContext();
