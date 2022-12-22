@@ -1,3 +1,8 @@
+import resolveConfig from 'tailwindcss/resolveConfig';
+import tailwindConfig from '../tailwind.config.js';
+
+export const fullConfig = resolveConfig(tailwindConfig);
+
 export const B64_IMAGE_HEADER: string = 'data:image/png;base64, ';
 
 export const enum ContextHistoryEnum {
