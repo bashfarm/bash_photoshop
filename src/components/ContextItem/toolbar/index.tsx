@@ -5,6 +5,7 @@ import {
     PaletteIcon,
     GridViewIcon,
     RefreshIcon,
+    DeleteIcon,
 } from 'components/Icons';
 import Tool from './Tool';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -16,13 +17,7 @@ import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { StyleReferencesDialog } from 'components/modals/StyleReferencesDialog';
 import { SmallUIDetailsDialog } from 'components/modals/SmallUIDetailsDialog';
-import { generateAILayer } from 'services/ai_service';
-import {
-    deleteLayer,
-    moveLayer,
-    scaleAndFitLayerToCanvas,
-} from 'services/layer_service';
-import photoshop from 'photoshop';
+import RegenerationTool from './RegenerationTool';
 
 const ToolbarDivider = () => {
     return (
@@ -42,44 +37,20 @@ export type ContexToolBarColumnProps = {
 };
 
 const ContextToolbar = (props: ContexToolBarColumnProps) => {
-    let getContextFromStore = useContextStore(
+    const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
-    let saveContextToStore = useContextStore(
-        (state: ContextStoreState) => state.saveContextToStore
+    const removeContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.removeContextFromStore
     );
-
     const popupRef = useRef<ExtendedHTMLDialogElement>();
-    async function regenerateLayer(deleteOldLayer: boolean = false) {
-        try {
-            let layerContext = getContextFromStore(props.contextID);
-            let newLayer = await generateAILayer(layerContext);
-            let oldLayer = layerContext.currentLayer;
-            let copyOfContext = layerContext.copy();
-
-            copyOfContext.currentLayer = newLayer;
-            saveContextToStore(copyOfContext);
-
-            await moveLayer(
-                newLayer,
-                oldLayer,
-                photoshop.constants.ElementPlacement.PLACEBEFORE
-            );
-            if (deleteOldLayer) {
-                await deleteLayer(oldLayer);
-            }
-            await scaleAndFitLayerToCanvas(newLayer);
-        } catch (e) {
-            console.error(e);
-        }
-    }
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <ToolSection>
                 <Tool
                     icon={VisibilityOffRounded}
-                    label="hideTool"
+                    label="Mask"
                     onClick={async () =>
                         await toggleOnContextHidingTool(
                             getContextFromStore(props.contextID)
@@ -88,7 +59,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                 />
                 <Tool
                     icon={VisibilityRounded}
-                    label="unHideTool"
+                    label="Unmask"
                     onClick={async () =>
                         await toggleOffContextHidingTool(
                             getContextFromStore(props.contextID)
@@ -129,12 +100,18 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
             </ToolSection>
             <ToolbarDivider />
             <ToolSection>
-                <Tool
+                <RegenerationTool
                     icon={RefreshIcon}
                     label="Regenerate Layer"
-                    onClick={async () => {
-                        await regenerateLayer(false);
-                    }}
+                    contextId={props.contextID}
+                />
+            </ToolSection>
+            <ToolbarDivider />
+            <ToolSection>
+                <Tool
+                    icon={DeleteIcon}
+                    label="Delete Context"
+                    onClick={() => removeContextFromStore(props.contextID)}
                 />
             </ToolSection>
         </div>
