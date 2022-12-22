@@ -28,11 +28,8 @@ export const ContextItem = (props: ContextItemProps) => {
     }, [layerContext]);
 
     return (
-        <div
-            ref={someRef}
-            className="flex flex-col p-1 bg-[color:var(--uxp-host-widget-hover-background-color)] border border-[color:var(--uxp-host-border-color)] rounded"
-        >
-            <ContextToolbar />
+        <div className="flex flex-col p-1 bg-[color:var(--uxp-host-widget-hover-background-color)] border border-[color:var(--uxp-host-border-color)] rounded">
+            <ContextToolbar contextID={props.contextID} />
             <div className="flex">
                 <ContextInfoColumn contextID={props.contextID} />
                 <ContextToolColumn contextID={props.contextID} />
