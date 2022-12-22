@@ -4,6 +4,7 @@ import BlenderIcon from '@mui/icons-material/Blender';
 import PaletteIcon from '@mui/icons-material/Palette';
 import GridViewIcon from '@mui/icons-material/GridView';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export {
     VisibilityOffRounded,
@@ -12,4 +13,5 @@ export {
     PaletteIcon,
     GridViewIcon,
     RefreshIcon,
+    DeleteIcon,
 };
