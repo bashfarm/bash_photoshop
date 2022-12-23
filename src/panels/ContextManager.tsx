@@ -1,26 +1,21 @@
 // import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
-import React from 'react';
-import { ContextStoreState, useContextStore } from 'store/contextStore';
+import React, { useRef, useLayoutEffect, useState } from 'react';
+import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
-import photoshop from 'photoshop';
 import { Button, Divider } from 'react-uxp-spectrum';
-import {
-    fitLayerPositionToCanvas,
-    getTopLayer,
-    scaleAndFitLayerToCanvas,
-    scaleLayer,
-    scaleLayerToCanvas,
-    translateLayer,
-} from '../services/layer_service';
-import { getWidthScale } from 'utils/layer_utils';
-
-const app = photoshop.app;
+import { BashfulHeader } from 'components/BashfulHeader';
+import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
 export const ContextManager = () => {
     const saveContextToStore = useContextStore(
-        (state: ContextStoreState) => state.saveContextToStore
+        (state) => state.saveContextToStore
     );
+
+    const contextStore = useContextStore();
+
+    let [timelineAnimation, setTimelineAnimation] =
+        useState<GSAPTimeline | null>(null);
 
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
@@ -29,22 +24,24 @@ export const ContextManager = () => {
         return context;
     }
 
+    let someRef = useRef<HTMLDivElement>(null);
+
+    useLayoutEffect(() => {
+        console.log('state changed detected');
+
+        if (!timelineAnimation) {
+            let tl = getSaveAnimationTimeline(someRef, false, 'green');
+
+            setTimelineAnimation(tl);
+        }
+
+        timelineAnimation?.restart();
+    });
+
     return (
         <>
-            {/* <ContextRecycleBin />
-
-			<E2ETestingPanel></E2ETestingPanel> */}
-            <Button
-                onClick={async () => {
-                    alert(
-                        'implement the upscale function.  Let users enhance the image'
-                    );
-                }}
-            >
-                Upscale
-            </Button>
-
-            <div className="mb-1">
+            <BashfulHeader />
+            <div ref={someRef} className="mb-1">
                 <Button
                     onClick={async () => {
                         let newContext = await createNewContext();
@@ -66,9 +63,7 @@ export const ContextManager = () => {
  */
 // TODO: move to its own file or something else - needs refactoring though
 function ContextItems() {
-    const contexts = useContextStore(
-        (state: ContextStoreState) => state.contexts
-    );
+    const contexts = useContextStore((state) => state.contexts);
     return (
         <>
             {contexts &&
@@ -79,7 +74,7 @@ function ContextItems() {
                             <ContextItem
                                 key={context.id}
                                 contextID={context.id}
-                            ></ContextItem>
+                            />
                             <Divider className="my-2" size="small" />
                         </>
                     );

@@ -16,6 +16,7 @@ type RegenerationToolProps = {
     icon?: FC<any>;
     label?: string;
     contextId: string;
+    newLayerNameSetter: Function;
 };
 
 const RegenerationTool = (props: RegenerationToolProps) => {
@@ -76,6 +77,7 @@ const RegenerationTool = (props: RegenerationToolProps) => {
                 await deleteLayer(oldLayer);
             }
             await scaleAndFitLayerToCanvas(newLayer);
+            props.newLayerNameSetter(newLayer.name);
         } catch (e) {
             console.error(e);
         }
