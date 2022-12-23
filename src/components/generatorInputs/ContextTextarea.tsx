@@ -13,8 +13,7 @@ export function ContextTextarea(props: ContextProps) {
         return state.getContextFromStore;
     });
 
-    let [timelineAnimation, setTimelineAnimation] =
-        useState<GSAPTimeline | null>(null);
+    let timelineAnimation = useRef<GSAPTimeline | null>();
     let [textValue, setTextValue] = useState<string>(null);
     let debouncedValue = delayStateEventsForStateValue(
         textValue,
@@ -32,13 +31,13 @@ export function ContextTextarea(props: ContextProps) {
     let someRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
-        if (!timelineAnimation) {
-            let tl = getSaveAnimationTimeline(someRef);
-
-            setTimelineAnimation(tl);
+        if (!timelineAnimation?.current) {
+            timelineAnimation.current = getSaveAnimationTimeline(someRef);
         }
 
-        timelineAnimation?.restart();
+        if (!timelineAnimation.current?.isActive() && props.animate) {
+            timelineAnimation.current?.restart();
+        }
     }, [debouncedValue]);
 
     return (

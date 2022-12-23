@@ -73,6 +73,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
     let [unSelectedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
     function onLayerChange() {
+        console.log(contexts);
         setUnSelectedLayers(
             photoshop.app.activeDocument.layers.map((layer) => layer.name)
         );
@@ -84,15 +85,27 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
      */
     function onDelete() {
         try {
+            console.log(contexts);
+
             for (let context of Object.values(contexts)) {
                 if (
                     !photoshop.app.activeDocument.layers.includes(
                         context.currentLayer
                     )
                 ) {
-                    let copyOfContext = context.copy();
-                    copyOfContext.currentLayer = null;
-                    saveContextToStore(copyOfContext);
+                    console.warn(
+                        photoshop.app.activeDocument.layers.map(
+                            (layer) => layer.name
+                        )
+                    );
+                    console.warn(
+                        photoshop.app.activeDocument.layers.map(
+                            (layer) => context.currentLayer
+                        )
+                    );
+                    // let copyOfContext = context.copy();
+                    // copyOfContext.currentLayer = null;
+                    // saveContextToStore(copyOfContext);
                 }
             }
         } catch (e) {

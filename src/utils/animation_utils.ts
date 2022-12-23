@@ -14,6 +14,10 @@ export function getSaveAnimationTimeline(
         defaults: { duration: 0.2, delay: 0.1, repeat: 1, yoyo: true },
     });
 
+    someRef.current.onselectstart = function () {
+        return false;
+    };
+
     if (borderOnly) {
         tl.to(someRef.current, {
             delay: 0,
@@ -21,6 +25,7 @@ export function getSaveAnimationTimeline(
             duration: 1,
             borderColor: color,
             borderWidth: '2px',
+            color: color,
         });
     } else {
         tl.to(someRef.current, {
@@ -35,6 +40,8 @@ export function getSaveAnimationTimeline(
         // 	backgroundColor: prevBackgroundColor,
         // })
     }
+
+    // tl.to(someRef.current, {delay:0, onComplete: function(){someRef.current.onselectstart = function() { return true; }}})
 
     tl.paused(true);
     return tl;

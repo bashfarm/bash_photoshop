@@ -13,8 +13,8 @@ export function ContextSlider(props: ContextProps) {
         return state.getContextFromStore;
     });
 
-    let [timelineAnimation, setTimelineAnimation] =
-        useState<GSAPTimeline | null>(null);
+    let timelineAnimation = useRef<GSAPTimeline | null>();
+
     let [sliderValue, setSliderValue] = useState<string>(null);
     let debouncedValue = delayStateEventsForStateValue(
         sliderValue,
@@ -24,13 +24,16 @@ export function ContextSlider(props: ContextProps) {
     let someRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
-        if (!timelineAnimation && (props.animate == null || props.animate)) {
-            let tl = getSaveAnimationTimeline(someRef);
-
-            setTimelineAnimation(tl);
+        if (!timelineAnimation?.current) {
+            timelineAnimation.current = getSaveAnimationTimeline(someRef);
         }
 
-        timelineAnimation?.restart();
+        if (
+            !timelineAnimation.current?.isActive() &&
+            (props.animate == null || props.animate)
+        ) {
+            timelineAnimation.current?.restart();
+        }
     }, [debouncedValue]);
 
     return (
@@ -52,8 +55,6 @@ export function ContextSlider(props: ContextProps) {
                         let copyOfContext = getContextFromStore(
                             props.contextID
                         ).copy();
-                        console.log(event.target.value);
-                        console.log(parseInt(event.target.value) / 100);
                         copyOfContext[props.contextKey] =
                             parseInt(event.target.value) / 100;
                         saveContextToStore(copyOfContext);
