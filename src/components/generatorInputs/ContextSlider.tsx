@@ -23,22 +23,6 @@ export function ContextSlider(props: ContextProps) {
 
     let someRef = useRef<HTMLDivElement>(null);
 
-    function getDisplayValue() {
-        if (props.inHundreds) {
-            return 100 * parseInt(sliderValue);
-        }
-
-        return parseInt(sliderValue);
-    }
-
-    function getActualValue(event: any) {
-        if (props.inHundreds) {
-            return parseInt(event.target.value) / 100;
-        }
-
-        return parseInt(sliderValue);
-    }
-
     useLayoutEffect(() => {
         if (!timelineAnimation && (props.animate == null || props.animate)) {
             let tl = getSaveAnimationTimeline(someRef);
@@ -56,13 +40,22 @@ export function ContextSlider(props: ContextProps) {
                     variant="filled"
                     min={0}
                     max={100}
-                    value={getDisplayValue()}
+                    value={
+                        parseFloat(
+                            getContextFromStore(props.contextID)[
+                                props.contextKey
+                            ]
+                        ) * 100 || parseInt(sliderValue)
+                    }
                     onChange={(event: any) => {
+                        setSliderValue(event.target.value);
                         let copyOfContext = getContextFromStore(
                             props.contextID
                         ).copy();
-                        copyOfContext[props.contextKey] = getActualValue(event);
-                        setSliderValue(event.target.value);
+                        console.log(event.target.value);
+                        console.log(parseInt(event.target.value) / 100);
+                        copyOfContext[props.contextKey] =
+                            parseInt(event.target.value) / 100;
                         saveContextToStore(copyOfContext);
                         if (props.onChange) {
                             props.onChange(event);

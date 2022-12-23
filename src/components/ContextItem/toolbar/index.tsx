@@ -70,10 +70,12 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
     );
 
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
-    let [unSelecedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
+    let [unSelectedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
     function onLayerChange() {
-        setUnSelectedLayers(getUnselectedLayerNames());
+        setUnSelectedLayers(
+            photoshop.app.activeDocument.layers.map((layer) => layer.name)
+        );
     }
 
     /**
@@ -97,7 +99,9 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
             console.error(e);
         }
 
-        setUnSelectedLayers(getUnselectedLayerNames());
+        setUnSelectedLayers(
+            photoshop.app.activeDocument.layers.map((layer) => layer.name)
+        );
     }
 
     useEffect(() => {
@@ -110,7 +114,15 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
     }, []);
 
     useEffect(() => {
-        setUnSelectedLayers(getUnselectedLayerNames());
+        setUnSelectedLayers(
+            photoshop.app.activeDocument.layers.map((layer) => layer.name)
+        );
+        let copyOfContext = layerContext.copy();
+        copyOfContext.currentLayer = photoshop.app.activeDocument.layers.filter(
+            (layer) => selectedLayerName == layer.name
+        )[0];
+
+        saveContextToStore(copyOfContext);
     }, [selectedLayerName]);
 
     function onDropDownSelect(layerName: string) {
@@ -123,22 +135,16 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
         saveContextToStore(copyOfContext);
     }
 
-    /**
-     * This retrieves the unselected layers through all the context items.  This isn't really implemented as of yet.
-     *
-     * TODO(): Implement this
-     * @returns
-     */
-    function getUnselectedLayerNames() {
-        return photoshop.app.activeDocument.layers.map((layer) => layer.name);
-    }
-
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
-                    {unSelecedLayers &&
-                        unSelecedLayers.map((layerName) => {
+                    {unSelectedLayers &&
+                        (() => {
+                            console.log(unSelectedLayers);
+                            return true;
+                        })() &&
+                        unSelectedLayers.map((layerName) => {
                             try {
                                 return (
                                     <Spectrum.MenuItem
@@ -216,7 +222,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                     icon={RefreshIcon}
                     label="Regenerate Layer"
                     contextId={props.contextID}
-                    newLayerNameSetter={setUnSelectedLayers}
+                    newLayerNameSetter={setSelectedLayerName}
                 />
             </ToolSection>
             <ToolbarDivider />
