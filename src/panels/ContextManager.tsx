@@ -4,18 +4,13 @@ import React, { useRef, useLayoutEffect, useState } from 'react';
 import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
-import { BashfulHeader } from 'components/BashfulHeader';
+import { BashfulHeader } from 'components/BashfulHeader/index';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
 export const ContextManager = () => {
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );
-
-    const contextStore = useContextStore();
-
-    let [timelineAnimation, setTimelineAnimation] =
-        useState<GSAPTimeline | null>(null);
 
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
@@ -24,24 +19,10 @@ export const ContextManager = () => {
         return context;
     }
 
-    let someRef = useRef<HTMLDivElement>(null);
-
-    useLayoutEffect(() => {
-        console.log('state changed detected');
-
-        if (!timelineAnimation) {
-            let tl = getSaveAnimationTimeline(someRef, false, 'green');
-
-            setTimelineAnimation(tl);
-        }
-
-        timelineAnimation?.restart();
-    });
-
     return (
         <>
-            <BashfulHeader />
-            <div ref={someRef} className="mb-1">
+            <BashfulHeader animate={true} />
+            <div className="mb-1">
                 <Button
                     onClick={async () => {
                         let newContext = await createNewContext();

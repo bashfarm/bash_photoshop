@@ -12,21 +12,13 @@ export function ContextTextarea(props: ContextProps) {
     let getContextFromStore = useContextStore((state: ContextStoreState) => {
         return state.getContextFromStore;
     });
+    let [textValue, setTextValue] = useState<string>(null);
 
     let timelineAnimation = useRef<GSAPTimeline | null>();
-    let [textValue, setTextValue] = useState<string>(null);
     let debouncedValue = delayStateEventsForStateValue(
         textValue,
         props.inputDelayTime || 0
     );
-
-    function saveText(event: any) {
-        let layerContext = getContextFromStore(props.contextID);
-        let copyOfContext = layerContext.copy();
-        copyOfContext.currentPrompt = event.target.value;
-        saveContextToStore(copyOfContext);
-        setTextValue(event.target.value);
-    }
 
     let someRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +31,14 @@ export function ContextTextarea(props: ContextProps) {
             timelineAnimation.current?.restart();
         }
     }, [debouncedValue]);
+
+    function saveText(event: any) {
+        let layerContext = getContextFromStore(props.contextID);
+        let copyOfContext = layerContext.copy();
+        copyOfContext.currentPrompt = event.target.value;
+        saveContextToStore(copyOfContext);
+        setTextValue(event.target.value);
+    }
 
     return (
         <div ref={someRef} className={props.className}>

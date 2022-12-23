@@ -1,6 +1,7 @@
+import { BashfulProps } from 'common/props/BashfulProps';
 import LayerAIContext from 'models/LayerAIContext';
 
-export interface ContextProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ContextProps extends BashfulProps {
     contextID: string;
     contextKey: keyof typeof LayerAIContext;
     app?: string; // lets just assume photoshop will be the default
