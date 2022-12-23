@@ -43,7 +43,7 @@ export const ContextItem = (props: ContextItemProps) => {
                 <ContextTextarea
                     contextID={props.contextID}
                     contextKey={'currentPrompt' as keyof typeof LayerAIContext}
-                    className="w-full"
+                    className="w-full select-none"
                     inputDelayTime={1000}
                 />
             </div>
