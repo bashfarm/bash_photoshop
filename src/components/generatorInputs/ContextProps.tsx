@@ -1,6 +1,6 @@
 import LayerAIContext from 'models/LayerAIContext';
 
-export interface GeneratorProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ContextProps extends React.HTMLAttributes<HTMLDivElement> {
     contextID: string;
     contextKey: keyof typeof LayerAIContext;
     app?: string; // lets just assume photoshop will be the default

@@ -1,11 +1,11 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { GeneratorProps } from './GeneratorProps';
+import { ContextProps } from './ContextProps';
 import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export function GeneratorTextArea(props: GeneratorProps) {
+export function ContextTextarea(props: ContextProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });
@@ -50,6 +50,9 @@ export function GeneratorTextArea(props: GeneratorProps) {
                     onInput={(event) => {
                         try {
                             saveText(event);
+                            if (props.onChange) {
+                                props.onChange(event);
+                            }
                         } catch (e) {
                             console.log(e);
                         }

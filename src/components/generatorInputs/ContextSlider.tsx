@@ -1,11 +1,11 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { GeneratorProps } from './GeneratorProps';
+import { ContextProps } from './ContextProps';
 import { Slider } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export function GeneratorSlider(props: GeneratorProps) {
+export function ContextSlider(props: ContextProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });
@@ -64,7 +64,9 @@ export function GeneratorSlider(props: GeneratorProps) {
                         copyOfContext[props.contextKey] = getActualValue(event);
                         setSliderValue(event.target.value);
                         saveContextToStore(copyOfContext);
-                        props?.onChange(event);
+                        if (props.onChange) {
+                            props.onChange(event);
+                        }
                     }}
                 >
                     <sp-label slot="label">{props.children}</sp-label>

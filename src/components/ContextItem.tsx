@@ -1,19 +1,14 @@
-import { Textarea } from 'react-uxp-spectrum';
-import { ContextStoreState, useContextStore } from '../store/contextStore';
-
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React from 'react';
 
 import { ContextInfoColumn } from './ContextInfoColumn';
 import { ContextToolColumn } from './ContextToolColumn';
 import { RegenerationColumn } from './RegenerationColumn';
 import ContextToolbar from './ContextItem/toolbar';
-import { getSaveAnimationTimeline } from 'utils/animation_utils';
-import { GeneratorSlider } from './generatorInputs/GeneratorSlider';
+import { ContextSlider } from './generatorInputs/ContextSlider';
 
 import _ from 'lodash';
 import LayerAIContext from 'models/LayerAIContext';
-import { delayStateEventsForStateValue } from 'hooks/utilHooks';
-import { GeneratorTextArea } from './generatorInputs/GeneratorTextarea';
+import { ContextTextarea } from './generatorInputs/ContextTextarea';
 
 export type ContextItemProps = {
     contextID: string;
@@ -29,23 +24,23 @@ export const ContextItem = (props: ContextItemProps) => {
                 <RegenerationColumn contextID={props.contextID} />
             </div>
             <div>
-                <GeneratorSlider
+                <ContextSlider
                     contextID={props.contextID}
                     contextKey={
                         'consistencyStrength' as keyof typeof LayerAIContext
                     }
                 >
                     Consistency Strength
-                </GeneratorSlider>
-                <GeneratorSlider
+                </ContextSlider>
+                <ContextSlider
                     contextID={props.contextID}
                     contextKey={
                         'stylingStrength' as keyof typeof LayerAIContext
                     }
                 >
                     Styling Strength
-                </GeneratorSlider>
-                <GeneratorTextArea
+                </ContextSlider>
+                <ContextTextarea
                     contextID={props.contextID}
                     contextKey={'currentPrompt' as keyof typeof LayerAIContext}
                     className="w-full"

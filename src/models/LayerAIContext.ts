@@ -27,7 +27,7 @@ export default class LayerAIContext extends BashfulObject {
     imageWidth: number;
     batchSize: number;
     seed: number;
-    currentLayer: Layer; // the layer that the context is assigned to
+    _currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
     styleReferences: Array<StyleReference>; // the hisory of the context
     prototype: any;
@@ -52,7 +52,7 @@ export default class LayerAIContext extends BashfulObject {
         this.id = this.createAILayerContextId();
         this.smallDetails = smallDetails;
         this.currentPrompt = currentPrompt;
-        this.currentLayer = currentLayer;
+        this._currentLayer = currentLayer;
         this.history = history;
         this.styleReferences = styleReferences;
         this.stylingStrength = stylingStrength;
@@ -62,6 +62,24 @@ export default class LayerAIContext extends BashfulObject {
         this.seed = seed;
         this.negativePrompt = negativePrompt;
         this.batchSize = batchSize;
+    }
+
+    get currentLayer() {
+        try {
+            this._currentLayer.id;
+            console.log('checking context current layer');
+            return this._currentLayer;
+        } catch (e) {
+            console.warn(
+                `The current layer of Context ID: ${this.id} does not exist`
+            );
+            this._currentLayer = null;
+            return null;
+        }
+    }
+
+    set currentLayer(value: Layer) {
+        this._currentLayer = value;
     }
 
     /**
