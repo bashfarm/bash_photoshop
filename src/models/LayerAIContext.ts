@@ -30,6 +30,7 @@ export default class LayerAIContext extends BashfulObject {
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
     styleReferences: Array<StyleReference>; // the hisory of the context
+    prototype: any;
 
     constructor(
         currentLayer: Layer = null,
@@ -39,7 +40,7 @@ export default class LayerAIContext extends BashfulObject {
         history: Array<LayerAIContextHistory> = [],
         styleReferences: Array<StyleReference> = [],
         stylingStrength: number = 0.7,
-        generationConsistencyStrength: number = 0.85,
+        consistencyStrength: number = 0.85,
         imageHeight: number = 512,
         imageWidth: number = 512,
         seed: number = -1,
@@ -55,7 +56,7 @@ export default class LayerAIContext extends BashfulObject {
         this.history = history;
         this.styleReferences = styleReferences;
         this.stylingStrength = stylingStrength;
-        this.consistencyStrength = generationConsistencyStrength;
+        this.consistencyStrength = consistencyStrength;
         this.imageHeight = imageHeight;
         this.imageWidth = imageWidth;
         this.seed = seed;

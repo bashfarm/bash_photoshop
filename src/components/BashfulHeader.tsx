@@ -1,12 +1,21 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useLayoutEffect, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { performHeaderAnimation } from 'utils/animation_utils';
+import { getHeaderAnimationTimeline } from 'utils/animation_utils';
 
 export const BashfulHeader = () => {
     let someRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        performHeaderAnimation(someRef);
+    let [timelineAnimation, setTimelineAnimation] =
+        useState<GSAPTimeline | null>(null);
+
+    useLayoutEffect(() => {
+        if (!timelineAnimation) {
+            let tl = getHeaderAnimationTimeline(someRef);
+
+            setTimelineAnimation(tl);
+        }
+
+        // timelineAnimation?.restart();
     }, []);
 
     return (

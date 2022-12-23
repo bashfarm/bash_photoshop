@@ -152,34 +152,6 @@ export const RegenerationColumn = (props: RegenerationColumnProps) => {
     return (
         <>
             <div className="flex flex-col justify-between">
-                <Button onClick={() => removeContextFromStore(props.contextID)}>
-                    Remove Generator Block(contextItem)
-                </Button>
-                <ProgressButton
-                    disabled={false}
-                    // We have to have a standard image size for bashing process.  We can't allocate that much Vram for high resolutions
-                    //  512x512 is the cheapest.  We will have to have a final step of upscaling
-                    longRunningFunction={async () => {
-                        console.log('before regenerate');
-                        await regenerateLayer(false);
-                        console.log('after regenerate');
-                    }}
-                    progressQueryFunction={getImageProcessingProgress}
-                    queryResponseParser={(response: ProgressResponse) =>
-                        response['progress']
-                    }
-                    progressSetter={setImageProgress}
-                    pollingSeconds={1}
-                    icon={<BlenderIcon />}
-                >
-                    Regenerate Layer
-                </ProgressButton>
-                <Progressbar
-                    min={0}
-                    max={1}
-                    value={imageProgress}
-                    className="py-2 w-full"
-                ></Progressbar>
                 <Spectrum.Dropdown>
                     <Spectrum.Menu slot="options">
                         {unSelecedLayers &&

@@ -1,6 +1,6 @@
 // import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useLayoutEffect, useState } from 'react';
 import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
@@ -14,6 +14,9 @@ export const ContextManager = () => {
 
     const contextStore = useContextStore();
 
+    let [timelineAnimation, setTimelineAnimation] =
+        useState<GSAPTimeline | null>(null);
+
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
         let context = new LayerAIContext();
@@ -23,9 +26,16 @@ export const ContextManager = () => {
 
     let someRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         console.log('state changed detected');
-        getSaveAnimationTimeline(someRef, 'green');
+
+        if (!timelineAnimation) {
+            let tl = getSaveAnimationTimeline(someRef, false, 'green');
+
+            setTimelineAnimation(tl);
+        }
+
+        timelineAnimation?.restart();
     });
 
     return (
@@ -64,7 +74,7 @@ function ContextItems() {
                             <ContextItem
                                 key={context.id}
                                 contextID={context.id}
-                            ></ContextItem>
+                            />
                             <Divider className="my-2" size="small" />
                         </>
                     );
