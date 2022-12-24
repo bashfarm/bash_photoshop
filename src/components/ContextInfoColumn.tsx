@@ -1,6 +1,8 @@
+import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ContextLabel } from './ContextLabel';
+import { ContextDropdown } from './generatorInputs/ContextDropdown';
 export type ContextInfoColumnProps = {
     contextID: string;
 };
@@ -27,14 +29,12 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
                     value={layerContext.currentLayer?.name}
                     labelText={'Layer Name:'}
                 />
-                {/* <ContextLabel
-                    value={layerContext.currentLayer?.id}
-                    labelText={'Layer Id:'}
-                />
-                <ContextLabel
-                    value={layerContext.id}
-                    labelText={'Context ID:'}
-                /> */}
+                {/* <ContextDropdown
+					contextID={props.contextID}
+					contextKey={
+						'docType' as keyof typeof LayerAIContext
+					}
+					options={["illustration", "doodle", "photo", "dream", "3D animation"]} /> */}
             </div>
         );
     } catch (e) {

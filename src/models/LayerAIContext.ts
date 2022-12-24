@@ -21,6 +21,7 @@ export default class LayerAIContext extends BashfulObject {
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     currentPrompt: string;
     negativePrompt: string;
+    docType: string;
     stylingStrength: number;
     consistencyStrength: number;
     imageHeight: number;
@@ -45,7 +46,8 @@ export default class LayerAIContext extends BashfulObject {
         imageWidth: number = 512,
         seed: number = -1,
         negativePrompt: string = '',
-        batchSize: number = 1
+        batchSize: number = 1,
+        docType: string = 'illustration'
     ) {
         super();
         this.name = name;
@@ -62,6 +64,7 @@ export default class LayerAIContext extends BashfulObject {
         this.seed = seed;
         this.negativePrompt = negativePrompt;
         this.batchSize = batchSize;
+        this.docType = docType;
     }
 
     /**
