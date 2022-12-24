@@ -22,6 +22,7 @@ export default class LayerAIContext extends BashfulObject {
     currentPrompt: string;
     negativePrompt: string;
     docType: string;
+    generationModelName: string;
     stylingStrength: number;
     consistencyStrength: number;
     imageHeight: number;
@@ -47,7 +48,8 @@ export default class LayerAIContext extends BashfulObject {
         seed: number = -1,
         negativePrompt: string = '',
         batchSize: number = 1,
-        docType: string = 'illustration'
+        docType: string = 'illustration',
+        generationModelName: string = 'model.ckpt'
     ) {
         super();
         this.name = name;
@@ -65,6 +67,7 @@ export default class LayerAIContext extends BashfulObject {
         this.negativePrompt = negativePrompt;
         this.batchSize = batchSize;
         this.docType = docType;
+        this.generationModelName = generationModelName;
     }
 
     /**

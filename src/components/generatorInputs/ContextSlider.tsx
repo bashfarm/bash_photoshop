@@ -28,10 +28,7 @@ export function ContextSlider(props: ContextProps) {
             timelineAnimation.current = getSaveAnimationTimeline(someRef);
         }
 
-        if (
-            !timelineAnimation.current?.isActive() &&
-            (props.animate == null || props.animate)
-        ) {
+        if (!timelineAnimation.current?.isActive() && props.animate) {
             timelineAnimation.current?.restart();
         }
     }, [debouncedValue]);
