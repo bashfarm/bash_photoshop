@@ -1,11 +1,10 @@
 // import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
-import React, { useRef, useLayoutEffect, useState } from 'react';
+import React from 'react';
 import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
-import Spectrum, { Button, Divider } from 'react-uxp-spectrum';
+import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader/index';
-import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
 export const ContextManager = () => {
     const saveContextToStore = useContextStore(
