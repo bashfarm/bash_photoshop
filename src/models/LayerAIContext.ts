@@ -168,6 +168,7 @@ export default class LayerAIContext extends BashfulObject {
                 alert('Please delete a file or use inplace image regeneration');
                 return;
             }
+            console.log(imgData);
             // Bad coding.  This should be a one liner and this should be like `serializeData()` or something
             // using getFileSerializer in it.
             let serializer: bashful.io.Serializer = getFileSerializer(imgData);

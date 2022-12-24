@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { TagSelector } from 'components/TagSelector';
 import AssetItem from 'components/SmallUiDetail/AssetItem';
 import { Textarea, Icon, Divider, Heading } from 'react-uxp-spectrum';
-import { getImageProcessingProgress, txt2img } from 'services/ai_service';
+import { txt2img } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { formatBase64Image } from 'utils/io_utils';
-import { ProgressButton } from 'components/ProgressButton';
-import { ProgressResponse } from 'common/types/sdapi';
 
 const dummyArray = [
     { id: 1, value: 30, src: 'img/cat.jpg' },
@@ -87,20 +85,7 @@ export const SmallUIDetailsDialog = (props: ModalProps) => {
                 onInput={(event) => setPrompt(event.target.value)}
                 className="w-full"
             ></Textarea>
-            <ProgressButton
-                disabled={loadingImages}
-                longRunningFunction={async () => {
-                    await generateImages(prompt);
-                }}
-                progressQueryFunction={getImageProcessingProgress}
-                queryResponseParser={(response: ProgressResponse) =>
-                    response['progress']
-                }
-                progressSetter={setImageProgress}
-                pollingSeconds={1}
-            >
-                {loadingImages ? 'Generating images...' : 'Generate Images'}
-            </ProgressButton>
+
             <Divider className="my-2" size="small" />
 
             <Heading size="XS" weight="light">

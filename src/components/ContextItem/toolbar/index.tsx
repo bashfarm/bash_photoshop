@@ -31,8 +31,6 @@ const events = [
     'undoEnum',
 ];
 
-const deleteEvent = ['delete'];
-
 const ToolbarDivider = () => {
     return (
         <div className="border-r border-[color:var(--uxp-host-border-color)] mx-1 self-stretch"></div>
@@ -65,53 +63,10 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    let contexts = useContextStore(
-        (state: ContextStoreState) => state.contexts
-    );
-
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
     let [unSelectedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
     function onLayerChange() {
-        console.log(contexts);
-        setUnSelectedLayers(
-            photoshop.app.activeDocument.layers.map((layer) => layer.name)
-        );
-    }
-
-    /**
-     * This function is used as an event handler for the delete event.  This is used to delete the context from the store if the layer is deleted
-     * from the active documents layers.
-     */
-    function onDelete() {
-        try {
-            console.log(contexts);
-
-            for (let context of Object.values(contexts)) {
-                if (
-                    !photoshop.app.activeDocument.layers.includes(
-                        context.currentLayer
-                    )
-                ) {
-                    console.warn(
-                        photoshop.app.activeDocument.layers.map(
-                            (layer) => layer.name
-                        )
-                    );
-                    console.warn(
-                        photoshop.app.activeDocument.layers.map(
-                            (layer) => context.currentLayer
-                        )
-                    );
-                    // let copyOfContext = context.copy();
-                    // copyOfContext.currentLayer = null;
-                    // saveContextToStore(copyOfContext);
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
         setUnSelectedLayers(
             photoshop.app.activeDocument.layers.map((layer) => layer.name)
         );
@@ -119,10 +74,8 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
 
     useEffect(() => {
         photoshop.action.addNotificationListener(events, onLayerChange);
-        photoshop.action.addNotificationListener(deleteEvent, onDelete);
         return () => {
             photoshop.action.removeNotificationListener(events, onLayerChange);
-            photoshop.action.removeNotificationListener(deleteEvent, onDelete);
         };
     }, []);
 
@@ -181,7 +134,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
             <ToolSection>
                 <Tool
                     icon={VisibilityOffRounded}
-                    label="Mask"
+                    label="Hide"
                     onClick={async () =>
                         await toggleOnContextHidingTool(
                             getContextFromStore(props.contextID)
@@ -190,7 +143,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                 />
                 <Tool
                     icon={VisibilityRounded}
-                    label="Unmask"
+                    label="Unhide"
                     onClick={async () =>
                         await toggleOffContextHidingTool(
                             getContextFromStore(props.contextID)

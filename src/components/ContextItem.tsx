@@ -2,7 +2,6 @@ import React from 'react';
 
 import { ContextInfoColumn } from './ContextInfoColumn';
 import { ContextToolColumn } from './ContextToolColumn';
-import { RegenerationColumn } from './RegenerationColumn';
 import ContextToolbar from './ContextItem/toolbar';
 import { ContextSlider } from './generatorInputs/ContextSlider';
 
@@ -21,7 +20,6 @@ export const ContextItem = (props: ContextItemProps) => {
             <div className="flex">
                 <ContextInfoColumn contextID={props.contextID} />
                 <ContextToolColumn contextID={props.contextID} />
-                <RegenerationColumn contextID={props.contextID} />
             </div>
             <div>
                 <ContextSlider
