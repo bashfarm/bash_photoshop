@@ -13,6 +13,7 @@ import LayerAIContext from 'models/LayerAIContext';
 import { alert } from './alert_service';
 import photoshop from 'photoshop';
 import StyleReference from 'models/StyleReference';
+import { ConfigAPIResponse, ModelResponse } from 'common/types/sdapi';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -332,6 +333,12 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     }
 }
 
+/**
+ * This will upscale the given image using ESRGAN.  However, this requires the auto-sd extension to be installed. https://github.com/Interpause/auto-sd-paint-ext
+ * @param b64UnformattedImage
+ * @param downScaleFirst
+ * @returns
+ */
 export async function upScaleImage(
     b64UnformattedImage: string,
     downScaleFirst: boolean = true
@@ -359,5 +366,89 @@ export async function upScaleImage(
     } catch (error) {
         console.error(error);
         throw error;
+    }
+}
+
+/**
+ * This will retrieve and up to date list of models from the API!  We even get the file path of the model.  Very useful if we
+ * want to manage their models too!
+ * @returns
+ */
+export async function getAvailableModels(): Promise<Array<ModelResponse>> {
+    const requestOptions: RequestInit = {
+        method: 'GET',
+        headers: myHeaders,
+        redirect: 'follow',
+    };
+    try {
+        let response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/sd-models`,
+            requestOptions
+        );
+        let data = await response.json();
+        console.log(data);
+        return data;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * This is a helper function to set the model of the entire Automatic Stable Diffusion API.
+ * @param modelName
+ */
+export async function swapModel(modelName: string = 'model.ckpt') {
+    let payload = {
+        sd_model_checkpoint: modelName,
+    };
+    console.log(payload);
+    await setAPIConfig(payload);
+}
+
+/**
+ * This retrieves the configuration of the Automatic Stable Diffusion API.
+ * @returns
+ */
+export async function getAPIConfig(): Promise<ConfigAPIResponse> {
+    const requestOptions: RequestInit = {
+        method: 'GET',
+        headers: myHeaders,
+        redirect: 'follow',
+    };
+    try {
+        let response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/options`,
+            requestOptions
+        );
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * Given the new configuration the api should be using.  Set the configuration of the API.  Get the config from the getAPIConfig endpoint to see what it looks like.
+ * @param config
+ * @returns
+ */
+export async function setAPIConfig(config: any) {
+    let payload = {
+        ...config,
+    };
+
+    const requestOptions: RequestInit = {
+        method: 'POST',
+        headers: myHeaders,
+        redirect: 'follow',
+        body: JSON.stringify(payload),
+    };
+    try {
+        let response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/options`,
+            requestOptions
+        );
+        return await response.json();
+    } catch (e) {
+        console.error(e);
     }
 }

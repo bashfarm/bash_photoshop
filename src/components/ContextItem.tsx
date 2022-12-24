@@ -23,6 +23,7 @@ export const ContextItem = (props: ContextItemProps) => {
             </div>
             <div>
                 <ContextSlider
+                    animate={true}
                     contextID={props.contextID}
                     contextKey={
                         'consistencyStrength' as keyof typeof LayerAIContext
@@ -31,6 +32,7 @@ export const ContextItem = (props: ContextItemProps) => {
                     Consistency Strength
                 </ContextSlider>
                 <ContextSlider
+                    animate={true}
                     contextID={props.contextID}
                     contextKey={
                         'stylingStrength' as keyof typeof LayerAIContext

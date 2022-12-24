@@ -1,4 +1,4 @@
-import Spectrum from 'react-uxp-spectrum';
+import Spectrum, { Label } from 'react-uxp-spectrum';
 import { ContextProps } from './ContextProps';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -10,10 +10,7 @@ interface ContextDropdownProps extends ContextProps {
 }
 
 export function ContextDropdown(props: ContextDropdownProps) {
-    const [selectedDocType, setSelectedDocType] = React.useState<string>(null);
-    const [docTypes, setDocTypes] = React.useState<Array<string>>(
-        props.options
-    );
+    const [selectedValue, setSelectedValue] = React.useState<string>(null);
 
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
@@ -25,7 +22,7 @@ export function ContextDropdown(props: ContextDropdownProps) {
     let timelineAnimation = useRef<GSAPTimeline | null>();
 
     let debouncedValue = delayStateEventsForStateValue(
-        selectedDocType,
+        selectedValue,
         props.inputDelayTime || 0
     );
 
@@ -36,42 +33,49 @@ export function ContextDropdown(props: ContextDropdownProps) {
             timelineAnimation.current = getSaveAnimationTimeline(someRef);
         }
 
-        if (
-            !timelineAnimation.current?.isActive() &&
-            (props.animate == null || props.animate)
-        ) {
+        if (!timelineAnimation.current?.isActive() && props.animate) {
             timelineAnimation.current?.restart();
         }
     }, [debouncedValue]);
 
     return (
-        <Spectrum.Dropdown>
-            <Spectrum.Menu slot="options">
-                {docTypes &&
-                    docTypes.map((docType: string) => {
-                        try {
-                            return (
-                                <Spectrum.MenuItem
-                                    key={docType}
-                                    onClick={() => {
-                                        setSelectedDocType(docType);
-                                        let copyOfContext = getContextFromStore(
-                                            props.contextID
-                                        ).copy();
-                                        copyOfContext[props.contextKey] =
-                                            docType;
-                                        saveContextToStore(copyOfContext);
-                                    }}
-                                    selected={selectedDocType == docType}
-                                >
-                                    {docType}
-                                </Spectrum.MenuItem>
-                            );
-                        } catch (e) {
-                            console.error(e);
-                        }
-                    })}
-            </Spectrum.Menu>
-        </Spectrum.Dropdown>
+        <div ref={someRef}>
+            <Label>{props.label}</Label>
+            <Spectrum.Dropdown>
+                <Spectrum.Menu slot="options">
+                    {props.options &&
+                        props.options.map((value: string) => {
+                            try {
+                                return (
+                                    <Spectrum.MenuItem
+                                        key={value}
+                                        onClick={(event: any) => {
+                                            setSelectedValue(value);
+                                            if (props.contextKey) {
+                                                let copyOfContext =
+                                                    getContextFromStore(
+                                                        props.contextID
+                                                    ).copy();
+                                                copyOfContext[
+                                                    props.contextKey
+                                                ] = value;
+                                                saveContextToStore(
+                                                    copyOfContext
+                                                );
+                                            }
+                                            props?.onChange?.(event);
+                                        }}
+                                        selected={selectedValue == value}
+                                    >
+                                        {value}
+                                    </Spectrum.MenuItem>
+                                );
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        })}
+                </Spectrum.Menu>
+            </Spectrum.Dropdown>
+        </div>
     );
 }
