@@ -6,6 +6,7 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
 import { ExtendedHTMLDialogElement } from 'common/types';
 import _ from 'lodash';
+import { ContextDivider } from 'components/ContextDivider';
 
 const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
@@ -27,29 +28,6 @@ export const StyleReferencesDialog = (props: ModalProps) => {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    const [dropDownIDs, setDropDownIDs] = React.useState<Array<string>>([]);
-
-    // const modalButtonOptionsHandler = (actionString: string) => {
-    // 	let retObj = { message: '', save: false };
-
-    // 	switch (actionString) {
-    // 		case 'cancel':
-    // 			retObj.message = 'Canceled Dialog';
-    // 			break;
-    // 		case 'saveStyles':
-    // 			retObj.message = 'Styles Saved';
-    // 			retObj.save = true;
-    // 			props.handle.close();
-    // 			break;
-
-    // 		default:
-    // 			break;
-    // 	}
-
-    //TODO: This can only return a string not an object
-    // props.handle.close(retObj);
-    // };
-
     function removeStyleReference(styleRef: StyleReference) {
         let newStyleReferences = layerContext.styleReferences.filter(
             (contextStyleRef: StyleReference) =>
@@ -70,7 +48,9 @@ export const StyleReferencesDialog = (props: ModalProps) => {
 
     return (
         <div className="flex flex-col">
-            <Button onClick={createContextStyleRef}>Add new artist</Button>
+            <Button variant="primary" onClick={createContextStyleRef}>
+                Add new artist
+            </Button>
 
             {layerContext.styleReferences &&
                 layerContext.styleReferences.map((styleRef: StyleReference) => (
@@ -84,7 +64,7 @@ export const StyleReferencesDialog = (props: ModalProps) => {
                     />
                 ))}
 
-            <Divider className="my-2" size="small" />
+            <ContextDivider animate={false} />
 
             {/* ❤️‍🔥 TODO:MAKE IMAGES REFERENCE STYLES. The images in the dialog to be displayed! ❤️‍🔥  */}
             {/* <div className="flex flex-wrap mb-4 w-full justify-center">

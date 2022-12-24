@@ -40,7 +40,7 @@ const ArtistDropdowns = (props: ArtistDropdownsProps) => {
     );
 
     return (
-        <div className="flex">
+        <div className="flex items-center justify-items-center">
             <Dropdown>
                 <Label slot="label">Categories</Label>
                 <Menu slot="options">
@@ -125,7 +125,13 @@ const ArtistDropdowns = (props: ArtistDropdownsProps) => {
                 </Menu>
             </Dropdown>
 
-            <Button onClick={() => props.removeStyleReference()}>Remove</Button>
+            <Button
+                className="mt-5"
+                variant="primary"
+                onClick={() => props.removeStyleReference()}
+            >
+                Remove
+            </Button>
         </div>
     );
 };

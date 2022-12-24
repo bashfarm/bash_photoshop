@@ -3,7 +3,7 @@ import LayerAIContext from 'models/LayerAIContext';
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { useContextStore } from 'store/contextStore';
 import { ContextItem } from '../components/ContextItem';
-import { Button, Divider } from 'react-uxp-spectrum';
+import Spectrum, { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader/index';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
@@ -24,6 +24,7 @@ export const ContextManager = () => {
             <BashfulHeader animate={true} />
             <div className="mb-1">
                 <Button
+                    variant="primary"
                     onClick={async () => {
                         let newContext = await createNewContext();
                         console.log(newContext);
