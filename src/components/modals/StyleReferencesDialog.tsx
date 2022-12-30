@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Divider, Icon } from 'react-uxp-spectrum';
+import { Button, Divider, Icon, ToolTip } from 'react-uxp-spectrum';
 
 import { ArtistDropdowns } from 'components/StyleReferences';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -48,6 +48,8 @@ export const StyleReferencesDialog = (props: ModalProps) => {
 
     return (
         <div className="flex flex-col">
+            <ToolTip>yolo</ToolTip>
+
             <Button variant="primary" onClick={createContextStyleRef}>
                 Add new artist
             </Button>

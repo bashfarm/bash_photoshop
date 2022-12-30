@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArtistType } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
-import { Button, Dropdown, Label } from 'react-uxp-spectrum';
+import Spectrum, { Button, Dropdown, Label, ToolTip } from 'react-uxp-spectrum';
 import Menu from 'react-uxp-spectrum/dist/Menu';
 import MenuItem from 'react-uxp-spectrum/dist/MenuItem';
 import { getArtistCategories, getArtists } from 'services/ai_service';
@@ -41,6 +41,7 @@ const ArtistDropdowns = (props: ArtistDropdownsProps) => {
 
     return (
         <div className="flex items-center justify-items-center">
+            <div></div>
             <Dropdown>
                 <Label slot="label">Categories</Label>
                 <Menu slot="options">

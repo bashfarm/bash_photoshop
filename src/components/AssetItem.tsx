@@ -1,5 +1,4 @@
 import React from 'react';
-import { saveB64ImageToBinaryFileToDataFolder } from 'services/io_service';
 import { createNewLayerFromFile } from 'services/layer_service';
 
 interface AssetItemProps {
@@ -8,7 +7,6 @@ interface AssetItemProps {
 
 const AssetItem = (props: AssetItemProps) => {
     const handleClick = async (src: string) => {
-        await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
         await createNewLayerFromFile(`${src.slice(-3)}-img`);
     };
     return (

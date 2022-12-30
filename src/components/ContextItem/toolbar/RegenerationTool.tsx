@@ -5,6 +5,7 @@ import {
     generateAILayer,
     getImageProcessingProgress,
 } from 'services/ai_service';
+import { alert } from 'services/alert_service';
 import {
     deleteLayer,
     moveLayer,
@@ -61,6 +62,13 @@ const RegenerationTool = (props: RegenerationToolProps) => {
     ) {
         try {
             const layerContext = getContextFromStore(contextID);
+            if (!(await layerContext.canRegenerate())) {
+                alert(
+                    "Can't regenerate this layer, it currently has a mask the AI doesn't understand transparency, you will need to merge layers"
+                );
+                return;
+            }
+
             const newLayer = await generateAILayer(layerContext);
             const oldLayer = layerContext.currentLayer;
             const copyOfContext = layerContext.copy();

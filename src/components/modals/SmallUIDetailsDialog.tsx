@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TagSelector } from 'components/TagSelector';
-import AssetItem from 'components/SmallUiDetail/AssetItem';
+import AssetItem from 'components/AssetItem';
 import { Textarea, Icon, Divider, Heading } from 'react-uxp-spectrum';
 import { txt2img } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -13,27 +13,6 @@ const dummyArray = [
     { id: 3, value: 30, src: 'img/cat.jpg' },
     { id: 4, value: 30, src: 'img/cat.jpg' },
 ];
-
-// export type AssetItemProps = {
-//     src: string;
-// };
-
-// const AssetItem = (props: AssetItemProps) => {
-//     const handleClick = async (src: string) => {
-//         await saveB64ImageToBinaryFileToDataFolder(`${src.slice(-3)}-img`, src);
-//         await createNewLayerFromFile(`${src.slice(-3)}-img`);
-//     };
-//     return (
-//         <div className="mx-5">
-//             <img
-//                 className="rounded-sm w-[90px] hover:border"
-//                 src={props.src}
-//                 alt="Demo Image"
-//                 onClick={() => handleClick(props.src)}
-//             />
-//         </div>
-//     );
-// };
 
 interface ModalProps {
     handle: ExtendedHTMLDialogElement;
