@@ -14,6 +14,7 @@ import { BashfulObject } from './BashfulObject';
 import _, { uniqueId } from 'lodash';
 import photoshop from 'photoshop';
 import StyleReference from './StyleReference';
+import { hasMask } from 'services/layer_service';
 
 export default class LayerAIContext extends BashfulObject {
     id: string; // this should be the id number of the layer
@@ -43,8 +44,8 @@ export default class LayerAIContext extends BashfulObject {
         styleReferences: Array<StyleReference> = [],
         stylingStrength: number = 0.7,
         consistencyStrength: number = 0.85,
-        imageHeight: number = 512,
-        imageWidth: number = 512,
+        imageHeight: number = 1024,
+        imageWidth: number = 1024,
         seed: number = -1,
         negativePrompt: string = '',
         batchSize: number = 1,
@@ -68,6 +69,10 @@ export default class LayerAIContext extends BashfulObject {
         this.batchSize = batchSize;
         this.docType = docType;
         this.generationModelName = generationModelName;
+    }
+
+    public async canRegenerate() {
+        return !(await hasMask(this.currentLayer));
     }
 
     /**

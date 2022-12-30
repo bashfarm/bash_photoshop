@@ -1,5 +1,5 @@
 import { formatBase64Image } from '../utils/io_utils';
-import { getDataFolderImageBase64ImgStr } from './io_service';
+import { getBase64OfImgInPluginDataFolder } from './io_service';
 import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 import {
     Text2ImgRequest,
@@ -266,7 +266,7 @@ export async function generateImageLayerUsingLayer(
         }
 
         // Retrieve the base64 string representation of the image given the name of the image.
-        let b64Data = await getDataFolderImageBase64ImgStr(
+        let b64Data = await getBase64OfImgInPluginDataFolder(
             contextHistoryFileEntry.name
         );
 
@@ -339,10 +339,10 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
  * @param downScaleFirst
  * @returns
  */
-export async function upScaleImage(
+export async function getUpScaledB64(
     b64UnformattedImage: string,
     downScaleFirst: boolean = true
-) {
+): Promise<string> {
     let payload = {
         upscaler_name: 'ESRGAN_4x',
         src_img: b64UnformattedImage, // probably should stay 512x512
@@ -362,7 +362,7 @@ export async function upScaleImage(
             requestOptions
         );
 
-        return await response.json();
+        return (await response.json())['output'];
     } catch (error) {
         console.error(error);
         throw error;
@@ -401,7 +401,6 @@ export async function swapModel(modelName: string = 'model.ckpt') {
     let payload = {
         sd_model_checkpoint: modelName,
     };
-    console.log(payload);
     await setAPIConfig(payload);
 }
 

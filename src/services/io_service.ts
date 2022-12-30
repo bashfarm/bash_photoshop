@@ -41,14 +41,14 @@ export async function saveTextFileToDataFolder(fileName: string, data: string) {
 export async function saveBinaryFileToDataFolder(
     fileName: string,
     data: Uint8Array
-): Promise<void> {
+): Promise<storage.File> {
     try {
         let entry = await createDataFolderEntry(fileName);
         let res = (await entry) as storage.File;
         res.write(data, { format: formats.binary });
+        return res;
     } catch (e) {
-        console.log('something not write');
-        console.log(e);
+        console.error(e);
     }
 }
 
@@ -61,9 +61,9 @@ export async function saveBinaryFileToDataFolder(
 export async function saveB64ImageToBinaryFileToDataFolder(
     fileName: string,
     data: string
-): Promise<void> {
+): Promise<storage.File> {
     try {
-        await saveBinaryFileToDataFolder(
+        return await saveBinaryFileToDataFolder(
             fileName,
             base64js.toByteArray(unformatBase64Image(data))
         );
@@ -91,7 +91,7 @@ export async function createDataFolderEntry(fileName: string) {
  * @param {String} fileName
  * @returns
  */
-export async function getDataFolderImageBase64ImgStr(
+export async function getBase64OfImgInPluginDataFolder(
     fileName: string
 ): Promise<string> {
     try {

@@ -12,7 +12,6 @@ import photoshop from 'photoshop';
 import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
-import LayerAIContext from 'models/LayerAIContext';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
 
 const lfs = storage.localFileSystem;
@@ -31,27 +30,13 @@ export function getVisibleLayers(layers: Layer[]): Layer[] {
 }
 
 /**
- * Creates a new layer from an image found in the plugin data folder.
- */
-export async function createNewLayerFromImage(
-    imageName: string,
-    relativeLayer: Layer,
-    relativeLayerPlacement: ElementPlacement,
-    rasterize = true
-): Promise<void> {
-    await createNewLayerFromFile(imageName, rasterize);
-    const newestLayer = getNewestLayer(photoshop.app.activeDocument.layers);
-    moveLayer(newestLayer, relativeLayer, relativeLayerPlacement);
-}
-
-/**
  * Create a new layer from the filename.  The file name is relative to the plugin.  This means that only files in the plugin data
  * folder on the user's local machine will be found.
  */
 export async function createNewLayerFromFile(
     fileName: string,
     rasterize: boolean = true
-): Promise<void> {
+): Promise<Layer> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
     const tkn = lfs.createSessionToken(fileEntry);
@@ -79,6 +64,7 @@ export async function createNewLayerFromFile(
         }
         // { commandName: 'open File' }
     );
+    return getNewestLayer(app.activeDocument.layers);
 }
 
 /**
@@ -372,6 +358,7 @@ export async function linkLayers(
         return originalLayer.link(targetLayer);
     });
 }
+
 /**
  * Unlinks the layer from any existing links.
  */
@@ -585,4 +572,24 @@ export async function createNewLayer(layerName: string) {
             }
         })) as Layer;
     } catch (e) {}
+}
+
+/**
+ * Checks if the layer has a mask.
+ * @param layer
+ * @returns
+ */
+export async function hasMask(layer: Layer) {
+    return await executeInPhotoshop(hasMask, async () => {
+        var lm = true,
+            pmd;
+        try {
+            pmd = layer.layerMaskDensity;
+            layer.layerMaskDensity = 50.0;
+            layer.layerMaskDensity = pmd;
+        } catch (e) {
+            lm = false;
+        }
+        return lm;
+    });
 }

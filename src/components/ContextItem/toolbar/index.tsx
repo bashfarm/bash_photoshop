@@ -20,6 +20,15 @@ import { SmallUIDetailsDialog } from 'components/modals/SmallUIDetailsDialog';
 import RegenerationTool from './RegenerationTool';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
+import { getUpScaledB64 } from 'services/ai_service';
+import {
+    getBase64OfImgInPluginDataFolder,
+    saveB64ImageToBinaryFileToDataFolder,
+} from 'services/io_service';
+import {
+    createNewLayerFromFile,
+    scaleAndFitLayerToCanvas,
+} from 'services/layer_service';
 
 const events = [
     'make',
@@ -169,17 +178,26 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                 />
                 <Tool
                     icon={GridViewIcon}
-                    label="Small Details"
-                    onClick={() =>
-                        popUpModal(
-                            popupRef,
-                            <SmallUIDetailsDialog
-                                handle={popupRef.current}
-                                contextID={props.contextID}
-                            />,
-                            'UI Details'
-                        )
-                    }
+                    label="UpScale Image"
+                    onClick={async () => {
+                        let fileEntry = await getContextFromStore(
+                            props.contextID
+                        ).saveLayerContexttoHistory(true);
+                        let b64Img = await getBase64OfImgInPluginDataFolder(
+                            fileEntry.name
+                        );
+                        let b64Upscaled = await getUpScaledB64(b64Img, false);
+                        let upScaledFileEntry =
+                            await saveB64ImageToBinaryFileToDataFolder(
+                                fileEntry.name,
+                                b64Upscaled
+                            );
+                        let newLayer = await createNewLayerFromFile(
+                            upScaledFileEntry.name,
+                            true
+                        );
+                        scaleAndFitLayerToCanvas(newLayer);
+                    }}
                 />
             </ToolSection>
             <ToolbarDivider />
