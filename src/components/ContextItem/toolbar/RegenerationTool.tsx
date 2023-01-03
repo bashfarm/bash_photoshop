@@ -7,6 +7,7 @@ import {
 } from 'services/ai_service';
 import { alert } from 'services/alert_service';
 import {
+    createMaskFromLayerForLayer,
     deleteLayer,
     moveLayer,
     scaleAndFitLayerToCanvas,
@@ -60,18 +61,21 @@ const RegenerationTool = (props: RegenerationToolProps) => {
         deleteOldLayer: boolean = false,
         contextID: string
     ) {
+        let maskWasApplied = false;
+        let duplicatedLayer = null;
+
         try {
             const layerContext = getContextFromStore(contextID);
-            if (!(await layerContext.canRegenerate())) {
-                alert(
-                    "Can't regenerate this layer, it currently has a mask the AI doesn't understand transparency, you will need to merge layers"
-                );
-                return;
+            const oldLayer = layerContext.currentLayer;
+            const copyOfContext = layerContext.copy();
+
+            if (await layerContext.hasLayerMask()) {
+                duplicatedLayer = await layerContext.duplicateCurrentLayer();
+                copyOfContext.currentLayer = duplicatedLayer;
+                maskWasApplied = await copyOfContext.applyLayerMask();
             }
 
             const newLayer = await generateAILayer(layerContext);
-            const oldLayer = layerContext.currentLayer;
-            const copyOfContext = layerContext.copy();
 
             copyOfContext.currentLayer = newLayer;
             saveContextToStore(copyOfContext);
@@ -81,10 +85,17 @@ const RegenerationTool = (props: RegenerationToolProps) => {
                 oldLayer,
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
+
             if (deleteOldLayer) {
                 await deleteLayer(oldLayer);
             }
             await scaleAndFitLayerToCanvas(newLayer);
+
+            if (duplicatedLayer) {
+                await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
+                await deleteLayer(duplicatedLayer);
+            }
+
             props.newLayerNameSetter(newLayer.name);
         } catch (e) {
             console.error(e);

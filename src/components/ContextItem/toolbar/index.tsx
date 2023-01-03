@@ -16,7 +16,6 @@ import {
 import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { StyleReferencesDialog } from 'components/modals/StyleReferencesDialog';
-import { SmallUIDetailsDialog } from 'components/modals/SmallUIDetailsDialog';
 import RegenerationTool from './RegenerationTool';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
@@ -26,6 +25,7 @@ import {
     saveB64ImageToBinaryFileToDataFolder,
 } from 'services/io_service';
 import {
+    applyMask,
     createNewLayerFromFile,
     scaleAndFitLayerToCanvas,
 } from 'services/layer_service';
@@ -178,15 +178,18 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                 />
                 <Tool
                     icon={GridViewIcon}
-                    label="UpScale Image"
+                    label="Increase Resolution"
                     onClick={async () => {
-                        let fileEntry = await getContextFromStore(
-                            props.contextID
-                        ).saveLayerContexttoHistory(true);
+                        let layerContext = getContextFromStore(props.contextID);
+                        let fileEntry =
+                            await layerContext.saveLayerContexttoHistory(true);
                         let b64Img = await getBase64OfImgInPluginDataFolder(
                             fileEntry.name
                         );
-                        let b64Upscaled = await getUpScaledB64(b64Img, false);
+                        let b64Upscaled = await getUpScaledB64(
+                            b64Img,
+                            layerContext
+                        );
                         let upScaledFileEntry =
                             await saveB64ImageToBinaryFileToDataFolder(
                                 fileEntry.name,

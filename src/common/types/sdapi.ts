@@ -242,3 +242,8 @@ export type ConfigAPIResponse = {
 };
 
 export type ArtistCategories = string[];
+
+export type Img2ImgRequestDepthMask = Img2ImgRequest & {
+    script_args: [false, 86, true, 512, 512, false, 2, true, true, true, false];
+    script_name: 'Depth aware img2img mask';
+};

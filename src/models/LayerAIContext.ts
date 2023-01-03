@@ -14,7 +14,7 @@ import { BashfulObject } from './BashfulObject';
 import _, { uniqueId } from 'lodash';
 import photoshop from 'photoshop';
 import StyleReference from './StyleReference';
-import { hasMask } from 'services/layer_service';
+import { applyMask, duplicateLayer, hasMask } from 'services/layer_service';
 
 export default class LayerAIContext extends BashfulObject {
     id: string; // this should be the id number of the layer
@@ -30,6 +30,7 @@ export default class LayerAIContext extends BashfulObject {
     imageWidth: number;
     batchSize: number;
     seed: number;
+    shouldBeMasked: boolean;
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
     styleReferences: Array<StyleReference>; // the hisory of the context
@@ -50,7 +51,8 @@ export default class LayerAIContext extends BashfulObject {
         negativePrompt: string = '',
         batchSize: number = 1,
         docType: string = 'illustration',
-        generationModelName: string = 'model.ckpt'
+        generationModelName: string = 'model.ckpt',
+        shouldBeMasked: boolean = true
     ) {
         super();
         this.name = name;
@@ -69,10 +71,27 @@ export default class LayerAIContext extends BashfulObject {
         this.batchSize = batchSize;
         this.docType = docType;
         this.generationModelName = generationModelName;
+        this.shouldBeMasked = shouldBeMasked;
     }
 
-    public async canRegenerate() {
-        return !(await hasMask(this.currentLayer));
+    public async hasLayerMask(): Promise<boolean> {
+        return await hasMask(this.currentLayer);
+    }
+
+    public async applyLayerMask(): Promise<boolean> {
+        if (await this.hasLayerMask()) {
+            await applyMask(this.currentLayer);
+            return true;
+        }
+        return false;
+    }
+
+    public async duplicateCurrentLayer(): Promise<Layer> {
+        return await duplicateLayer(
+            this.currentLayer,
+            this.currentLayer,
+            photoshop.constants.ElementPlacement.PLACEBEFORE
+        );
     }
 
     /**
@@ -171,9 +190,12 @@ export default class LayerAIContext extends BashfulObject {
      * Create the next available historical file for the LayerContext
      * @param {string | Uint8Array} imgData
      */
-    public async createNewContextHistoryFile(imgData: string | Uint8Array) {
+    public async createNewContextHistoryFile(
+        imgData: string | Uint8Array,
+        temp: boolean = false
+    ) {
         try {
-            let fileName = await this.getNextAvailableHistoryFileName(-1);
+            let fileName = await this.getNextAvailableHistoryFileName(-1, temp);
             console.log(`Saving file with name ${fileName}`);
             if (!fileName) {
                 alert('Please delete a file or use inplace image regeneration');
