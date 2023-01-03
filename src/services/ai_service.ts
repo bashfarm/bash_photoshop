@@ -1,6 +1,11 @@
 import { formatBase64Image } from '../utils/io_utils';
-import { getDataFolderImageBase64ImgStr } from './io_service';
-import { getNewestLayer, createNewLayerFromFile } from './layer_service';
+import { getBase64OfImgInPluginDataFolder } from './io_service';
+import {
+    getNewestLayer,
+    createNewLayerFromFile,
+    selectLayerMask,
+    createMaskFromLayerForLayer,
+} from './layer_service';
 import {
     Text2ImgRequest,
     Img2ImgRequest,
@@ -13,7 +18,12 @@ import LayerAIContext from 'models/LayerAIContext';
 import { alert } from './alert_service';
 import photoshop from 'photoshop';
 import StyleReference from 'models/StyleReference';
-import { ConfigAPIResponse, ModelResponse } from 'common/types/sdapi';
+import {
+    ConfigAPIResponse,
+    Img2ImgRequestDepthMask,
+    ModelResponse,
+} from 'common/types/sdapi';
+import { Layer } from 'photoshop/dom/Layer';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -252,7 +262,11 @@ export async function generateImageLayerUsingOnlyContext(
 
 export async function generateImageLayerUsingLayer(
     layerContext: LayerAIContext
-) {
+): Promise<Layer> {
+    let genb64Str = null;
+    let generatedLayer = null;
+    let oldLayer = layerContext.currentLayer;
+
     try {
         // This will save the current layer to plugin folder as a history file
         // We save in the beginning to make sure we capture all changes that could have occurred to the layer
@@ -266,13 +280,12 @@ export async function generateImageLayerUsingLayer(
         }
 
         // Retrieve the base64 string representation of the image given the name of the image.
-        let b64Data = await getDataFolderImageBase64ImgStr(
+        let b64Data = await getBase64OfImgInPluginDataFolder(
             contextHistoryFileEntry.name
         );
 
         // So we send off the new image that we saved and got it's string representation for 👏
         // What we will get back from the ai is an image.  The string representation in base64 encoding!
-        let genb64Str = null;
         try {
             const response = await img2img(
                 formatBase64Image(b64Data),
@@ -295,12 +308,12 @@ export async function generateImageLayerUsingLayer(
             await createNewLayerFromFile(generatedFileName);
 
             // Retrieve the newest layer that was created in photoshop, whereever it is.
-            let generatedLayer = getNewestLayer(
+            generatedLayer = getNewestLayer(
                 photoshop.app.activeDocument.layers
             );
-
-            return generatedLayer;
         }
+
+        return generatedLayer;
     } catch (e) {
         console.error(e);
         alert(
@@ -401,7 +414,6 @@ export async function swapModel(modelName: string = 'model.ckpt') {
     let payload = {
         sd_model_checkpoint: modelName,
     };
-    console.log(payload);
     await setAPIConfig(payload);
 }
 
@@ -445,6 +457,120 @@ export async function setAPIConfig(config: any) {
     try {
         let response = await fetch(
             `${process.env.API_URL}/sdapi/v1/options`,
+            requestOptions
+        );
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export async function getUpScaledB64(
+    b64ImgStr: string,
+    layerContext: LayerAIContext
+) {
+    var payload = {
+        resize_mode: 0,
+        show_extras_results: true,
+        gfpgan_visibility: 0,
+        codeformer_visibility: 0,
+        codeformer_weight: 0,
+        //   "upscaling_resize": 2,
+        upscaling_resize_w: layerContext.imageWidth,
+        upscaling_resize_h: layerContext.imageHeight,
+        upscaling_crop: true,
+        upscaler_1: 'ESRGAN_4x',
+        upscaler_2: 'None',
+        extras_upscaler_2_visibility: 0,
+        upscale_first: false,
+        image: b64ImgStr,
+    };
+
+    const requestOptions: RequestInit = {
+        method: 'POST',
+        headers: myHeaders,
+        redirect: 'follow',
+        body: JSON.stringify(payload),
+    };
+    try {
+        let response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/extra-single-image`,
+            requestOptions
+        );
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * Deprecated, use img2img instead
+ * Use this as a reference to run scripts.
+ */
+export async function getImg2ImgDepth(
+    b64ImgStr: string,
+    layerContext: LayerAIContext
+) {
+    const payload: Img2ImgRequestDepthMask = {
+        init_images: [b64ImgStr],
+        resize_mode: 0,
+        denoising_strength: layerContext.getDenoisingStrength(),
+        mask_blur: 4,
+        inpainting_fill: 0,
+        inpaint_full_res: true,
+        inpaint_full_res_padding: 0,
+        inpainting_mask_invert: 0,
+        prompt: layerContext.generateContextualizedPrompt(),
+        seed: layerContext.seed,
+        subseed: -1,
+        subseed_strength: 0,
+        seed_resize_from_h: -1,
+        seed_resize_from_w: -1,
+        batch_size: 1,
+        n_iter: 1,
+        steps: 25,
+        cfg_scale: layerContext.getStylingStrength(),
+        width: layerContext.imageWidth,
+        height: layerContext.imageHeight,
+        restore_faces: false,
+        tiling: false,
+        negative_prompt: layerContext.negativePrompt,
+        eta: 0,
+        s_churn: 0,
+        s_tmax: 0,
+        s_tmin: 0,
+        s_noise: 1,
+        override_settings: {},
+        sampler_index: 'Euler',
+        include_init_images: false,
+        mask: null,
+        styles: [],
+        sampler_name: null,
+        script_args: [
+            false,
+            86,
+            true,
+            512,
+            512,
+            false,
+            2,
+            true,
+            true,
+            true,
+            false,
+        ],
+        script_name: 'Depth aware img2img mask',
+    };
+
+    const requestOptions: RequestInit = {
+        method: 'POST',
+        headers: myHeaders,
+        redirect: 'follow',
+        body: JSON.stringify(payload),
+    };
+    try {
+        let response = await fetch(
+            `${process.env.API_URL}/sdapi/v1/img2img/script`,
             requestOptions
         );
         return await response.json();

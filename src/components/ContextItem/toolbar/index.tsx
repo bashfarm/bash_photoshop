@@ -16,10 +16,19 @@ import {
 import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { StyleReferencesDialog } from 'components/modals/StyleReferencesDialog';
-import { SmallUIDetailsDialog } from 'components/modals/SmallUIDetailsDialog';
 import RegenerationTool from './RegenerationTool';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
+import { getUpScaledB64 } from 'services/ai_service';
+import {
+    getBase64OfImgInPluginDataFolder,
+    saveB64ImageToBinaryFileToDataFolder,
+} from 'services/io_service';
+import {
+    applyMask,
+    createNewLayerFromFile,
+    scaleAndFitLayerToCanvas,
+} from 'services/layer_service';
 
 const events = [
     'make',
@@ -169,17 +178,29 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                 />
                 <Tool
                     icon={GridViewIcon}
-                    label="Small Details"
-                    onClick={() =>
-                        popUpModal(
-                            popupRef,
-                            <SmallUIDetailsDialog
-                                handle={popupRef.current}
-                                contextID={props.contextID}
-                            />,
-                            'UI Details'
-                        )
-                    }
+                    label="Increase Resolution"
+                    onClick={async () => {
+                        let layerContext = getContextFromStore(props.contextID);
+                        let fileEntry =
+                            await layerContext.saveLayerContexttoHistory(true);
+                        let b64Img = await getBase64OfImgInPluginDataFolder(
+                            fileEntry.name
+                        );
+                        let b64Upscaled = await getUpScaledB64(
+                            b64Img,
+                            layerContext
+                        );
+                        let upScaledFileEntry =
+                            await saveB64ImageToBinaryFileToDataFolder(
+                                fileEntry.name,
+                                b64Upscaled
+                            );
+                        let newLayer = await createNewLayerFromFile(
+                            upScaledFileEntry.name,
+                            true
+                        );
+                        scaleAndFitLayerToCanvas(newLayer);
+                    }}
                 />
             </ToolSection>
             <ToolbarDivider />
@@ -197,6 +218,17 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                     icon={DeleteIcon}
                     label="Delete Context"
                     onClick={() => removeContextFromStore(props.contextID)}
+                />
+            </ToolSection>
+            <ToolSection>
+                <Tool
+                    icon={DeleteIcon}
+                    label="Apply Mask"
+                    onClick={() => {
+                        applyMask(
+                            getContextFromStore(props.contextID).currentLayer
+                        );
+                    }}
                 />
             </ToolSection>
         </div>

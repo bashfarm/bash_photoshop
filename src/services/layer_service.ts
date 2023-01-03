@@ -51,7 +51,7 @@ export async function createNewLayerFromImage(
 export async function createNewLayerFromFile(
     fileName: string,
     rasterize: boolean = true
-): Promise<void> {
+): Promise<Layer> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
     const tkn = lfs.createSessionToken(fileEntry);
@@ -79,6 +79,7 @@ export async function createNewLayerFromFile(
         }
         // { commandName: 'open File' }
     );
+    return getNewestLayer(app.activeDocument.layers);
 }
 
 /**
@@ -246,7 +247,7 @@ export async function selectLayerMask(layer: Layer) {
 /**
  * This function will duplicate the given layer and return a reference to it.
  */
-async function duplicateLayer(
+export async function duplicateLayer(
     layer: Layer,
     relativeObject?: Document | Layer,
     insertionLocation?: ElementPlacement,
@@ -532,29 +533,6 @@ export async function translateLayer(
     });
 }
 
-/**
- * Take in the array of photoshop layers and the context.  Convert all the layers to NEW smart object layers and remap those NEW layers
- * to their respective contexts they had before.
- * @param layers
- * @param layerContext
- * @param setAILayerContext
- */
-// export async function convertLayersToSmartObjects(
-//     layers: Array<Layer>,
-//     getLayerAssignment: Function,
-//     setLayerAssignment: Function
-// ) {
-//     await executeInPhotoshop(convertLayersToSmartObjects, async () => {
-//         for (let layer of layers) {
-//             let newLayer = await convertLayerToSmartObject(layer);
-//             let layerContextID = getLayerAssignment(layer.id) as string;
-//             let copyOfContext = layerContext.copy();
-//             copyOfContext.currentLayer = newLayer;
-//             setLayerAssignment(newLayer.id, copyOfContext);
-//         }
-//     });
-// }
-
 export async function convertLayerToSmartObject(layer: Layer) {
     let command = { _obj: 'newPlacedLayer' };
     return await executeInPhotoshop(convertLayerToSmartObject, async () => {
@@ -585,4 +563,76 @@ export async function createNewLayer(layerName: string) {
             }
         })) as Layer;
     } catch (e) {}
+}
+
+/**
+ * Checks if the layer has a mask.
+ * @param layer
+ * @returns
+ */
+export async function hasMask(layer: Layer) {
+    return await executeInPhotoshop(hasMask, async () => {
+        var lm = true,
+            pmd;
+        try {
+            pmd = layer.layerMaskDensity;
+            layer.layerMaskDensity = 50.0;
+            layer.layerMaskDensity = pmd;
+        } catch (e) {
+            lm = false;
+        }
+        return lm;
+    });
+}
+
+export async function applyMask(layer: Layer) {
+    await selectLayerMask(layer);
+    return await executeInPhotoshop(applyMask, async () => {
+        let command = {
+            _obj: 'delete',
+            _target: [
+                { _enum: 'ordinal', _ref: 'channel', _value: 'targetEnum' },
+            ],
+            apply: true,
+        };
+        return await bp([command], {});
+    });
+}
+
+export async function createMaskFromLayerForLayer(
+    fromLayer: Layer,
+    forLayer: Layer
+) {
+    console.log('createMaskFromLayerForLayer', fromLayer, forLayer);
+    return await executeInPhotoshop(createMaskFromLayerForLayer, async () => {
+        let command = {
+            _obj: 'make',
+            at: { _enum: 'channel', _ref: 'channel', _value: 'mask' },
+            duplicate: true,
+            new: { _class: 'channel' },
+            using: {
+                _ref: [
+                    {
+                        _enum: 'channel',
+                        _ref: 'channel',
+                        _value: 'transparencyEnum',
+                    },
+                    { _id: fromLayer.id, _ref: 'layer' },
+                ],
+            },
+        };
+        return await bp([command], {});
+    });
+}
+
+export async function selectLayer(layer: Layer) {
+    return await executeInPhotoshop(selectLayer, async () => {
+        layer.selected = true;
+    });
+}
+
+export async function deSelectLayer(layer: Layer) {
+    return await executeInPhotoshop(deSelectLayer, async () => {
+        layer.selected = false;
+    });
 }
