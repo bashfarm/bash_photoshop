@@ -61,28 +61,14 @@ const RegenerationTool = (props: RegenerationToolProps) => {
         deleteOldLayer: boolean = false,
         contextID: string
     ) {
-        const layerContext = getContextFromStore(contextID);
-
-        if (!(await layerContext.canRegenerate())) {
-            alert(
-                "Can't regenerate this layer, it currently has a mask the AI doesn't understand transparency, you will need to merge layers"
-            );
-            return;
-        }
+        let maskWasApplied = false;
+        let duplicatedLayer = null;
 
         try {
             const layerContext = getContextFromStore(contextID);
-            if (!(await layerContext.canRegenerate())) {
-                alert(
-                    "Can't regenerate this layer, it currently has a mask the AI doesn't understand transparency, you will need to merge layers"
-                );
-                return;
-            }
-
             const oldLayer = layerContext.currentLayer;
             const copyOfContext = layerContext.copy();
-            let maskWasApplied = false;
-            let duplicatedLayer = null;
+
             if (await layerContext.hasLayerMask()) {
                 duplicatedLayer = await layerContext.duplicateCurrentLayer();
                 copyOfContext.currentLayer = duplicatedLayer;

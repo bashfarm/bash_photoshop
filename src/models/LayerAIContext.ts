@@ -94,10 +94,6 @@ export default class LayerAIContext extends BashfulObject {
         );
     }
 
-    public async canRegenerate() {
-        return !(await hasMask(this.currentLayer));
-    }
-
     /**
      * Return a copy of the context
      * @returns

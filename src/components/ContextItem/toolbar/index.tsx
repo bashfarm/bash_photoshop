@@ -220,17 +220,6 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                     onClick={() => removeContextFromStore(props.contextID)}
                 />
             </ToolSection>
-            <ToolSection>
-                <Tool
-                    icon={DeleteIcon}
-                    label="Apply Mask"
-                    onClick={() => {
-                        applyMask(
-                            getContextFromStore(props.contextID).currentLayer
-                        );
-                    }}
-                />
-            </ToolSection>
         </div>
     );
 };
