@@ -78,11 +78,6 @@ export default class LayerAIContext extends BashfulObject {
         return await hasMask(this.currentLayer);
     }
 
-    public async canRegenerate(): Promise<boolean> {
-        // return !(await this.hasLayerMask());
-        return true;
-    }
-
     public async applyLayerMask(): Promise<boolean> {
         if (await this.hasLayerMask()) {
             await applyMask(this.currentLayer);
@@ -97,6 +92,10 @@ export default class LayerAIContext extends BashfulObject {
             this.currentLayer,
             photoshop.constants.ElementPlacement.PLACEBEFORE
         );
+    }
+
+    public async canRegenerate() {
+        return !(await hasMask(this.currentLayer));
     }
 
     /**

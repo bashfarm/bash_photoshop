@@ -48,8 +48,7 @@ export async function saveBinaryFileToDataFolder(
         res.write(data, { format: formats.binary });
         return res;
     } catch (e) {
-        console.log('something not write');
-        console.log(e);
+        console.error(e);
     }
 }
 

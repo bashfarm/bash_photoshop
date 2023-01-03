@@ -1,11 +1,6 @@
 import { formatBase64Image } from '../utils/io_utils';
 import { getBase64OfImgInPluginDataFolder } from './io_service';
-import {
-    getNewestLayer,
-    createNewLayerFromFile,
-    selectLayerMask,
-    createMaskFromLayerForLayer,
-} from './layer_service';
+import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 import {
     Text2ImgRequest,
     Img2ImgRequest,
@@ -336,42 +331,6 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     try {
         const response = await fetch(
             `${process.env.API_URL}/sdapi/v1/progress?skip_current_image=false`,
-            requestOptions
-        );
-
-        return await response.json();
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-/**
- * This will upscale the given image using ESRGAN.  However, this requires the auto-sd extension to be installed. https://github.com/Interpause/auto-sd-paint-ext
- * @param b64UnformattedImage
- * @param downScaleFirst
- * @returns
- */
-export async function upScaleImage(
-    b64UnformattedImage: string,
-    downScaleFirst: boolean = true
-) {
-    let payload = {
-        upscaler_name: 'ESRGAN_4x',
-        src_img: b64UnformattedImage, // probably should stay 512x512
-        downscale_first: downScaleFirst,
-    };
-
-    const requestOptions: RequestInit = {
-        method: 'POST',
-        headers: myHeaders,
-        redirect: 'follow',
-        body: JSON.stringify(payload),
-    };
-
-    try {
-        const response = await fetch(
-            `${process.env.API_URL}/sdapi/interpause/upscale`,
             requestOptions
         );
 

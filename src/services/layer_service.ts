@@ -12,7 +12,6 @@ import photoshop from 'photoshop';
 import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
-import LayerAIContext from 'models/LayerAIContext';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
 
 const lfs = storage.localFileSystem;
@@ -28,20 +27,6 @@ export function getVisibleLayers(layers: Layer[]): Layer[] {
     return layers.filter((layer) => {
         return layer.visible;
     });
-}
-
-/**
- * Creates a new layer from an image found in the plugin data folder.
- */
-export async function createNewLayerFromImage(
-    imageName: string,
-    relativeLayer: Layer,
-    relativeLayerPlacement: ElementPlacement,
-    rasterize = true
-): Promise<void> {
-    await createNewLayerFromFile(imageName, rasterize);
-    const newestLayer = getNewestLayer(photoshop.app.activeDocument.layers);
-    moveLayer(newestLayer, relativeLayer, relativeLayerPlacement);
 }
 
 /**
@@ -373,6 +358,7 @@ export async function linkLayers(
         return originalLayer.link(targetLayer);
     });
 }
+
 /**
  * Unlinks the layer from any existing links.
  */
