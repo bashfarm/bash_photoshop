@@ -5,7 +5,7 @@ interface AssetItemProps {
     src: string;
 }
 
-const AssetItem = (props: AssetItemProps) => {
+export default function AssetItem(props: AssetItemProps) {
     const handleClick = async (src: string) => {
         await createNewLayerFromFile(`${src.slice(-3)}-img`);
     };
@@ -19,6 +19,4 @@ const AssetItem = (props: AssetItemProps) => {
             />
         </div>
     );
-};
-
-export default AssetItem;
+}

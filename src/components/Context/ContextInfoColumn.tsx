@@ -4,8 +4,9 @@ import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { getAvailableModels, swapModel } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { ContextLabel } from './ContextLabel';
-import { ContextDropdown } from './generatorInputs/ContextDropdown';
+import ContextDropdown from './ContextDropdown';
+import ContextLabel from './ContextLabel';
+
 export type ContextInfoColumnProps = {
     contextID: string;
 };
@@ -19,7 +20,7 @@ function DefaultContextInfoColumn() {
     );
 }
 
-export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
+export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
         state.getContextFromStore(props.contextID)
     );
@@ -67,4 +68,4 @@ export const ContextInfoColumn = (props: ContextInfoColumnProps) => {
         console.warn('probably a deleted current layer');
         return <DefaultContextInfoColumn></DefaultContextInfoColumn>;
     }
-};
+}

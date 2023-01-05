@@ -5,7 +5,7 @@ import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export function ContextTextarea(props: ContextProps) {
+export default function ContextTextarea(props: ContextProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Divider, Icon, ToolTip } from 'react-uxp-spectrum';
 
-import { ArtistDropdowns } from 'components/StyleReferences';
+import ArtistDropdown from 'components/ArtistDropdowns';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from 'models/StyleReference';
 import { ExtendedHTMLDialogElement } from 'common/types';
 import _ from 'lodash';
-import { ContextDivider } from 'components/ContextDivider';
-
+import { ContextDivider } from 'components/Context/ContextDivider';
 const StyleReferences: Array<StyleReference> = [
     new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
     new StyleReference('kitty', '', 'img/cat.jpg', [], [], []),
@@ -19,7 +18,7 @@ interface ModalProps {
     contextID: string;
 }
 
-export const StyleReferencesDialog = (props: ModalProps) => {
+export function StyleReferencesModal(props: ModalProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
         state.getContextFromStore(props.contextID)
     );
@@ -56,7 +55,7 @@ export const StyleReferencesDialog = (props: ModalProps) => {
 
             {layerContext.styleReferences &&
                 layerContext.styleReferences.map((styleRef: StyleReference) => (
-                    <ArtistDropdowns
+                    <ArtistDropdown
                         key={styleRef.id}
                         contextID={props.contextID}
                         styleRef={styleRef}
@@ -90,4 +89,4 @@ export const StyleReferencesDialog = (props: ModalProps) => {
             </div>
         </div>
     );
-};
+}

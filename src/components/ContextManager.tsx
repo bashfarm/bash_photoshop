@@ -1,12 +1,11 @@
-// import { E2ETestingPanel } from 'components/E2ETestingPanel';
 import LayerAIContext from 'models/LayerAIContext';
 import React from 'react';
 import { useContextStore } from 'store/contextStore';
-import { ContextItem } from '../components/ContextItem';
+import ContextItem from './Context/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
-import { BashfulHeader } from 'components/BashfulHeader/index';
+import { BashfulHeader } from 'components/BashfulHeader';
 
-export const ContextManager = () => {
+export default function ContextManager() {
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );
@@ -35,7 +34,7 @@ export const ContextManager = () => {
             <ContextItems />
         </>
     );
-};
+}
 
 /**
  * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
