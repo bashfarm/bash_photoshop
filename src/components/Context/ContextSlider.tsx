@@ -5,7 +5,7 @@ import { Slider } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export function ContextSlider(props: ContextProps) {
+export default function ContextSlider(props: ContextProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

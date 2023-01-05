@@ -21,7 +21,7 @@ type RegenerationToolProps = {
     newLayerNameSetter: Function;
 };
 
-const RegenerationTool = (props: RegenerationToolProps) => {
+export default function RegenerationTool(props: RegenerationToolProps) {
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
@@ -150,6 +150,4 @@ const RegenerationTool = (props: RegenerationToolProps) => {
             />
         </div>
     );
-};
-
-export default RegenerationTool;
+}

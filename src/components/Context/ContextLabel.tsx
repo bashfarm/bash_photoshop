@@ -6,7 +6,7 @@ export type ContextLabelProps = {
     labelText: string;
 };
 
-export const ContextLabel = (props: ContextLabelProps) => {
+export default function ContextLabel(props: ContextLabelProps) {
     return (
         <div className="flex flex-row">
             <Heading
@@ -18,4 +18,4 @@ export const ContextLabel = (props: ContextLabelProps) => {
             <span className="text-xs text-[color:var(--uxp-host-text-color-secondary)] ml-3">{` ${props.value}`}</span>
         </div>
     );
-};
+}

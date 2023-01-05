@@ -1,22 +1,21 @@
 import React from 'react';
 
-import { ContextInfoColumn } from './ContextInfoColumn';
-import { ContextToolColumn } from './ContextToolColumn';
-import ContextToolbar from './ContextItem/toolbar';
-import { ContextSlider } from './generatorInputs/ContextSlider';
+import ContextInfoColumn from './ContextInfoColumn';
+import ContextToolColumn from './ContextToolColumn';
+import ContextToolBar from './ContextToolBar';
+import ContextSlider from './ContextSlider';
 
 import _ from 'lodash';
 import LayerAIContext from 'models/LayerAIContext';
-import { ContextTextarea } from './generatorInputs/ContextTextarea';
-
+import ContextTextarea from './ContextTextarea';
 export type ContextItemProps = {
     contextID: string;
 };
 
-export const ContextItem = (props: ContextItemProps) => {
+export default function ContextItem(props: ContextItemProps) {
     return (
         <div className="flex flex-col p-1 bg-[color:var(--uxp-host-widget-hover-background-color)] border border-[color:var(--uxp-host-border-color)] rounded">
-            <ContextToolbar contextID={props.contextID} />
+            <ContextToolBar contextID={props.contextID} />
             <div className="flex">
                 <ContextInfoColumn contextID={props.contextID} />
                 <ContextToolColumn contextID={props.contextID} />
@@ -49,4 +48,4 @@ export const ContextItem = (props: ContextItemProps) => {
             </div>
         </div>
     );
-};
+}

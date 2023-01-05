@@ -9,7 +9,7 @@ interface ContextDropdownProps extends ContextProps {
     options: Array<string>;
 }
 
-export function ContextDropdown(props: ContextDropdownProps) {
+export default function ContextDropdown(props: ContextDropdownProps) {
     const [selectedValue, setSelectedValue] = React.useState<string>(null);
 
     let saveContextToStore = useContextStore((state: ContextStoreState) => {

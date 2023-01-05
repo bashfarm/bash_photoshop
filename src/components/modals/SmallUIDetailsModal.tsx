@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TagSelector } from 'components/TagSelector';
+import TagSelector from 'components/TagSelector';
 import AssetItem from 'components/AssetItem';
 import { Textarea, Icon, Divider, Heading } from 'react-uxp-spectrum';
 import { txt2img } from 'services/ai_service';
@@ -19,7 +19,7 @@ interface ModalProps {
     contextID: string;
 }
 
-export const SmallUIDetailsDialog = (props: ModalProps) => {
+export default function (props: ModalProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
         state.getContextFromStore(props.contextID)
     );
@@ -94,4 +94,4 @@ export const SmallUIDetailsDialog = (props: ModalProps) => {
             <TagSelector tagArray={dummyArray} />
         </div>
     );
-};
+}

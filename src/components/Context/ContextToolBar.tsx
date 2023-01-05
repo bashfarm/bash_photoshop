@@ -7,7 +7,6 @@ import {
     RefreshIcon,
     DeleteIcon,
 } from 'components/Icons';
-import Tool from './Tool';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import {
     toggleOffContextHidingTool,
@@ -15,8 +14,7 @@ import {
 } from 'services/tools_service';
 import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
-import { StyleReferencesDialog } from 'components/modals/StyleReferencesDialog';
-import RegenerationTool from './RegenerationTool';
+import { StyleReferencesModal } from 'components/modals/StyleReferencesModal';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
 import { getUpScaledB64 } from 'services/ai_service';
@@ -29,6 +27,8 @@ import {
     createNewLayerFromFile,
     scaleAndFitLayerToCanvas,
 } from 'services/layer_service';
+import Tool from 'components/Tool';
+import RegenerationTool from 'components/RegenerationTool';
 
 const events = [
     'make',
@@ -57,7 +57,7 @@ export type ContexToolBarColumnProps = {
     contextID: string;
 };
 
-const ContextToolbar = (props: ContexToolBarColumnProps) => {
+export default function ContextToolBar(props: ContexToolBarColumnProps) {
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
@@ -168,7 +168,7 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
                     onClick={() =>
                         popUpModal(
                             popupRef,
-                            <StyleReferencesDialog
+                            <StyleReferencesModal
                                 handle={popupRef.current}
                                 contextID={props.contextID}
                             />,
@@ -222,6 +222,4 @@ const ContextToolbar = (props: ContexToolBarColumnProps) => {
             </ToolSection>
         </div>
     );
-};
-
-export default ContextToolbar;
+}

@@ -6,7 +6,7 @@ import Menu from 'react-uxp-spectrum/dist/Menu';
 import MenuItem from 'react-uxp-spectrum/dist/MenuItem';
 import { getArtistCategories, getArtists } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import StyleReference from '../../models/StyleReference';
+import StyleReference from '../models/StyleReference';
 
 export type ArtistDropdownsProps = {
     contextID: string;
@@ -14,8 +14,7 @@ export type ArtistDropdownsProps = {
     styleRef: StyleReference;
 };
 
-// TODO: kevmok - need to refactor for better error handling
-const ArtistDropdowns = (props: ArtistDropdownsProps) => {
+export default function ArtistDropdown(props: ArtistDropdownsProps) {
     const { value: artists } = useAsyncEffect(getArtists);
     const { value: categories, loading: categoriesLoading } =
         useAsyncEffect(getArtistCategories);
@@ -135,6 +134,4 @@ const ArtistDropdowns = (props: ArtistDropdownsProps) => {
             </Button>
         </div>
     );
-};
-
-export default ArtistDropdowns;
+}

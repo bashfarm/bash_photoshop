@@ -5,7 +5,7 @@ interface StyleImagesProps {
     onSelect: () => void;
 }
 
-const StyleImage = (props: StyleImagesProps) => {
+export default function StyleImage(props: StyleImagesProps) {
     let [isSelected, setIsSelected] = React.useState(false);
 
     function handleClick() {
@@ -24,6 +24,4 @@ const StyleImage = (props: StyleImagesProps) => {
             onClick={handleClick}
         />
     );
-};
-
-export default StyleImage;
+}
