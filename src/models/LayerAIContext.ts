@@ -37,41 +37,43 @@ export default class LayerAIContext extends BashfulObject {
     prototype: any;
 
     constructor(
-        currentLayer: Layer = null,
-        name: string = null,
-        smallDetails: Array<SmallDetailContext> = [],
-        currentPrompt: string = '',
-        history: Array<LayerAIContextHistory> = [],
-        styleReferences: Array<StyleReference> = [],
-        stylingStrength: number = 0.7,
-        consistencyStrength: number = 0.85,
-        imageHeight: number = 1024,
-        imageWidth: number = 1024,
-        seed: number = -1,
-        negativePrompt: string = '',
-        batchSize: number = 1,
-        docType: string = 'illustration',
-        generationModelName: string = 'model.ckpt',
-        shouldBeMasked: boolean = true
+        options: any = {
+            currentLayer: null,
+            name: null,
+            smallDetails: [],
+            currentPrompt: '',
+            history: [],
+            styleReferences: [],
+            stylingStrength: 0.7,
+            consistencyStrength: 0.85,
+            imageHeight: 1024,
+            imageWidth: 1024,
+            seed: -1,
+            negativePrompt: '',
+            batchSize: 1,
+            docType: 'illustration',
+            generationModelName: 'model.ckpt',
+            shouldBeMasked: true,
+        }
     ) {
         super();
-        this.name = name;
+        this.name = options.name;
         this.id = this.createAILayerContextId();
-        this.smallDetails = smallDetails;
-        this.currentPrompt = currentPrompt;
-        this.currentLayer = currentLayer;
-        this.history = history;
-        this.styleReferences = styleReferences;
-        this.stylingStrength = stylingStrength;
-        this.consistencyStrength = consistencyStrength;
-        this.imageHeight = imageHeight;
-        this.imageWidth = imageWidth;
-        this.seed = seed;
-        this.negativePrompt = negativePrompt;
-        this.batchSize = batchSize;
-        this.docType = docType;
-        this.generationModelName = generationModelName;
-        this.shouldBeMasked = shouldBeMasked;
+        this.smallDetails = options.smallDetails;
+        this.currentPrompt = options.currentPrompt;
+        this.currentLayer = options.currentLayer;
+        this.history = options.history;
+        this.styleReferences = options.styleReferences;
+        this.stylingStrength = options.stylingStrength;
+        this.consistencyStrength = options.consistencyStrength;
+        this.imageHeight = options.imageHeight;
+        this.imageWidth = options.imageWidth;
+        this.seed = options.seed;
+        this.negativePrompt = options.negativePrompt;
+        this.batchSize = options.batchSize;
+        this.docType = options.docType;
+        this.generationModelName = options.generationModelName;
+        this.shouldBeMasked = options.shouldBeMasked;
     }
 
     public async hasLayerMask(): Promise<boolean> {

@@ -1,4 +1,5 @@
 import base64js from 'base64-js';
+import _ from 'lodash';
 const photoshop = require('photoshop');
 import { Layer } from 'photoshop/dom/Layer';
 import { storage } from 'uxp';
@@ -30,6 +31,42 @@ export async function saveTextFileToDataFolder(fileName: string, data: string) {
     } catch (e) {
         console.log('something not write');
         console.log(e);
+    }
+}
+
+/**
+ * Save the given data to a file
+ * @param {String} fileEntry
+ * @param {string} data
+ */
+export async function saveTextFile(
+    fileEntry: storage.File | Promise<storage.File>,
+    data: string
+) {
+    try {
+        const res = await fileEntry;
+        res.write(data, { format: formats.utf8 });
+    } catch (e) {
+        console.log('something not write');
+        console.log(e);
+    }
+}
+
+/**
+ * Create a Temp File Entry
+ * @param {String} fileEntry
+ * @param {*} data
+ */
+export async function createTempFileEntry(tempName: string) {
+    try {
+        const tempFolder: storage.Folder = await lfs.getTemporaryFolder();
+        const entry = tempFolder.createEntry(tempName, {
+            type: types.file,
+            overwrite: true,
+        });
+        return entry as Promise<storage.File>;
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -78,12 +115,16 @@ export async function saveB64ImageToBinaryFileToDataFolder(
  * @returns a data folder
  */
 export async function createDataFolderEntry(fileName: string) {
-    const dataFolder: storage.Folder = await lfs.getDataFolder();
-    const entry = dataFolder.createEntry(fileName, {
-        type: types.file,
-        overwrite: true,
-    });
-    return entry as Promise<storage.File>;
+    try {
+        const dataFolder: storage.Folder = await lfs.getDataFolder();
+        const entry = dataFolder.createEntry(fileName, {
+            type: types.file,
+            overwrite: true,
+        });
+        return entry as Promise<storage.File>;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 /**
@@ -142,6 +183,25 @@ export async function saveDocumentAsPNG(fileRef: storage.File) {
                 true
             )
     );
+}
+
+/**
+ * Save the current document state as a PSD to the given file entry.
+ */
+export async function saveActiveDocument(
+    fileRef: storage.File | string | Promise<storage.File>
+) {
+    try {
+        if (_.isString(fileRef)) {
+            fileRef = await createTempFileEntry(fileRef);
+        }
+
+        await executeInPhotoshop(saveDocumentAsPNG, async () => {
+            await photoshop.app.activeDocument.saveAs.psd(await fileRef);
+        });
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 /**
@@ -205,4 +265,14 @@ export function getFileSerializer(imgData: Uint8Array | string) {
 export async function getPluginDataFiles(): Promise<storage.Entry[]> {
     const dataFolder = await lfs.getDataFolder();
     return dataFolder.getEntries();
+}
+
+/**
+ *
+ * @param fileName
+ * @returns
+ */
+export async function getTempFileEntry(fileName: string) {
+    const tempFolder = await lfs.getTemporaryFolder();
+    return (await tempFolder.getEntry(fileName)) as storage.File;
 }

@@ -108,7 +108,7 @@ declare module 'uxp' {
             isFolder: boolean;
         };
 
-        class Entry {
+        class Entry extends Blob {
             constructor(name: string, provider: FileSystemProvider, id: string);
 
             toString: () => string;
@@ -147,10 +147,10 @@ declare module 'uxp' {
 
         class File extends Entry {
             static isFile: (entry: Entry) => boolean;
-
             isFile: boolean;
-
             mode: ModeSymbol;
+            lastModified: number;
+            webkitRelativePath: string;
 
             read: (options: {
                 format?: FormatSymbol;
@@ -198,7 +198,7 @@ declare module 'uxp' {
         }
 
         class FileSystemProvider {
-            static isFileSystemProvider: (FileSystemProvider) => boolean;
+            static isFileSystemProvider: (arg0: FileSystemProvider) => boolean;
 
             isFileSystemProvider: boolean;
 
@@ -269,11 +269,5 @@ declare module 'uxp' {
         function release(): string;
 
         function arch(): string;
-    }
-}
-
-declare module 'bashful' {
-    namespace io {
-        type Serializer = (fileName: string, data: string | Uint8Array) => void;
     }
 }
