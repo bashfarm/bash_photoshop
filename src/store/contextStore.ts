@@ -1,6 +1,4 @@
-import { plainToInstance } from 'class-transformer';
 import LayerAIContext from 'models/LayerAIContext';
-import { Layer } from 'photoshop/dom/Layer';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
@@ -18,8 +16,6 @@ export class ContextStoreState {
         this.get = get;
     }
     public saveContextToStore = (layerContext: LayerAIContext) => {
-        console.log(this.contexts);
-        console.log('yolo');
         try {
             this.set((state: ContextStoreState) => {
                 console.log(state);
@@ -109,62 +105,3 @@ export const useContextStore = create(
         })
     )
 );
-
-// export const useContextStore = create(
-//     immer(
-//         log((set: any, get: any) => {
-//             let state: ContextStoreState = {
-// 				contextCache: {},
-// 				contexts: {},
-// 				saveContextToStore: (layerContext: LayerAIContext) => {
-// 					set((state: ContextStoreState) => {
-// 						state.contexts[layerContext.id] = layerContext;
-// 					});
-// 				},
-// 				removeContextFromStore: (contextID: string) => {
-// 					set((state: ContextStoreState) => {
-// 						state.contextCache[contextID] =
-// 							get().contexts[contextID];
-// 						delete state.contexts[contextID];
-// 					});
-// 				},
-// 				getContextFromStore: (contextID: string) => {
-// 					return get().contexts[contextID];
-// 				},
-// 				getContextFromCache: (contextID: string) => {
-// 					return get().contextCache[contextID];
-// 				},
-// 				getContextsFromStore: (contextIDs: Array<string>) => {
-// 					if (contextIDs) {
-// 						return contextIDs.map((contextID) => {
-// 							return get().contexts[contextID];
-// 						});
-// 					}
-// 					return get().contexts.values();
-// 				},
-// 				getContextStore: function (): ContextStoreState {
-// 					return get();
-// 				},
-// 				setContextStore: function (stateData: ContextStoreState): void {
-// 					let newStateObj = plainToInstance(ContextStoreState, stateData);
-// 					let currentStateObj = get();
-// 					console.log(newStateObj);
-// 					console.log(currentStateObj);
-// 					console.log();
-// 					for (let method of Object.keys(currentStateObj)) {
-// 						console.log(typeof currentStateObj[method as keyof ContextStoreState]);
-// 						if (typeof currentStateObj[method as keyof ContextStoreState] === 'function') {
-// 							newStateObj[method as keyof ContextStoreState] = currentStateObj[method as keyof ContextStoreState];
-// 						}
-// 					}
-// 					console.log(newStateObj);
-// 					console.log(currentStateObj);
-
-// 					set(newStateObj, true);
-// 				}
-// 			};
-
-//             return state;
-//         })
-//     )
-// );
