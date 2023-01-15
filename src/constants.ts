@@ -5,6 +5,14 @@ export const fullConfig = resolveConfig(tailwindConfig);
 
 export const B64_IMAGE_HEADER: string = 'data:image/png;base64, ';
 
+export const enum BashfulAppProject {
+    BASHFUL_PROJECT_FILE_EXTENSION = 'bashful',
+    BASHFUL_PROJECT_FILE_NAME = 'bashful_project',
+    BASHFUL_PROJECT_FILE_TYPE = 'bashful',
+    BASHFUL_PHOTOSHOP_FILE_NAME = 'photoshop.psd',
+    BASHFUL_STATE_FILE_NAME = 'bashful.json',
+}
+
 export const enum ContextHistoryEnum {
     HISTORY_FILE_FLAG = 'history',
     TEMP_FILE_FLAG = 'temp',

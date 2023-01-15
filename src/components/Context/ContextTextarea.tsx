@@ -46,6 +46,7 @@ export default function ContextTextarea(props: ContextProps) {
                 <Textarea
                     className={props.className}
                     placeholder="Enter a description of the content in this layer"
+                    value={getContextFromStore(props.contextID)?.currentPrompt}
                     onInput={(event) => {
                         try {
                             saveText(event);

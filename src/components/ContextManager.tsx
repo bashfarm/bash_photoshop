@@ -4,6 +4,7 @@ import { useContextStore } from 'store/contextStore';
 import ContextItem from './Context/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
+import ContextToolBar from './ContextManagerToolBar';
 
 export default function ContextManager() {
     const saveContextToStore = useContextStore(
@@ -16,24 +17,29 @@ export default function ContextManager() {
         saveContextToStore(context);
         return context;
     }
-
-    return (
-        <>
-            <BashfulHeader animate={true} />
-            <div className="mb-1">
-                <Button
-                    variant="primary"
-                    onClick={async () => {
-                        let newContext = await createNewContext();
-                        console.log(newContext);
-                    }}
-                >
-                    Create New Context
-                </Button>
-            </div>
-            <ContextItems />
-        </>
-    );
+    try {
+        return (
+            <>
+                <BashfulHeader animate={true} />
+                <ContextToolBar />
+                <div className="mb-1">
+                    <Button
+                        variant="primary"
+                        onClick={async () => {
+                            let newContext = await createNewContext();
+                            console.log(newContext);
+                        }}
+                    >
+                        Create New Context
+                    </Button>
+                </div>
+                <ContextItems />
+            </>
+        );
+    } catch (e) {
+        console.error(e);
+        return <div>error</div>;
+    }
 }
 
 /**
@@ -44,6 +50,12 @@ export default function ContextManager() {
 // TODO: move to its own file or something else - needs refactoring though
 function ContextItems() {
     const contexts = useContextStore((state) => state.contexts);
+    const state = useContextStore((state) => state);
+    const getContextStore = useContextStore((state) => state.getContextStore);
+    console.log('rerender');
+    console.log(contexts);
+    console.log(state);
+    console.log(getContextStore());
     return (
         <>
             {contexts &&
