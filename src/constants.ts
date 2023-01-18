@@ -5,6 +5,11 @@ export const fullConfig = resolveConfig(tailwindConfig);
 
 export const B64_IMAGE_HEADER: string = 'data:image/png;base64, ';
 
+export const enum DialogType {
+    OPEN = 'open',
+    SAVE = 'save',
+}
+
 export const enum BashfulAppProject {
     BASHFUL_PROJECT_FILE_EXTENSION = 'bashful',
     BASHFUL_PROJECT_FILE_NAME = 'bashful_project',
