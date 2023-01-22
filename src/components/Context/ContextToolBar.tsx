@@ -17,18 +17,10 @@ import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { StyleReferencesModal } from 'components/modals/StyleReferencesModal';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
-import { getUpScaledB64 } from 'services/ai_service';
-import {
-    getBase64OfImgInPluginDataFolder,
-    saveB64ImageToBinaryFileToDataFolder,
-} from 'services/io_service';
-import {
-    applyMask,
-    createNewLayerFromFile,
-    scaleAndFitLayerToCanvas,
-} from 'services/layer_service';
 import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
+import ContextPainterModal from 'components/modals/ContextPainterModal';
+import { ContextType } from 'bashConstants';
 
 const events = [
     'make',
@@ -64,14 +56,12 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
     const removeContextFromStore = useContextStore(
         (state: ContextStoreState) => state.removeContextFromStore
     );
-    const popupRef = useRef<ExtendedHTMLDialogElement>();
-    let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID)
-    );
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
 
+    const popupRef = useRef<ExtendedHTMLDialogElement>();
+    let layerContext = getContextFromStore(props.contextID, ContextType.LAYER);
     let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
     let [unSelectedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
 
@@ -147,18 +137,14 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     icon={VisibilityOffRounded}
                     label="Hide"
                     onClick={async () =>
-                        await toggleOnContextHidingTool(
-                            getContextFromStore(props.contextID)
-                        )
+                        await toggleOnContextHidingTool(layerContext)
                     }
                 />
                 <Tool
                     icon={VisibilityRounded}
                     label="Unhide"
                     onClick={async () =>
-                        await toggleOffContextHidingTool(
-                            getContextFromStore(props.contextID)
-                        )
+                        await toggleOffContextHidingTool(layerContext)
                     }
                 />
             </ToolSection>
@@ -173,12 +159,13 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                             <StyleReferencesModal
                                 handle={popupRef.current}
                                 contextID={props.contextID}
+                                contextType={ContextType.LAYER}
                             />,
                             'Styles'
                         )
                     }
                 />
-                <Tool
+                {/* <Tool
                     icon={GridViewIcon}
                     label="Increase Resolution"
                     onClick={async () => {
@@ -203,6 +190,20 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                         );
                         scaleAndFitLayerToCanvas(newLayer);
                     }}
+                /> */}
+                <Tool
+                    icon={GridViewIcon}
+                    label="Context Painter"
+                    onClick={() =>
+                        popUpModal(
+                            popupRef,
+                            <ContextPainterModal
+                                handle={popupRef.current}
+                                contextID={props.contextID}
+                            />,
+                            'Context Painter'
+                        )
+                    }
                 />
             </ToolSection>
             <ToolbarDivider />
@@ -219,7 +220,12 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 <Tool
                     icon={DeleteIcon}
                     label="Delete Context"
-                    onClick={() => removeContextFromStore(props.contextID)}
+                    onClick={() =>
+                        removeContextFromStore(
+                            layerContext.id,
+                            ContextType.LAYER
+                        )
+                    }
                 />
             </ToolSection>
         </div>

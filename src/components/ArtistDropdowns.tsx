@@ -7,12 +7,12 @@ import MenuItem from 'react-uxp-spectrum/dist/MenuItem';
 import { getArtistCategories, getArtists } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import StyleReference from '../models/StyleReference';
+import { ContextProps } from './Context/ContextProps';
 
-export type ArtistDropdownsProps = {
-    contextID: string;
+export interface ArtistDropdownsProps extends ContextProps {
     removeStyleReference: Function;
     styleRef: StyleReference;
-};
+}
 
 export default function ArtistDropdown(props: ArtistDropdownsProps) {
     const { value: artists } = useAsyncEffect(getArtists);
@@ -22,8 +22,8 @@ export default function ArtistDropdown(props: ArtistDropdownsProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });
-    const layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID)
+    const context = useContextStore((state: ContextStoreState) =>
+        state.getContextFromStore(props.contextID, props.contextType)
     );
 
     let styleRefs = artists?.map(
@@ -51,13 +51,13 @@ export default function ArtistDropdown(props: ArtistDropdownsProps) {
                             <MenuItem
                                 selected={name === props.styleRef.categories[0]}
                                 onClick={(e: any) => {
-                                    let copyOfContext = layerContext.copy();
+                                    let copyOfContext = context.copy();
                                     let copyOfStyleRef = props.styleRef.copy();
                                     copyOfStyleRef.categories = [
                                         e.target.value,
                                     ];
                                     let contextStyleRefIndex =
-                                        layerContext.styleReferences.findIndex(
+                                        context.styleReferences.findIndex(
                                             (styleRef: StyleReference) =>
                                                 styleRef.id ===
                                                 props.styleRef.id
@@ -95,7 +95,7 @@ export default function ArtistDropdown(props: ArtistDropdownsProps) {
                                         props.styleRef.artists[0]
                                     }
                                     onClick={(e: any) => {
-                                        let copyOfContext = layerContext.copy();
+                                        let copyOfContext = context.copy();
                                         let copyOfStyleRef =
                                             props.styleRef.copy();
                                         copyOfStyleRef.name = item.name;
@@ -104,7 +104,7 @@ export default function ArtistDropdown(props: ArtistDropdownsProps) {
                                             item.categories;
 
                                         let contextStyleRefIndex =
-                                            layerContext.styleReferences.findIndex(
+                                            context.styleReferences.findIndex(
                                                 (styleRef: StyleReference) =>
                                                     styleRef.id ===
                                                     props.styleRef.id

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { BashfulObject } from './BashfulObject';
 
 export default class StyleReference extends BashfulObject {
@@ -19,7 +18,7 @@ export default class StyleReference extends BashfulObject {
         artists: string[] = []
     ) {
         super();
-        this.id = _.uniqueId();
+        this.id = this.createID();
         this.prompt = prompt;
         this.categories = categories;
         this.moods = moods;

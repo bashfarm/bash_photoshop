@@ -39,6 +39,8 @@ module.exports = {
             crypto: require.resolve('crypto-browserify'),
             buffer: require.resolve('buffer/'),
             stream: require.resolve('stream-browserify'),
+            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
         },
     },
     module: {

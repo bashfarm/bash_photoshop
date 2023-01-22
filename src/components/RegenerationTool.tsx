@@ -1,3 +1,4 @@
+import { ContextType } from 'bashConstants';
 import photoshop from 'photoshop';
 import React, { FC, useEffect, useState } from 'react';
 import Progressbar from 'react-uxp-spectrum/dist/Progressbar';
@@ -5,7 +6,6 @@ import {
     generateAILayer,
     getImageProcessingProgress,
 } from 'services/ai_service';
-import { alert } from 'services/alert_service';
 import {
     createMaskFromLayerForLayer,
     deleteLayer,
@@ -61,18 +61,20 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         deleteOldLayer: boolean = false,
         contextID: string
     ) {
-        let maskWasApplied = false;
         let duplicatedLayer = null;
 
         try {
-            const layerContext = getContextFromStore(contextID);
+            const layerContext = getContextFromStore(
+                contextID,
+                ContextType.LAYER
+            );
             const oldLayer = layerContext.currentLayer;
             const copyOfContext = layerContext.copy();
 
             if (await layerContext.hasLayerMask()) {
                 duplicatedLayer = await layerContext.duplicateCurrentLayer();
                 copyOfContext.currentLayer = duplicatedLayer;
-                maskWasApplied = await copyOfContext.applyLayerMask();
+                await copyOfContext.applyLayerMask();
             }
 
             const newLayer = await generateAILayer(layerContext);

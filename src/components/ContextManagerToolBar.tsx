@@ -23,10 +23,6 @@ const ToolSection: FC<ToolSectionProps> = ({ children }) => {
 };
 
 export default function ContextToolBar() {
-    const getContextsFromStore = useContextStore(
-        (state: ContextStoreState) => state.getContextsFromStore
-    );
-
     const getContextStore = useContextStore(
         (state: ContextStoreState) => state.getContextStore
     );
@@ -48,14 +44,18 @@ export default function ContextToolBar() {
                     icon={VisibilityOffRounded}
                     label="Regenerate All layers"
                     onClick={async () =>
-                        await regenerateLayers(getContextsFromStore())
+                        await regenerateLayers(
+                            Object.values(getContextStore().LayerAIContexts)
+                        )
                     }
                 />
                 <Tool
                     icon={VisibilityRounded}
                     label="Regenerate Selected Layers"
                     onClick={async () =>
-                        await regenerateSelectedLayers(getContextsFromStore())
+                        await regenerateSelectedLayers(
+                            Object.values(getContextStore().LayerAIContexts)
+                        )
                     }
                 />
                 <Tool

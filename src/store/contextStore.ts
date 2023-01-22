@@ -2,68 +2,101 @@ import LayerAIContext from 'models/LayerAIContext';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
+import PromptAIContext from 'models/PromptAIContext';
+import { ContextType } from 'bashConstants';
 
 export class ContextStoreState {
     [immerable] = true;
-    contextCache: Record<string, LayerAIContext> = {};
-    contexts: Record<string, LayerAIContext> = {};
+    layerContextCache: Record<string, LayerAIContext> = {};
+    promptContextCache: Record<string, PromptAIContext> = {};
+    layerContexts: Record<string, LayerAIContext> = {};
+    promptContexts: Record<string, PromptAIContext> = {};
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
-        this.contextCache = {};
-        this.contexts = {};
+        this.layerContextCache = {};
+        this.promptContextCache = {};
+        this.layerContexts = {};
         this.set = set;
         this.get = get;
     }
-    public saveContextToStore = (layerContext: LayerAIContext) => {
+    public saveContextToStore = (context: LayerAIContext | PromptAIContext) => {
         try {
             this.set((state: ContextStoreState) => {
-                console.log(state);
-                state.contexts[layerContext.id] = layerContext;
+                if (context instanceof LayerAIContext) {
+                    state.layerContexts[context.id] = context;
+                } else if (context instanceof PromptAIContext) {
+                    state.promptContexts[context.id] = context;
+                }
             });
         } catch (e) {
             console.error(e);
         }
     };
-    public removeContextFromStore = (contextID: string) => {
+    public removeContextFromStore = (
+        contextID: string,
+        contextType: ContextType
+    ) => {
         try {
             this.set((state: ContextStoreState) => {
-                state.contextCache[contextID] = this.get().contexts[contextID];
-                delete state.contexts[contextID];
+                if (contextType === ContextType.LAYER) {
+                    state.layerContextCache[contextID] =
+                        this.get().layerContexts[contextID];
+                    delete state.layerContexts[contextID];
+                } else if (contextType === ContextType.PROMPT) {
+                    state.promptContextCache[contextID] =
+                        this.get().promptContexts[contextID];
+                    delete state.promptContexts[contextID];
+                }
             });
         } catch (e) {
             console.error(e);
         }
     };
-    public getContextFromCache = (contextID: string) => {
+    public getContextFromCache = (
+        contextID: string,
+        contextType: ContextType
+    ) => {
         try {
-            return this.get().contextCache[contextID];
+            if (contextType === ContextType.LAYER) {
+                return this.get().layerContextCache[contextID];
+            } else if (contextType === ContextType.PROMPT) {
+                return this.get().promptContextCache[contextID];
+            }
         } catch (e) {
             console.error(e);
         }
     };
-    public getContextFromStore = (contextID: string) => {
+    public getContextFromStore = (
+        contextID: string,
+        contextType: ContextType
+    ) => {
         try {
-            return this.get().contexts[contextID];
+            if (contextType === ContextType.LAYER) {
+                return this.get().layerContexts[contextID];
+            } else if (contextType === ContextType.PROMPT) {
+                return this.get().promptContexts[contextID];
+            }
         } catch (e) {
             console.error(e);
         }
     };
-    public getContextsFromStore = (contextIDs?: Array<string>) => {
+    public getContextsFromStore = (
+        contextIDs: Array<string>,
+        contextType: ContextType
+    ) => {
         if (contextIDs) {
             return contextIDs.map((contextID) => {
                 try {
-                    return this.get().contexts[contextID];
+                    if (contextType === ContextType.LAYER) {
+                        return this.get().layerContexts[contextID];
+                    } else if (contextType === ContextType.PROMPT) {
+                        return this.get().promptContexts[contextID];
+                    }
                 } catch (e) {
                     console.error(e);
                 }
             });
-        }
-
-        try {
-            return this.get().contexts.values();
-        } catch (e) {
-            console.error(e);
         }
     };
     public getContextStore = () => {
@@ -74,14 +107,28 @@ export class ContextStoreState {
         }
     };
     public setContextStore = (stateData: ContextStoreState) => {
-        this.contexts = {};
+        this.setInstantiatedLayerContexts(stateData);
+        this.setInstantiatedPromptContexts(stateData);
+    };
+    private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
         this.set((state: any) => {
-            for (let key of Object.keys(stateData.contexts)) {
+            for (let key of Object.keys(stateData.layerContexts)) {
                 let instantiatedLayerContext = new LayerAIContext(
-                    stateData.contexts[key]
+                    stateData.layerContexts[key]
                 );
-                state.contexts[instantiatedLayerContext.id] =
+                state.layerContexts[instantiatedLayerContext.id] =
                     instantiatedLayerContext;
+            }
+        });
+    };
+    private setInstantiatedPromptContexts = (stateData: ContextStoreState) => {
+        this.set((state: any) => {
+            for (let key of Object.keys(stateData.layerContexts)) {
+                let instantiatedPromptContext = new PromptAIContext(
+                    stateData.promptContexts[key]
+                );
+                state.promptContexts[instantiatedPromptContext.id] =
+                    instantiatedPromptContext;
             }
         });
     };
