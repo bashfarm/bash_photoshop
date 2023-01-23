@@ -4,6 +4,7 @@ import { ContextProps } from './ContextProps';
 import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
+import { ContextType } from 'bashConstants';
 
 export default function ContextTextarea(props: ContextProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
@@ -33,8 +34,10 @@ export default function ContextTextarea(props: ContextProps) {
     }, [debouncedValue]);
 
     function saveText(event: any) {
-        let layerContext = getContextFromStore(props.contextID);
-        let copyOfContext = layerContext.copy();
+        let copyOfContext = getContextFromStore(
+            props.contextID,
+            props.contextType
+        ).copy();
         copyOfContext.currentPrompt = event.target.value;
         saveContextToStore(copyOfContext);
         setTextValue(event.target.value);
@@ -46,7 +49,10 @@ export default function ContextTextarea(props: ContextProps) {
                 <Textarea
                     className={props.className}
                     placeholder="Enter a description of the content in this layer"
-                    value={getContextFromStore(props.contextID)?.currentPrompt}
+                    value={
+                        getContextFromStore(props.contextID, props.contextType)
+                            ?.currentPrompt
+                    }
                     onInput={(event) => {
                         try {
                             saveText(event);

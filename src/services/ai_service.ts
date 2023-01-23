@@ -19,6 +19,7 @@ import {
     ModelResponse,
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
+import PromptAIContext from 'models/PromptAIContext';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -536,4 +537,47 @@ export async function getImg2ImgDepth(
     } catch (e) {
         console.error(e);
     }
+}
+
+function inpaint(
+    b64ImgStr: string,
+    b64MaskStr: string,
+    promptContext: PromptAIContext,
+    layerContext: LayerAIContext
+) {
+    const payload = {
+        init_images: [b64ImgStr],
+        resize_mode: 0,
+        denoising_strength: Number(this.denoisingStrength) / 100,
+        mask: b64MaskStr,
+        mask_blur: 4,
+        inpainting_fill: 1,
+        inpaint_full_res: true,
+        inpaint_full_res_padding: 32,
+        inpainting_mask_invert: 0,
+        prompt: promptContext.currentPrompt,
+        styles: new Array<string>(),
+        seed: -1, // TODO: add the seed for the prompt in the painter eventually
+        subseed: -1,
+        subseed_strength: 0,
+        seed_resize_from_h: -1,
+        seed_resize_from_w: -1,
+        batch_size: 4,
+        n_iter: 1,
+        steps: 40,
+        cfg_scale: promptContext.getStylingStrength(),
+        width: layerContext.imageWidth,
+        height: layerContext.imageHeight,
+        restore_faces: false,
+        tiling: false,
+        negative_prompt: promptContext.negativePrompt, // TODO: add the negative prompt for the prompt in the painter, not the layer
+        eta: 0,
+        s_churn: 0,
+        s_tmax: 0,
+        s_tmin: 0,
+        s_noise: 1,
+        override_settings: {},
+        sampler_index: 'Euler',
+        include_init_images: false,
+    };
 }

@@ -1,3 +1,4 @@
+import { ContextType } from 'bashConstants';
 import { ModelResponse } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
@@ -22,7 +23,7 @@ function DefaultContextInfoColumn() {
 
 export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID)
+        state.getContextFromStore(props.contextID, ContextType.LAYER)
     );
     let { loading, value } = useAsyncEffect(async () => {
         return getAvailableModels();
@@ -45,12 +46,14 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
+                        contextType={ContextType.LAYER}
                         options={['loading models...']}
                     />
                 ) : (
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
+                        contextType={ContextType.LAYER}
                         contextKey={
                             'generationModelName' as keyof typeof LayerAIContext
                         }

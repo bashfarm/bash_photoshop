@@ -1,7 +1,7 @@
 const photoshop = require('photoshop');
 const bp = photoshop.action.batchPlay;
 import LayerAIContext from 'models/LayerAIContext';
-import { PhotoshopTool } from '../constants';
+import { PhotoshopTool } from '../bashConstants';
 import { createLayerMask, selectLayerMask } from './layer_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 

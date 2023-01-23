@@ -1,4 +1,4 @@
-import { B64_IMAGE_HEADER } from '../constants';
+import { B64_IMAGE_HEADER } from '../bashConstants';
 
 /**
  *

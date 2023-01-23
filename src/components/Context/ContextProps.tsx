@@ -1,9 +1,12 @@
+import { ContextType } from 'bashConstants';
 import { BashfulProps } from 'common/props/BashfulProps';
 import LayerAIContext from 'models/LayerAIContext';
+import PromptAIContext from 'models/PromptAIContext';
 
 export interface ContextProps extends BashfulProps {
     contextID: string;
-    contextKey?: keyof typeof LayerAIContext;
+    contextType: ContextType;
+    contextKey?: keyof typeof LayerAIContext | keyof typeof PromptAIContext;
     label?: string;
     app?: string; // lets just assume photoshop will be the default
     children?: any;

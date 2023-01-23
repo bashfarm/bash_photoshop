@@ -7,7 +7,7 @@ import {
     saveTextFile,
 } from './io_service';
 import JSZip from 'jszip';
-import { BashfulAppProject, DialogType } from '../constants';
+import { BashfulAppProject, DialogType } from '../bashConstants';
 import photoshop from 'photoshop';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 

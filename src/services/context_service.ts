@@ -1,6 +1,6 @@
 import LayerAIContext from 'models/LayerAIContext';
 import { storage } from 'uxp';
-import { ContextHistoryEnum } from '../constants';
+import { ContextHistoryEnum } from '../bashConstants';
 import { getContextInfoFromFileName } from '../utils/context_utils';
 
 import { getPluginDataFiles } from './io_service';

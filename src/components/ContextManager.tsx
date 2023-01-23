@@ -1,12 +1,15 @@
 import LayerAIContext from 'models/LayerAIContext';
-import React from 'react';
-import { useContextStore } from 'store/contextStore';
+import React, { useEffect } from 'react';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextItem from './Context/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from './ContextManagerToolBar';
+import _ from 'lodash';
 
 export default function ContextManager() {
+    const [rerender, setRerender] = React.useState(false);
+
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );
@@ -17,6 +20,7 @@ export default function ContextManager() {
         saveContextToStore(context);
         return context;
     }
+
     try {
         return (
             <>
@@ -49,28 +53,26 @@ export default function ContextManager() {
  */
 // TODO: move to its own file or something else - needs refactoring though
 function ContextItems() {
-    const contexts = useContextStore((state) => state.contexts);
-    const state = useContextStore((state) => state);
-    const getContextStore = useContextStore((state) => state.getContextStore);
+    let contexts = useContextStore(
+        (state: ContextStoreState) => state.layerContexts
+    );
+
     console.log('rerender');
-    console.log(contexts);
-    console.log(state);
-    console.log(getContextStore());
     return (
         <>
-            {contexts &&
-                Object.keys(contexts).map((key) => {
-                    let context = contexts[key];
-                    return (
-                        <>
-                            <ContextItem
-                                key={context.id}
-                                contextID={context.id}
-                            />
-                            <Divider className="my-2" size="small" />
-                        </>
-                    );
-                })}
+            {Object.keys(contexts).map((key) => {
+                let context = contexts[key];
+                return (
+                    <>
+                        <ContextItem key={context.id} contextID={context.id} />
+                        <Divider
+                            key={_.uniqueId()}
+                            className="my-2"
+                            size="small"
+                        />
+                    </>
+                );
+            })}
         </>
     );
 }

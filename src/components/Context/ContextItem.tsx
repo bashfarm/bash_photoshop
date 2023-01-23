@@ -8,6 +8,8 @@ import ContextSlider from './ContextSlider';
 import _ from 'lodash';
 import LayerAIContext from 'models/LayerAIContext';
 import ContextTextarea from './ContextTextarea';
+import { ContextType } from 'bashConstants';
+import ContextTagArea from './ContextTagArea';
 export type ContextItemProps = {
     contextID: string;
 };
@@ -24,6 +26,7 @@ export default function ContextItem(props: ContextItemProps) {
                 <ContextSlider
                     animate={true}
                     contextID={props.contextID}
+                    contextType={ContextType.LAYER}
                     contextKey={
                         'consistencyStrength' as keyof typeof LayerAIContext
                     }
@@ -33,6 +36,7 @@ export default function ContextItem(props: ContextItemProps) {
                 <ContextSlider
                     animate={true}
                     contextID={props.contextID}
+                    contextType={ContextType.LAYER}
                     contextKey={
                         'stylingStrength' as keyof typeof LayerAIContext
                     }
@@ -41,9 +45,14 @@ export default function ContextItem(props: ContextItemProps) {
                 </ContextSlider>
                 <ContextTextarea
                     contextID={props.contextID}
+                    contextType={ContextType.LAYER}
                     contextKey={'currentPrompt' as keyof typeof LayerAIContext}
                     className="w-full select-none"
                     inputDelayTime={1000}
+                />
+                <ContextTagArea
+                    contextID={props.contextID}
+                    contextType={ContextType.LAYER}
                 />
             </div>
         </div>

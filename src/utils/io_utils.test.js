@@ -1,4 +1,4 @@
-import { B64_IMAGE_HEADER } from '../constants';
+import { B64_IMAGE_HEADER } from '../bashConstants';
 import { formatBase64Image, unformatBase64Image } from './io_utils';
 
 describe('formatBase64Image', () => {
