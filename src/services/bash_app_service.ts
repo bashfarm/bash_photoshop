@@ -3,6 +3,7 @@ import { ContextStoreState } from 'store/contextStore';
 import { storage } from 'uxp';
 import {
     createTempFileEntry,
+    getTempFileEntry,
     saveActiveDocument,
     saveTextFile,
 } from './io_service';
@@ -55,9 +56,22 @@ async function createStateDataEntry() {
  * @returns
  */
 async function createPhotoshopFileEntry() {
-    return await createTempFileEntry(
-        BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
-    );
+    try {
+        let tempPsd = await getTempFileEntry(
+            BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
+        );
+        if (tempPsd.isFile) {
+            tempPsd.delete();
+        }
+
+        if (!tempPsd.isFile) {
+            return await createTempFileEntry(
+                BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
+            );
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 async function extractPhotoshopPSD(zip: JSZip) {
@@ -93,31 +107,6 @@ async function extractStateData(zip: JSZip) {
 }
 
 /**
- * This function will extract the app state, the zustand stores, from the zip file and load them in to the app.
- * @param zip
- * @returns
- */
-// async function extractStateData(zip: JSZip) {
-//     let stateEntry = await createStateDataEntry();
-// 	try{
-// 		console.log("yolo")
-// 		console.log("extracting state data")
-// 		console.log(stateEntry)
-// 		console.log(stateEntry.nativePath)
-// 		// console.log(JSON.stringify(zip.files));
-// 		// console.log(zip.files)
-// 		// console.log(zip)
-// 		// console.log(await unzipFiles2(zip))
-// 		console.log(await extractPhotoshopPSD(zip))
-
-// 	} catch (e){
-// 		console.error(e)
-// 	}
-
-//     return await zip.files[stateEntry.nativePath].async('string');
-// }
-
-/**
  * This function will extract the photoshop file from the zip file and save it to the file system.
  * @param zip
  * @returns
@@ -128,7 +117,7 @@ async function extractPhotoshopFile(zip: JSZip) {
 
         // Save the photoshop file that is in the zip file as a file that we can load.
         let data = await extractPhotoshopPSD(zip);
-        photoshopFileEntry.delete();
+
         photoshopFileEntry.write(data, { format: storage.formats.binary });
         return photoshopFileEntry;
     } catch (e) {
@@ -183,13 +172,8 @@ export async function getBashfulData() {
 export async function loadBashfulProject(contextSetter: Function) {
     try {
         let bashfulData = await getBashfulData();
-        console.log(bashfulData);
         let stateData = JSON.parse(await extractStateData(bashfulData));
-        console.log('after extractions');
-        console.log(stateData);
         loadPhotoshopFile(await extractPhotoshopFile(bashfulData));
-        console.log('loading photoshop file');
-        console.log(stateData);
         contextSetter(stateData);
     } catch (e) {
         console.error(e);

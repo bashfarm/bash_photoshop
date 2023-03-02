@@ -23,6 +23,8 @@ export class ContextStoreState {
     }
     public saveContextToStore = (context: LayerAIContext | PromptAIContext) => {
         logCallingFunction(this.saveContextToStore);
+        console.log(context);
+        console.log(this.saveContextToStore.caller.name);
         try {
             this.set((state: ContextStoreState) => {
                 if (context instanceof LayerAIContext) {
