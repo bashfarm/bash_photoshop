@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
 import PromptAIContext from 'models/PromptAIContext';
 import { ContextType } from 'bashConstants';
+import { logCallingFunction } from 'utils/general_utils';
 
 export class ContextStoreState {
     [immerable] = true;
@@ -21,6 +22,7 @@ export class ContextStoreState {
         this.get = get;
     }
     public saveContextToStore = (context: LayerAIContext | PromptAIContext) => {
+        logCallingFunction(this.saveContextToStore);
         try {
             this.set((state: ContextStoreState) => {
                 if (context instanceof LayerAIContext) {
@@ -37,6 +39,7 @@ export class ContextStoreState {
         contextID: string,
         contextType: ContextType
     ) => {
+        logCallingFunction(this.removeContextFromStore);
         try {
             this.set((state: ContextStoreState) => {
                 if (contextType === ContextType.LAYER) {
@@ -107,31 +110,24 @@ export class ContextStoreState {
         }
     };
     public setContextStore = (stateData: ContextStoreState) => {
-        console.log('yolo');
+        logCallingFunction(this.setContextStore);
         this.setInstantiatedLayerContexts(stateData);
         this.setInstantiatedPromptContexts(stateData);
     };
     private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
-        console.log(stateData.layerContexts);
-        console.log(stateData);
-        console.log(stateData);
-        console.log(stateData['layerContexts']);
-        console.log(Object.keys(stateData));
+        logCallingFunction(this.setInstantiatedLayerContexts);
         this.set((state: any) => {
             for (let key of Object.keys(stateData.layerContexts)) {
-                console.log(state.layerContexts[key]);
-                console.log('before instantiation of layer context');
                 let instantiatedLayerContext = new LayerAIContext(
                     stateData.layerContexts[key]
                 );
-                console.log('after instantiation of layer context');
-                console.log(instantiatedLayerContext);
                 state.layerContexts[instantiatedLayerContext.id] =
                     instantiatedLayerContext;
             }
         });
     };
     private setInstantiatedPromptContexts = (stateData: ContextStoreState) => {
+        logCallingFunction(this.setInstantiatedPromptContexts);
         this.set((state: any) => {
             for (let key of Object.keys(stateData.layerContexts)) {
                 let instantiatedPromptContext = new PromptAIContext(

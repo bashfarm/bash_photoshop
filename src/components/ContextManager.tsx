@@ -34,7 +34,7 @@ export default function ContextManager() {
                             console.log(newContext);
                         }}
                     >
-                        Create New Context
+                        Create New AI Setting
                     </Button>
                 </div>
                 <ContextItems />

@@ -21,6 +21,7 @@ import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
 import ContextPainterModal from 'components/modals/ContextPainterModal';
 import { ContextType } from 'bashConstants';
+import { Layer } from 'photoshop/dom/Layer';
 
 const events = [
     'make',
@@ -41,6 +42,12 @@ const ToolbarDivider = () => {
 interface ToolSectionProps {
     children: React.ReactNode;
 }
+
+interface LayerDTO {
+    name: string;
+    id: number;
+}
+
 const ToolSection: FC<ToolSectionProps> = ({ children }) => {
     return <div className="flex items-center justify-between">{children}</div>;
 };
@@ -62,13 +69,13 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
 
     const popupRef = useRef<ExtendedHTMLDialogElement>();
     let layerContext = getContextFromStore(props.contextID, ContextType.LAYER);
-    let [selectedLayerName, setSelectedLayerName] = useState<string>(null);
-    let [unSelectedLayers, setUnSelectedLayers] = useState<Array<string>>(null);
+    console.log(layerContext);
+    let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>(null);
+    let [unSelectedLayers, setUnSelectedLayers] =
+        useState<Array<LayerDTO>>(null);
 
     function onLayerChange() {
-        setUnSelectedLayers(
-            photoshop.app.activeDocument?.layers?.map((layer) => layer.name)
-        );
+        setUnpickedLayers();
     }
 
     useEffect(() => {
@@ -78,25 +85,35 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         };
     }, []);
 
-    useEffect(() => {
+    function setUnpickedLayers() {
         setUnSelectedLayers(
-            photoshop.app.activeDocument?.layers?.map((layer) => layer.name)
+            photoshop.app.activeDocument?.layers?.map((layer) => {
+                let layerDTO: LayerDTO = {
+                    name: layer.name,
+                    id: layer.id,
+                };
+                return layerDTO;
+            })
         );
+    }
+
+    useEffect(() => {
+        setUnpickedLayers();
         let copyOfContext = layerContext.copy();
         copyOfContext.currentLayer =
             photoshop.app.activeDocument?.layers?.filter(
-                (layer) => selectedLayerName == layer.name
+                (layer) => selectedLayerDTO?.id == layer.id
             )[0];
 
         saveContextToStore(copyOfContext);
-    }, [selectedLayerName]);
+    }, [selectedLayerDTO]);
 
-    function onDropDownSelect(layerName: string) {
-        setSelectedLayerName(layerName);
+    function onDropDownSelect(selectedLayerDTO: LayerDTO) {
+        setSelectedLayerDTO(selectedLayerDTO);
         let copyOfContext = layerContext.copy();
         copyOfContext.currentLayer =
             photoshop.app.activeDocument?.layers?.filter(
-                (layer) => layerName == layer.name
+                (layer) => selectedLayerDTO.id == layer.id
             )[0];
 
         saveContextToStore(copyOfContext);
@@ -109,21 +126,22 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     {unSelectedLayers &&
                         (() => {
                             console.log(unSelectedLayers);
+                            console.log(selectedLayerDTO);
                             return true;
                         })() &&
-                        unSelectedLayers.map((layerName) => {
+                        unSelectedLayers.map((layerDTO: LayerDTO) => {
                             try {
                                 return (
                                     <Spectrum.MenuItem
-                                        key={layerName}
+                                        key={layerDTO.id}
                                         onClick={() =>
-                                            onDropDownSelect(layerName)
+                                            onDropDownSelect(layerDTO)
                                         }
                                         selected={
-                                            selectedLayerName == layerName
+                                            selectedLayerDTO?.id == layerDTO.id
                                         }
                                     >
-                                        {layerName}
+                                        {layerDTO.name}
                                     </Spectrum.MenuItem>
                                 );
                             } catch (e) {
@@ -212,7 +230,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     icon={RefreshIcon}
                     label="Regenerate Layer"
                     contextId={props.contextID}
-                    newLayerNameSetter={setSelectedLayerName}
+                    newLayerDTOSelectionFunc={setSelectedLayerDTO}
                 />
             </ToolSection>
             <ToolbarDivider />

@@ -39,15 +39,17 @@ export default class LayerAIContext extends ContextObject {
     ) {
         super();
         this.name = options.name;
-        this.currentLayer = options.currentLayer;
-        this.generationModelName = options.generationModelName;
-        this.currentPrompt = options.currentPrompt;
-        this.imageHeight = options.imageHeight;
-        this.imageWidth = options.imageHeight;
-        this.consistencyStrength = options.consistencyStrength;
-        this.stylingStrength = options.stylingStrength;
-        this.negativePrompt = options.negativePrompt;
-        this.tags = options.tags;
+        this.currentLayer = options.currentLayer ?? this.currentLayer;
+        this.generationModelName =
+            options.generationModelName ?? this.generationModelName;
+        this.currentPrompt = options.currentPrompt ?? this.currentPrompt;
+        this.imageHeight = options.imageHeight ?? this.imageHeight;
+        this.imageWidth = options.imageHeight ?? this.imageHeight;
+        this.consistencyStrength =
+            options.consistencyStrength ?? this.consistencyStrength;
+        this.stylingStrength = options.stylingStrength ?? this.stylingStrength;
+        this.negativePrompt = options.negativePrompt ?? this.negativePrompt;
+        this.tags = options.tags ?? this.tags;
     }
 
     public async hasLayerMask(): Promise<boolean> {

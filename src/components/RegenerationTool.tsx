@@ -18,7 +18,7 @@ type RegenerationToolProps = {
     icon?: FC<any>;
     label?: string;
     contextId: string;
-    newLayerNameSetter: Function;
+    newLayerDTOSelectionFunc: Function;
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
@@ -73,13 +73,13 @@ export default function RegenerationTool(props: RegenerationToolProps) {
 
             if (await layerContext.hasLayerMask()) {
                 duplicatedLayer = await layerContext.duplicateCurrentLayer();
-                copyOfContext.currentLayer = duplicatedLayer;
+                copyOfContext.currentLayerName = duplicatedLayer.name;
                 await copyOfContext.applyLayerMask();
             }
 
             const newLayer = await generateAILayer(layerContext);
 
-            copyOfContext.currentLayer = newLayer;
+            copyOfContext.currentLayerName = newLayer.name;
             saveContextToStore(copyOfContext);
 
             await moveLayer(
@@ -98,7 +98,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                 await deleteLayer(duplicatedLayer);
             }
 
-            props.newLayerNameSetter(newLayer.name);
+            props.newLayerDTOSelectionFunc(newLayer.name);
         } catch (e) {
             console.error(e);
         }

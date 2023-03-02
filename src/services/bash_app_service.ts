@@ -128,6 +128,7 @@ async function extractPhotoshopFile(zip: JSZip) {
 
         // Save the photoshop file that is in the zip file as a file that we can load.
         let data = await extractPhotoshopPSD(zip);
+        photoshopFileEntry.delete();
         photoshopFileEntry.write(data, { format: storage.formats.binary });
         return photoshopFileEntry;
     } catch (e) {
