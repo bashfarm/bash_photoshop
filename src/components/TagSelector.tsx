@@ -18,7 +18,6 @@ export default function TagSelector(props: TagSelectorProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
     let tags = getContextFromStore(props.contextID, props.contextType).tags;
-    console.log(tags);
 
     function removeTagFromContext(tag: ContextTag) {
         let copyOfContext = getContextFromStore(
@@ -41,34 +40,29 @@ export default function TagSelector(props: TagSelectorProps) {
     return (
         <div className="flex justify-between w-full bg-[#3f3f3f] border border-[#545454] rounded shadow-md hover:border-[#707070] items-center">
             <div className="flex flex-col">
-                {Object.values(tags).map(
-                    (tag: ContextTag) => (
-                        console.log(tag),
-                        (
-                            <Tag
-                                key={_.uniqueId()}
-                                onClick={() => {
-                                    console.log('tag click');
-                                }}
-                                value={tag.value}
-                                text={tag?.text ?? ''}
-                                onDelete={() => removeTagFromContext(tag)}
-                                onSliderChange={(value: number) => {
-                                    let copyOfContext = getContextFromStore(
-                                        props.contextID,
-                                        props.contextType
-                                    ).copy();
-                                    let copyOfTag = tag.copy();
-                                    copyOfTag.value = value;
-                                    copyOfContext.addTag(copyOfTag);
+                {Object.values(tags).map((tag: ContextTag) => (
+                    <Tag
+                        key={_.uniqueId()}
+                        onClick={() => {
+                            console.log('tag click');
+                        }}
+                        value={tag.value}
+                        text={tag?.text ?? ''}
+                        onDelete={() => removeTagFromContext(tag)}
+                        onSliderChange={(value: number) => {
+                            let copyOfContext = getContextFromStore(
+                                props.contextID,
+                                props.contextType
+                            ).copy();
+                            let copyOfTag = tag.copy();
+                            copyOfTag.value = value;
+                            copyOfContext.addTag(copyOfTag);
 
-                                    console.log(copyOfContext);
-                                    saveContextToStore(copyOfContext);
-                                }}
-                            />
-                        )
-                    )
-                )}
+                            console.log(copyOfContext);
+                            saveContextToStore(copyOfContext);
+                        }}
+                    />
+                ))}
             </div>
 
             <Search
