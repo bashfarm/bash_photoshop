@@ -5,10 +5,14 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import GridViewIcon from '@mui/icons-material/GridView';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import PublishIcon from '@mui/icons-material/Publish';
 
 export {
     VisibilityOffRounded,
+    SaveAltIcon,
     VisibilityRounded,
+    PublishIcon,
     BlenderIcon,
     PaletteIcon,
     GridViewIcon,
