@@ -25,6 +25,8 @@ const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
+let API_URL = 'http://127.0.0.1:7860';
+
 /**
  * @returns {Object}
  */
@@ -78,7 +80,7 @@ export async function img2img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/img2img`,
+            `${API_URL}/sdapi/v1/img2img`,
             requestOptions
         );
 
@@ -137,7 +139,7 @@ export const txt2img = async (
 
     try {
         const response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/txt2img`,
+            `${API_URL}/sdapi/v1/txt2img`,
             requestOptions
         );
 
@@ -164,9 +166,9 @@ export const getArtists = async (): Promise<ArtistType[]> => {
         headers: myHeaders,
     };
     try {
-        console.log(process.env.API_URL);
+        console.log(API_URL);
         const response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/artists`,
+            `${API_URL}/sdapi/v1/artists`,
             requestOptions
         );
         return await response.json();
@@ -185,9 +187,9 @@ export const getArtistCategories = async (): Promise<ArtistCategories> => {
         headers: myHeaders,
     };
     try {
-        console.log(process.env.API_URL);
+        console.log(API_URL);
         const response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/artist-categories`,
+            `${API_URL}/sdapi/v1/artist-categories`,
             requestOptions
         );
 
@@ -261,7 +263,6 @@ export async function generateImageLayerUsingLayer(
 ): Promise<Layer> {
     let genb64Str = null;
     let generatedLayer = null;
-    let oldLayer = layerContext.currentLayer;
 
     try {
         // This will save the current layer to plugin folder as a history file
@@ -330,8 +331,9 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     };
 
     try {
+        console.log(API_URL);
         const response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/progress?skip_current_image=false`,
+            `${API_URL}/sdapi/v1/progress?skip_current_image=false`,
             requestOptions
         );
 
@@ -355,7 +357,7 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
     };
     try {
         let response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/sd-models`,
+            `${API_URL}/sdapi/v1/sd-models`,
             requestOptions
         );
         let data = await response.json();
@@ -389,7 +391,7 @@ export async function getAPIConfig(): Promise<ConfigAPIResponse> {
     };
     try {
         let response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/options`,
+            `${API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -416,7 +418,7 @@ export async function setAPIConfig(config: any) {
     };
     try {
         let response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/options`,
+            `${API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -454,7 +456,7 @@ export async function getUpScaledB64(
     };
     try {
         let response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/extra-single-image`,
+            `${API_URL}/sdapi/v1/extra-single-image`,
             requestOptions
         );
         return await response.json();
@@ -530,7 +532,7 @@ export async function getImg2ImgDepth(
     };
     try {
         let response = await fetch(
-            `${process.env.API_URL}/sdapi/v1/img2img/script`,
+            `${API_URL}/sdapi/v1/img2img/script`,
             requestOptions
         );
         return await response.json();

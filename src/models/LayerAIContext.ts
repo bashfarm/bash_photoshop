@@ -27,12 +27,27 @@ export default class LayerAIContext extends ContextObject {
             currentLayer: null,
             name: null,
             generationModelName: 'model.ckpt',
+            docType: '"illustration"',
+            currentPrompt: '',
+            imageHeight: 1024,
+            imageWidth: 1024,
+            consistencyStrength: 0.7,
+            stylingStrength: 0.7,
+            negativePrompt: '',
+            tags: [],
         }
     ) {
         super();
         this.name = options.name;
         this.currentLayer = options.currentLayer;
         this.generationModelName = options.generationModelName;
+        this.currentPrompt = options.currentPrompt;
+        this.imageHeight = options.imageHeight;
+        this.imageWidth = options.imageHeight;
+        this.consistencyStrength = options.consistencyStrength;
+        this.stylingStrength = options.stylingStrength;
+        this.negativePrompt = options.negativePrompt;
+        this.tags = options.tags;
     }
 
     public async hasLayerMask(): Promise<boolean> {

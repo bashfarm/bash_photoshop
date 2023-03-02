@@ -13,6 +13,10 @@ import { executeInPhotoshop } from './middleware/photoshop_middleware';
 
 const lfs = storage.localFileSystem;
 
+/**
+ * This function will save the bashful project to the file system.  It is the highest function in the stack that will save the bashful project.
+ * @param contextStore
+ */
 export async function saveBashfulProject(contextStore: ContextStoreState) {
     try {
         let bashfulProjectEntry = await openBashfulFileDialog(DialogType.SAVE);
@@ -36,29 +40,94 @@ export async function saveBashfulProject(contextStore: ContextStoreState) {
     }
 }
 
+/**
+ * This functions creates a temporary file with the name of the state file that we will save to the file system and eventually zip
+ * It is in a constant called BASHFUL_STATE_FILE_NAME, `bashful.json`.
+ * @returns
+ */
 async function createStateDataEntry() {
     return await createTempFileEntry(BashfulAppProject.BASHFUL_STATE_FILE_NAME);
 }
 
+/**
+ * This function creates a temporary file with the name of the photoshop file that we will save to the file system and eventually zip
+ * It is in a constant called BASHFUL_PHOTOSHOP_FILE_NAME, `photoshop.psd`.
+ * @returns
+ */
 async function createPhotoshopFileEntry() {
     return await createTempFileEntry(
         BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
     );
 }
 
-async function extractStateData(zip: JSZip) {
-    let stateEntry = await createStateDataEntry();
-    return await zip.files[stateEntry.nativePath].async('string');
+async function extractPhotoshopPSD(zip: JSZip) {
+    const matchingFiles = zip.filter((relativePath, file) => {
+        return relativePath.endsWith('photoshop.psd');
+    });
+
+    if (matchingFiles.length === 0) {
+        throw new Error('File not found');
+    }
+
+    const file = matchingFiles[0];
+    console.log(file);
+
+    // Extract the file contents as a Blob
+    return await file.async('arraybuffer');
 }
 
+async function extractStateData(zip: JSZip) {
+    const matchingFiles = zip.filter((relativePath, file) => {
+        return relativePath.endsWith('bashful.json');
+    });
+
+    if (matchingFiles.length === 0) {
+        throw new Error('File not found');
+    }
+
+    const file = matchingFiles[0];
+    console.log(file);
+
+    // Extract the file contents as a Blob
+    return await file.async('string');
+}
+
+/**
+ * This function will extract the app state, the zustand stores, from the zip file and load them in to the app.
+ * @param zip
+ * @returns
+ */
+// async function extractStateData(zip: JSZip) {
+//     let stateEntry = await createStateDataEntry();
+// 	try{
+// 		console.log("yolo")
+// 		console.log("extracting state data")
+// 		console.log(stateEntry)
+// 		console.log(stateEntry.nativePath)
+// 		// console.log(JSON.stringify(zip.files));
+// 		// console.log(zip.files)
+// 		// console.log(zip)
+// 		// console.log(await unzipFiles2(zip))
+// 		console.log(await extractPhotoshopPSD(zip))
+
+// 	} catch (e){
+// 		console.error(e)
+// 	}
+
+//     return await zip.files[stateEntry.nativePath].async('string');
+// }
+
+/**
+ * This function will extract the photoshop file from the zip file and save it to the file system.
+ * @param zip
+ * @returns
+ */
 async function extractPhotoshopFile(zip: JSZip) {
     try {
         let photoshopFileEntry = await createPhotoshopFileEntry();
 
         // Save the photoshop file that is in the zip file as a file that we can load.
-        let data = await zip.files[photoshopFileEntry.nativePath].async(
-            'arraybuffer'
-        );
+        let data = await extractPhotoshopPSD(zip);
         photoshopFileEntry.write(data, { format: storage.formats.binary });
         return photoshopFileEntry;
     } catch (e) {
@@ -66,6 +135,11 @@ async function extractPhotoshopFile(zip: JSZip) {
     }
 }
 
+/**
+ * This opens a file dialog for the user to select a bashful project file, and only allows the selection of bashful project files.
+ * @param dialogType
+ * @returns
+ */
 async function openBashfulFileDialog(dialogType: DialogType) {
     if (dialogType === DialogType.SAVE) {
         let bashfulProjectEntry = await lfs.getFileForSaving('', {
@@ -80,12 +154,20 @@ async function openBashfulFileDialog(dialogType: DialogType) {
     })) as storage.File;
 }
 
+/**
+ * This is the lowest function in the stack that will load the photoshop file.
+ * @param photoshopFileEntry
+ */
 async function loadPhotoshopFile(photoshopFileEntry: storage.File) {
     await executeInPhotoshop(loadPhotoshopFile, async () => {
         await photoshop.app.open(photoshopFileEntry);
     });
 }
 
+/**
+ * This function opens a dialog for the user to select a bashful project file.
+ * @returns
+ */
 export async function getBashfulData() {
     let bashfulProjectEntry = await openBashfulFileDialog(DialogType.OPEN);
     return await JSZip.loadAsync(
@@ -93,11 +175,20 @@ export async function getBashfulData() {
     );
 }
 
+/**
+ * This function will load the bashful project from the file system.
+ * @param contextSetter
+ */
 export async function loadBashfulProject(contextSetter: Function) {
     try {
         let bashfulData = await getBashfulData();
-        let stateData = await extractStateData(bashfulData);
+        console.log(bashfulData);
+        let stateData = JSON.parse(await extractStateData(bashfulData));
+        console.log('after extractions');
+        console.log(stateData);
         loadPhotoshopFile(await extractPhotoshopFile(bashfulData));
+        console.log('loading photoshop file');
+        console.log(stateData);
         contextSetter(stateData);
     } catch (e) {
         console.error(e);
