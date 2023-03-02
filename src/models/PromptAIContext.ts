@@ -6,7 +6,7 @@ export default class PromptAIContext extends ContextObject {
         options: any = {
             currentPrompt: '',
             stylingStrength: 0.7,
-            consistencyStrength: 0.85,
+            consistencyStrength: 0.1,
             seed: -1,
             negativePrompt: '',
             docType: 'illustration',

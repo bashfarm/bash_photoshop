@@ -15,7 +15,7 @@ export default function ContextSlider(props: ContextProps) {
 
     let timelineAnimation = useRef<GSAPTimeline | null>();
 
-    let [sliderValue, setSliderValue] = useState<string>(null);
+    let [sliderValue, setSliderValue] = useState<string>('0');
     let debouncedValue = delayStateEventsForStateValue(
         sliderValue,
         props.inputDelayTime || 0

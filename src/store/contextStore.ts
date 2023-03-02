@@ -107,15 +107,25 @@ export class ContextStoreState {
         }
     };
     public setContextStore = (stateData: ContextStoreState) => {
+        console.log('yolo');
         this.setInstantiatedLayerContexts(stateData);
         this.setInstantiatedPromptContexts(stateData);
     };
     private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
+        console.log(stateData.layerContexts);
+        console.log(stateData);
+        console.log(stateData);
+        console.log(stateData['layerContexts']);
+        console.log(Object.keys(stateData));
         this.set((state: any) => {
             for (let key of Object.keys(stateData.layerContexts)) {
+                console.log(state.layerContexts[key]);
+                console.log('before instantiation of layer context');
                 let instantiatedLayerContext = new LayerAIContext(
                     stateData.layerContexts[key]
                 );
+                console.log('after instantiation of layer context');
+                console.log(instantiatedLayerContext);
                 state.layerContexts[instantiatedLayerContext.id] =
                     instantiatedLayerContext;
             }

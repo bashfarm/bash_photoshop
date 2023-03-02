@@ -1,13 +1,13 @@
 {
-    "id": "react-hostappapi",
-    "name": "AI Asset Creator",
-    "version": "1.0.0",
+    "id": "0d4a6a37",
+    "name": "Bashful",
+    "version": "0.0.80",
     "main": "main.jsx",
     "manifestVersion": 5,
     "host": [
         {
             "app": "PS",
-            "minVersion": "22.5.0",
+            "minVersion": "22.5",
             "data": {
                 "apiVersion": 2
             }
@@ -52,7 +52,7 @@
                 {
                     "width": 23,
                     "height": 23,
-                    "path": "icons/DarkTheme.png",
+                    "path": "icons/bashful_23.png",
                     "scale": [1, 2],
                     "theme": ["dark", "darkest"],
                     "species": ["chrome"]
@@ -60,7 +60,7 @@
                 {
                     "width": 23,
                     "height": 23,
-                    "path": "icons/LightTheme.png",
+                    "path": "icons/bashful_23.png",
                     "scale": [1, 2],
                     "theme": ["lightest", "light"],
                     "species": ["chrome"]
@@ -70,17 +70,17 @@
     ],
     "icons": [
         {
-            "width": 48,
-            "height": 48,
-            "path": "icons/DarkTheme_plugins.png",
+            "width": 46,
+            "height": 46,
+            "path": "icons/bashful_46.png",
             "scale": [1, 2],
             "theme": ["dark", "darkest"],
             "species": ["pluginList"]
         },
         {
-            "width": 48,
-            "height": 48,
-            "path": "icons/LightTheme_plugins.png",
+            "width": 46,
+            "height": 46,
+            "path": "icons/bashful_46.png",
             "scale": [1, 2],
             "theme": ["lightest", "light"],
             "species": ["pluginList"]

@@ -40,7 +40,7 @@ export default function ContextToolBar() {
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <ToolSection>
-                <Tool
+                {/* <Tool
                     icon={VisibilityOffRounded}
                     label="Regenerate All layers"
                     onClick={async () =>
@@ -57,7 +57,7 @@ export default function ContextToolBar() {
                             Object.values(getContextStore().LayerAIContexts)
                         )
                     }
-                />
+                /> */}
                 <Tool
                     icon={VisibilityRounded}
                     label="Save Project"
