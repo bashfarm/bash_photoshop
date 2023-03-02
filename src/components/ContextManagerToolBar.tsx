@@ -1,5 +1,10 @@
 import React, { FC, useRef } from 'react';
-import { VisibilityOffRounded, VisibilityRounded } from 'components/Icons';
+import {
+    PublishIcon,
+    SaveAltIcon,
+    VisibilityOffRounded,
+    VisibilityRounded,
+} from 'components/Icons';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import Tool from 'components/Tool';
@@ -59,14 +64,14 @@ export default function ContextToolBar() {
                     }
                 /> */}
                 <Tool
-                    icon={VisibilityRounded}
+                    icon={SaveAltIcon}
                     label="Save Project"
                     onClick={async () =>
                         await saveBashfulProject(getContextStore())
                     }
                 />
                 <Tool
-                    icon={VisibilityRounded}
+                    icon={PublishIcon}
                     label="Load Project"
                     onClick={async () => {
                         await loadBashfulProject(setContextStore);
