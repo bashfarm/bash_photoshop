@@ -5,7 +5,6 @@ import { immerable } from 'immer';
 import PromptAIContext from 'models/PromptAIContext';
 import { ContextType } from 'bashConstants';
 import { logCallingFunction } from 'utils/general_utils';
-import ContextObject from 'models/ContextObject';
 import { BashfulObject } from 'models/BashfulObject';
 
 export class ContextStoreState extends BashfulObject {
