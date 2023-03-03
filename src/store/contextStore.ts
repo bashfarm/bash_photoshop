@@ -5,8 +5,10 @@ import { immerable } from 'immer';
 import PromptAIContext from 'models/PromptAIContext';
 import { ContextType } from 'bashConstants';
 import { logCallingFunction } from 'utils/general_utils';
+import ContextObject from 'models/ContextObject';
+import { BashfulObject } from 'models/BashfulObject';
 
-export class ContextStoreState {
+export class ContextStoreState extends BashfulObject {
     [immerable] = true;
     layerContextCache: Record<string, LayerAIContext> = {};
     promptContextCache: Record<string, PromptAIContext> = {};
@@ -15,6 +17,7 @@ export class ContextStoreState {
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
+        super();
         this.layerContextCache = {};
         this.promptContextCache = {};
         this.layerContexts = {};
@@ -23,8 +26,6 @@ export class ContextStoreState {
     }
     public saveContextToStore = (context: LayerAIContext | PromptAIContext) => {
         logCallingFunction(this.saveContextToStore);
-        console.log(context);
-        console.log(this.saveContextToStore.caller.name);
         try {
             this.set((state: ContextStoreState) => {
                 if (context instanceof LayerAIContext) {
@@ -119,6 +120,7 @@ export class ContextStoreState {
     private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
         logCallingFunction(this.setInstantiatedLayerContexts);
         this.set((state: any) => {
+            state.layerContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
                 let instantiatedLayerContext = new LayerAIContext(
                     stateData.layerContexts[key]
@@ -131,6 +133,7 @@ export class ContextStoreState {
     private setInstantiatedPromptContexts = (stateData: ContextStoreState) => {
         logCallingFunction(this.setInstantiatedPromptContexts);
         this.set((state: any) => {
+            state.promptContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
                 let instantiatedPromptContext = new PromptAIContext(
                     stateData.promptContexts[key]

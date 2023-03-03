@@ -29,7 +29,10 @@ export async function saveBashfulProject(contextStore: ContextStoreState) {
         await saveActiveDocument(psdFileEntry);
 
         let zip = new JSZip();
-        zip.file(stateFileEntry.nativePath, JSON.stringify(contextStore));
+        let storeCopy = _.cloneDeep(contextStore);
+        storeCopy.layerContextCache = {};
+        storeCopy.promptContextCache = {};
+        zip.file(stateFileEntry.nativePath, JSON.stringify(storeCopy));
         zip.file(
             psdFileEntry.nativePath,
             psdFileEntry.read({ format: storage.formats.binary })
@@ -60,18 +63,14 @@ async function createPhotoshopFileEntry() {
         let tempPsd = await getTempFileEntry(
             BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
         );
-        if (tempPsd.isFile) {
-            tempPsd.delete();
-        }
-
-        if (!tempPsd.isFile) {
-            return await createTempFileEntry(
-                BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
-            );
-        }
+        tempPsd.delete();
     } catch (e) {
-        console.error(e);
+        console.warn('Had to delete plugin temp file photoshop.psd');
     }
+
+    return await createTempFileEntry(
+        BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
+    );
 }
 
 async function extractPhotoshopPSD(zip: JSZip) {
@@ -117,6 +116,7 @@ async function extractPhotoshopFile(zip: JSZip) {
 
         // Save the photoshop file that is in the zip file as a file that we can load.
         let data = await extractPhotoshopPSD(zip);
+        photoshopFileEntry.delete();
 
         photoshopFileEntry.write(data, { format: storage.formats.binary });
         return photoshopFileEntry;

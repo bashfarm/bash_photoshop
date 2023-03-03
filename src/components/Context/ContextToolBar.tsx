@@ -31,6 +31,7 @@ const events = [
     'move',
     'undoEvent',
     'undoEnum',
+    'openDocument',
 ];
 
 const ToolbarDivider = () => {
@@ -76,32 +77,27 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
     const popupRef = useRef<ExtendedHTMLDialogElement>();
     let layerContext = getContextFromStore(props.contextID, ContextType.LAYER);
     let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>({
-        name: getPSLayerNameFromLayerID(layerContext.currentLayer._id),
-        id: layerContext.currentLayer._id,
+        name: getPSLayerNameFromLayerID(layerContext?.currentLayer?._id),
+        id: layerContext?.currentLayer?._id,
     });
-    console.log(layerContext);
-    console.log(selectedLayerDTO);
 
-    let [dropDownLayers, setDropDownLayers] = useState<Array<LayerDTO>>(
-        photoshop.app.activeDocument?.layers?.map((layer) => {
-            let layerDTO: LayerDTO = {
-                name: layer.name,
-                id: layer.id,
-            };
-            return layerDTO;
-        })
-    );
+    let [dropDownLayers, setDropDownLayers] = useState<Array<LayerDTO>>([]);
 
-    function onLayerChange() {
+    function onChange() {
         setDropDownToAllLayers();
     }
 
     useEffect(() => {
-        photoshop.action.addNotificationListener(events, onLayerChange);
+        photoshop.action.addNotificationListener(events, onChange);
         return () => {
-            photoshop.action.removeNotificationListener(events, onLayerChange);
+            photoshop.action.removeNotificationListener(events, onChange);
         };
     }, []);
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onChange);
+        setDropDownToAllLayers();
+    }, [selectedLayerDTO]);
 
     /**
      * This function just takes all of the active document's layers and creates DTOs of them for
@@ -124,10 +120,6 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         )[0];
     }
 
-    useEffect(() => {
-        setDropDownToAllLayers();
-    }, [selectedLayerDTO]);
-
     function onDropDownSelect(layerDTO: LayerDTO) {
         setSelectedLayerDTO(layerDTO);
         console.warn(layerDTO);
@@ -141,25 +133,32 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
                     {dropDownLayers &&
-                        dropDownLayers.map((layerDTO: LayerDTO) => {
-                            try {
-                                return (
-                                    <Spectrum.MenuItem
-                                        key={layerDTO.id}
-                                        onClick={() =>
-                                            onDropDownSelect(layerDTO)
-                                        }
-                                        selected={
-                                            selectedLayerDTO?.id == layerDTO.id
-                                        }
-                                    >
-                                        {layerDTO.name}
-                                    </Spectrum.MenuItem>
-                                );
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        })}
+                        dropDownLayers
+                            .sort((a, b) =>
+                                a.name.toLowerCase() > b.name.toLowerCase()
+                                    ? 1
+                                    : -1
+                            )
+                            .map((layerDTO: LayerDTO) => {
+                                try {
+                                    return (
+                                        <Spectrum.MenuItem
+                                            key={layerDTO.id}
+                                            onClick={() =>
+                                                onDropDownSelect(layerDTO)
+                                            }
+                                            selected={
+                                                selectedLayerDTO?.id ==
+                                                layerDTO.id
+                                            }
+                                        >
+                                            {layerDTO.name}
+                                        </Spectrum.MenuItem>
+                                    );
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            })}
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ToolSection>
