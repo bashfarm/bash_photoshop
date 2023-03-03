@@ -71,7 +71,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
     function getPSLayerNameFromLayerID(layerID: number) {
         return photoshop.app?.activeDocument?.layers.filter(
             (layer) => layer.id == layerID
-        )[0].name;
+        )[0]?.name;
     }
 
     const popupRef = useRef<ExtendedHTMLDialogElement>();
