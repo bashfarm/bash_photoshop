@@ -31,6 +31,7 @@ const events = [
     'move',
     'undoEvent',
     'undoEnum',
+    'openDocument',
 ];
 
 const ToolbarDivider = () => {
@@ -67,26 +68,43 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
+    function getPSLayerNameFromLayerID(layerID: number) {
+        return photoshop.app?.activeDocument?.layers.filter(
+            (layer) => layer.id == layerID
+        )[0]?.name;
+    }
+
     const popupRef = useRef<ExtendedHTMLDialogElement>();
     let layerContext = getContextFromStore(props.contextID, ContextType.LAYER);
-    console.log(layerContext);
-    let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>(null);
-    let [unSelectedLayers, setUnSelectedLayers] =
-        useState<Array<LayerDTO>>(null);
+    let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>({
+        name: getPSLayerNameFromLayerID(layerContext?.currentLayer?._id),
+        id: layerContext?.currentLayer?._id,
+    });
 
-    function onLayerChange() {
-        setUnpickedLayers();
+    let [dropDownLayers, setDropDownLayers] = useState<Array<LayerDTO>>([]);
+
+    function onChange() {
+        setDropDownToAllLayers();
     }
 
     useEffect(() => {
-        photoshop.action.addNotificationListener(events, onLayerChange);
+        photoshop.action.addNotificationListener(events, onChange);
         return () => {
-            photoshop.action.removeNotificationListener(events, onLayerChange);
+            photoshop.action.removeNotificationListener(events, onChange);
         };
     }, []);
 
-    function setUnpickedLayers() {
-        setUnSelectedLayers(
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onChange);
+        setDropDownToAllLayers();
+    }, [selectedLayerDTO]);
+
+    /**
+     * This function just takes all of the active document's layers and creates DTOs of them for
+     * the dropdown menu.
+     */
+    function setDropDownToAllLayers() {
+        setDropDownLayers(
             photoshop.app.activeDocument?.layers?.map((layer) => {
                 let layerDTO: LayerDTO = {
                     name: layer.name,
@@ -96,26 +114,17 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
             })
         );
     }
+    function getPSLayerByID(layerID: number) {
+        return photoshop.app.activeDocument?.layers?.filter(
+            (layer) => layerID == layer.id
+        )[0];
+    }
 
-    useEffect(() => {
-        setUnpickedLayers();
+    function onDropDownSelect(layerDTO: LayerDTO) {
+        setSelectedLayerDTO(layerDTO);
+        console.warn(layerDTO);
         let copyOfContext = layerContext.copy();
-        copyOfContext.currentLayer =
-            photoshop.app.activeDocument?.layers?.filter(
-                (layer) => selectedLayerDTO?.id == layer.id
-            )[0];
-
-        saveContextToStore(copyOfContext);
-    }, [selectedLayerDTO]);
-
-    function onDropDownSelect(selectedLayerDTO: LayerDTO) {
-        setSelectedLayerDTO(selectedLayerDTO);
-        let copyOfContext = layerContext.copy();
-        copyOfContext.currentLayer =
-            photoshop.app.activeDocument?.layers?.filter(
-                (layer) => selectedLayerDTO.id == layer.id
-            )[0];
-
+        copyOfContext.currentLayer = getPSLayerByID(layerDTO.id);
         saveContextToStore(copyOfContext);
     }
 
@@ -123,31 +132,33 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
-                    {unSelectedLayers &&
-                        (() => {
-                            console.log(unSelectedLayers);
-                            console.log(selectedLayerDTO);
-                            return true;
-                        })() &&
-                        unSelectedLayers.map((layerDTO: LayerDTO) => {
-                            try {
-                                return (
-                                    <Spectrum.MenuItem
-                                        key={layerDTO.id}
-                                        onClick={() =>
-                                            onDropDownSelect(layerDTO)
-                                        }
-                                        selected={
-                                            selectedLayerDTO?.id == layerDTO.id
-                                        }
-                                    >
-                                        {layerDTO.name}
-                                    </Spectrum.MenuItem>
-                                );
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        })}
+                    {dropDownLayers &&
+                        dropDownLayers
+                            .sort((a, b) =>
+                                a.name.toLowerCase() > b.name.toLowerCase()
+                                    ? 1
+                                    : -1
+                            )
+                            .map((layerDTO: LayerDTO) => {
+                                try {
+                                    return (
+                                        <Spectrum.MenuItem
+                                            key={layerDTO.id}
+                                            onClick={() =>
+                                                onDropDownSelect(layerDTO)
+                                            }
+                                            selected={
+                                                selectedLayerDTO?.id ==
+                                                layerDTO.id
+                                            }
+                                        >
+                                            {layerDTO.name}
+                                        </Spectrum.MenuItem>
+                                    );
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            })}
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ToolSection>

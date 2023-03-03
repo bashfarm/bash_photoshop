@@ -8,8 +8,6 @@ import ContextToolBar from './ContextManagerToolBar';
 import _ from 'lodash';
 
 export default function ContextManager() {
-    const [rerender, setRerender] = React.useState(false);
-
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );

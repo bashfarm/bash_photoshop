@@ -3,6 +3,7 @@ import { ContextStoreState } from 'store/contextStore';
 import { storage } from 'uxp';
 import {
     createTempFileEntry,
+    getTempFileEntry,
     saveActiveDocument,
     saveTextFile,
 } from './io_service';
@@ -28,7 +29,10 @@ export async function saveBashfulProject(contextStore: ContextStoreState) {
         await saveActiveDocument(psdFileEntry);
 
         let zip = new JSZip();
-        zip.file(stateFileEntry.nativePath, JSON.stringify(contextStore));
+        let storeCopy = _.cloneDeep(contextStore);
+        storeCopy.layerContextCache = {};
+        storeCopy.promptContextCache = {};
+        zip.file(stateFileEntry.nativePath, JSON.stringify(storeCopy));
         zip.file(
             psdFileEntry.nativePath,
             psdFileEntry.read({ format: storage.formats.binary })
@@ -55,6 +59,15 @@ async function createStateDataEntry() {
  * @returns
  */
 async function createPhotoshopFileEntry() {
+    try {
+        let tempPsd = await getTempFileEntry(
+            BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
+        );
+        tempPsd.delete();
+    } catch (e) {
+        console.warn('Had to delete plugin temp file photoshop.psd');
+    }
+
     return await createTempFileEntry(
         BashfulAppProject.BASHFUL_PHOTOSHOP_FILE_NAME
     );
@@ -91,31 +104,6 @@ async function extractStateData(zip: JSZip) {
     // Extract the file contents as a Blob
     return await file.async('string');
 }
-
-/**
- * This function will extract the app state, the zustand stores, from the zip file and load them in to the app.
- * @param zip
- * @returns
- */
-// async function extractStateData(zip: JSZip) {
-//     let stateEntry = await createStateDataEntry();
-// 	try{
-// 		console.log("yolo")
-// 		console.log("extracting state data")
-// 		console.log(stateEntry)
-// 		console.log(stateEntry.nativePath)
-// 		// console.log(JSON.stringify(zip.files));
-// 		// console.log(zip.files)
-// 		// console.log(zip)
-// 		// console.log(await unzipFiles2(zip))
-// 		console.log(await extractPhotoshopPSD(zip))
-
-// 	} catch (e){
-// 		console.error(e)
-// 	}
-
-//     return await zip.files[stateEntry.nativePath].async('string');
-// }
 
 /**
  * This function will extract the photoshop file from the zip file and save it to the file system.
@@ -183,13 +171,8 @@ export async function getBashfulData() {
 export async function loadBashfulProject(contextSetter: Function) {
     try {
         let bashfulData = await getBashfulData();
-        console.log(bashfulData);
         let stateData = JSON.parse(await extractStateData(bashfulData));
-        console.log('after extractions');
-        console.log(stateData);
         loadPhotoshopFile(await extractPhotoshopFile(bashfulData));
-        console.log('loading photoshop file');
-        console.log(stateData);
         contextSetter(stateData);
     } catch (e) {
         console.error(e);

@@ -85,6 +85,4 @@ export function sleep(ms: number) {
 
 export function logCallingFunction(func: Function) {
     console.log(func);
-    console.log(JSON.stringify(func));
-    console.log(`Function Called: ${func.name}`);
 }
