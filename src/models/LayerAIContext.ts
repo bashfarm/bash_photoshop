@@ -14,12 +14,14 @@ import _ from 'lodash';
 import photoshop from 'photoshop';
 import { applyMask, duplicateLayer, hasMask } from 'services/layer_service';
 import ContextObject from './ContextObject';
+import { LayerDTO } from './LayerDTO';
+import { getPSLayerByID } from 'utils/ps_utils';
 
 export default class LayerAIContext extends ContextObject {
     name: string;
     smallDetails: Array<SmallDetailContext>; // The details from the above object
     generationModelName: string;
-    currentLayer: Layer; // the layer that the context is assigned to
+    _currentLayer: Layer | LayerDTO; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context
 
     constructor(
@@ -39,7 +41,7 @@ export default class LayerAIContext extends ContextObject {
     ) {
         super();
         this.name = options.name;
-        this.currentLayer = options.currentLayer ?? this.currentLayer;
+        this._currentLayer = options.currentLayer ?? this.currentLayer;
         this.generationModelName =
             options.generationModelName ?? this.generationModelName;
         this.currentPrompt = options.currentPrompt ?? this.currentPrompt;
@@ -50,6 +52,12 @@ export default class LayerAIContext extends ContextObject {
         this.stylingStrength = options.stylingStrength ?? this.stylingStrength;
         this.negativePrompt = options.negativePrompt ?? this.negativePrompt;
         this.tags = options.tags ?? this.tags;
+    }
+
+    get currentLayer(): Layer {
+        return getPSLayerByID(
+            this._currentLayer?.id ?? (this._currentLayer as LayerDTO)._id
+        );
     }
 
     public async hasLayerMask(): Promise<boolean> {

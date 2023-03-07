@@ -13,6 +13,8 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
+import { getPSLayerByID } from 'utils/ps_utils';
+import { LayerDTO } from 'models/LayerDTO';
 
 const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
@@ -233,13 +235,24 @@ export async function selectLayerMask(layer: Layer) {
  * This function will duplicate the given layer and return a reference to it.
  */
 export async function duplicateLayer(
-    layer: Layer,
+    layerObj: Layer | LayerDTO,
     relativeObject?: Document | Layer,
     insertionLocation?: ElementPlacement,
     name?: string
 ) {
+    let layerFromPhotoshop = layerObj;
+
+    if (layerObj.id === undefined) {
+        layerFromPhotoshop = getPSLayerByID((layerObj as LayerDTO)._id);
+    }
     return await executeInPhotoshop(duplicateLayer, async () => {
-        return await layer.duplicate(relativeObject, insertionLocation, name);
+        // get layer from photoshop document layers using the layer id
+
+        return ((await layerFromPhotoshop) as Layer).duplicate(
+            relativeObject,
+            insertionLocation,
+            name
+        );
     });
 }
 
