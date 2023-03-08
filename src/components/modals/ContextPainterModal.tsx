@@ -4,7 +4,7 @@ import { Textarea, Icon, Divider, Heading } from 'react-uxp-spectrum';
 import { txt2img } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
-import { formatBase64Image } from 'utils/io_utils';
+import { addB64Header } from 'utils/io_utils';
 
 interface ModalProps {
     handle: ExtendedHTMLDialogElement;

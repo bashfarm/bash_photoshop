@@ -14,9 +14,8 @@ import {
 } from 'services/tools_service';
 import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
-import { StyleReferencesModal } from 'components/modals/StyleReferencesModal';
 import photoshop from 'photoshop';
-import Spectrum from 'react-uxp-spectrum';
+import Spectrum, { Checkbox, Label } from 'react-uxp-spectrum';
 import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
 import ContextPainterModal from 'components/modals/ContextPainterModal';
@@ -162,6 +161,18 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ToolSection>
+                <Label>Use Auto1111</Label>
+                <Checkbox
+                    onChange={async () => {
+                        let copyOfContext = layerContext.copy();
+                        copyOfContext.is_cloud_run =
+                            !copyOfContext.is_cloud_run;
+                        saveContextToStore(copyOfContext);
+                    }}
+                />
+            </ToolSection>
+
+            <ToolSection>
                 <Tool
                     icon={VisibilityOffRounded}
                     label="Hide"
@@ -179,47 +190,6 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
             </ToolSection>
             <ToolbarDivider />
             <ToolSection>
-                <Tool
-                    icon={PaletteIcon}
-                    label="Styles"
-                    onClick={() =>
-                        popUpModal(
-                            popupRef,
-                            <StyleReferencesModal
-                                handle={popupRef.current}
-                                contextID={props.contextID}
-                                contextType={ContextType.LAYER}
-                            />,
-                            'Styles'
-                        )
-                    }
-                />
-                {/* <Tool
-                    icon={GridViewIcon}
-                    label="Increase Resolution"
-                    onClick={async () => {
-                        let layerContext = getContextFromStore(props.contextID);
-                        let fileEntry =
-                            await layerContext.saveLayerContexttoHistory(true);
-                        let b64Img = await getBase64OfImgInPluginDataFolder(
-                            fileEntry.name
-                        );
-                        let b64Upscaled = await getUpScaledB64(
-                            b64Img,
-                            layerContext
-                        );
-                        let upScaledFileEntry =
-                            await saveB64ImageToBinaryFileToDataFolder(
-                                fileEntry.name,
-                                b64Upscaled
-                            );
-                        let newLayer = await createNewLayerFromFile(
-                            upScaledFileEntry.name,
-                            true
-                        );
-                        scaleAndFitLayerToCanvas(newLayer);
-                    }}
-                /> */}
                 <Tool
                     icon={GridViewIcon}
                     label="Context Painter"

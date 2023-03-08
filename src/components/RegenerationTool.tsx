@@ -31,23 +31,24 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     const [isHovered, setIsHovered] = useState(false);
     // Set up a state variable to hold the progress value
     const [imageProgress, setImageProgress] = useState(0);
+    const [retryCount, setRetryCount] = useState(0);
     // Set up a state variable to hold the interval ID
-    const [intervalId, setIntervalId] = useState<NodeJS.Timer | null>(null);
+    const [intervalTimer, setIntervalTimer] = useState<NodeJS.Timer | null>(
+        null
+    );
     let prevVal = -1;
 
     // Define a function to update the progress value
     const updateImageProgress = async (): Promise<void> => {
-        let imageProcessingCompleted: boolean = false;
+        setRetryCount(retryCount + 1);
         // Call the getImageProcessingProgress function
         const progressResponse = await getImageProcessingProgress();
         // Update the imageProgress state variable with the progress value from the response
-        setImageProgress(progressResponse.progress);
+        setImageProgress(progressResponse?.progress ?? 0.1);
         prevVal = progressResponse.progress;
         // Check if the progress is 1
-        if (progressResponse.progress === 1) {
-            imageProcessingCompleted = true;
-        }
-        if (prevVal == 0) {
+
+        if (prevVal == 0 || retryCount >= 2) {
             setImageProgress(1);
         }
     };
@@ -55,7 +56,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     // Define a function to start the progress updates
     const startProgressUpdates = (): void => {
         // Set the interval to call the updateImageProgress function every 1 second
-        setIntervalId(setInterval(updateImageProgress, 1000));
+        // setIntervalTimer(setInterval(updateImageProgress, 1000));
     };
     async function regenerateLayer(
         deleteOldLayer: boolean = false,
@@ -105,8 +106,15 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     }
 
     useEffect(() => {
-        if (imageProgress == 1) clearInterval(intervalId);
-    }, [imageProgress]);
+        if (imageProgress == 1) {
+            clearInterval(intervalTimer);
+        } else if (retryCount >= 2) {
+            clearInterval(intervalTimer);
+        }
+
+        console.log('retryCount', retryCount);
+        console.log('imageProgress', imageProgress);
+    }, [imageProgress, retryCount]);
 
     const handleButtonClick = (): void => {
         regenerateLayer(false, props.contextId);

@@ -3,7 +3,7 @@ import _ from 'lodash';
 const photoshop = require('photoshop');
 import { Layer } from 'photoshop/dom/Layer';
 import { storage } from 'uxp';
-import { unformatBase64Image } from '../utils/io_utils';
+import { removeB64Header } from '../utils/io_utils';
 import {
     getVisibleLayers,
     makeLayersInvisible,
@@ -17,6 +17,17 @@ const [lfs, types, formats] = [
     storage.types,
     storage.formats,
 ];
+
+/**
+ * This function gets the base64 string from an image url.
+ * @param imgUrl
+ */
+export async function getB64StringFromImageUrl(
+    imgUrl: string
+): Promise<string> {
+    const response = await fetch(imgUrl);
+    return base64js.fromByteArray(new Uint8Array(await response.arrayBuffer()));
+}
 
 /**
  * Save the given text to a file in the plugin data folder
@@ -102,7 +113,7 @@ export async function saveB64ImageToBinaryFileToDataFolder(
     try {
         return await saveBinaryFileToDataFolder(
             fileName,
-            base64js.toByteArray(unformatBase64Image(data))
+            base64js.toByteArray(removeB64Header(data))
         );
     } catch (e) {
         console.log(e);

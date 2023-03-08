@@ -1,3 +1,27 @@
+export type BashfulAPIImg2ImgRequest = {
+    init_images: string[]; // base64 encoded images
+    denoising_strength: number;
+    prompt: string;
+    seed: number;
+    guidance: number;
+    negative_prompt: string;
+    model_config: string;
+    calling_application: string;
+};
+
+export type BashfulAPITxt2ImgRequest = {
+    prompt: string;
+    seed: number;
+    guidance: number;
+    negative_prompt: string;
+    model_config: string;
+    calling_application: string;
+};
+
+export type BashfulImageAPIResponse = {
+    url: string;
+};
+
 export type Text2ImgRequest = {
     enable_hr: boolean;
     denoising_strength: number;
