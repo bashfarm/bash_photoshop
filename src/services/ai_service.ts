@@ -35,6 +35,8 @@ const LOCAL_API_URL = 'http://127.0.0.1:7860';
 const CLOUD_API_URL =
     'https://us-central1-bashful-photoshop.cloudfunctions.net/';
 
+const calling_application = 'Bashful: The AI Powered Photoshop Plugin';
+
 /**
  * This function is used to generate image using the bashful image api
  *
@@ -43,7 +45,7 @@ const CLOUD_API_URL =
 export async function BAPIImg2Img(
     imgb64Str: string,
     layerContext: LayerAIContext
-): Promise<ImageResponse> {
+): Promise<BashfulImageAPIResponse> {
     try {
         const payload: BashfulAPIImg2ImgRequest = {
             init_images: [imgb64Str],
@@ -51,10 +53,13 @@ export async function BAPIImg2Img(
             prompt: layerContext.generateContextualizedPrompt(),
             seed: layerContext.seed,
             guidance: layerContext.getStylingStrength(),
+            styling_strength: layerContext.getStylingStrength(),
             negative_prompt: layerContext.negativePrompt,
             model_config: layerContext.model_config,
-            calling_application: 'Bashful: The AI Powered Photoshop Plugin',
+            calling_application: calling_application,
         };
+        console.log('payload');
+        console.log(payload);
 
         const requestOptions: RequestInit = {
             method: 'POST',
@@ -83,15 +88,16 @@ export async function BAPIImg2Img(
 export async function BAPITxt2Img(
     imgb64Str: ArrayBuffer,
     layerContext: LayerAIContext
-): Promise<ImageResponse> {
+): Promise<BashfulImageAPIResponse> {
     try {
         const payload: BashfulAPITxt2ImgRequest = {
             prompt: layerContext.generateContextualizedPrompt(),
             seed: layerContext.seed,
             guidance: layerContext.getStylingStrength(),
+            styling_strength: layerContext.getStylingStrength(),
             negative_prompt: layerContext.negativePrompt,
             model_config: layerContext.model_config,
-            calling_application: 'Bashful: The AI Powered Photoshop Plugin',
+            calling_application: calling_application,
         };
 
         const requestOptions: RequestInit = {
@@ -121,7 +127,12 @@ export async function img2img(
 ): Promise<ImageResponse | BashfulImageAPIResponse> {
     try {
         if (layerContext.is_cloud_run) {
-            return await BAPIImg2Img(imgb64Str, layerContext);
+            console.log(layerContext);
+            let response = await BAPIImg2Img(imgb64Str, layerContext);
+            if (response.url == undefined) {
+                console.error(response);
+            }
+            return response;
         }
 
         const payload: Img2ImgRequest = {
