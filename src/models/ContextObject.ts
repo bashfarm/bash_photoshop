@@ -16,6 +16,8 @@ export default class ContextObject extends BashfulObject {
     seed: number;
     styleReferences: Array<StyleReference>;
     tags: Record<string, ContextTag>;
+    model_config: string;
+    is_cloud_run: true;
 
     constructor(
         options: any = {
@@ -30,6 +32,8 @@ export default class ContextObject extends BashfulObject {
             imageWidth: 1024,
             styleReferences: [],
             tags: {},
+            model_config: 'OpenJourney-Config',
+            is_cloud_run: true,
         }
     ) {
         super();
@@ -45,6 +49,8 @@ export default class ContextObject extends BashfulObject {
         this.imageHeight = options.imageHeight;
         this.imageWidth = options.imageWidth;
         this.tags = options.tags;
+        this.model_config = options.model_config;
+        this.is_cloud_run = options.is_cloud_run;
     }
 
     public getStylingStrength() {

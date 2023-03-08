@@ -1,5 +1,8 @@
-import { formatBase64Image } from '../utils/io_utils';
-import { getBase64OfImgInPluginDataFolder } from './io_service';
+import { addB64Header, removeB64Header } from '../utils/io_utils';
+import {
+    getB64StringFromImageUrl,
+    getBase64OfImgInPluginDataFolder,
+} from './io_service';
 import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 import {
     Text2ImgRequest,
@@ -7,13 +10,15 @@ import {
     ImageResponse,
     ProgressResponse,
     ArtistType,
-    ArtistCategories,
 } from '../common/types';
 import LayerAIContext from 'models/LayerAIContext';
 import { alert } from './alert_service';
 import photoshop from 'photoshop';
 import StyleReference from 'models/StyleReference';
 import {
+    BashfulAPIImg2ImgRequest,
+    BashfulAPITxt2ImgRequest,
+    BashfulImageAPIResponse,
     ConfigAPIResponse,
     Img2ImgRequestDepthMask,
     ModelResponse,
@@ -25,7 +30,87 @@ const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
-let API_URL = 'http://127.0.0.1:7860';
+const LOCAL_API_URL = 'http://127.0.0.1:7860';
+// const CLOUD_API_URL = 'http://127.0.0.1:7860';
+const CLOUD_API_URL =
+    'https://us-central1-bashful-photoshop.cloudfunctions.net/';
+
+/**
+ * This function is used to generate image using the bashful image api
+ *
+ * @returns {Object}
+ */
+export async function BAPIImg2Img(
+    imgb64Str: string,
+    layerContext: LayerAIContext
+): Promise<ImageResponse> {
+    try {
+        const payload: BashfulAPIImg2ImgRequest = {
+            init_images: [imgb64Str],
+            denoising_strength: layerContext.getDenoisingStrength(),
+            prompt: layerContext.generateContextualizedPrompt(),
+            seed: layerContext.seed,
+            guidance: layerContext.getStylingStrength(),
+            negative_prompt: layerContext.negativePrompt,
+            model_config: layerContext.model_config,
+            calling_application: 'Bashful: The AI Powered Photoshop Plugin',
+        };
+
+        const requestOptions: RequestInit = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify(payload),
+            redirect: 'follow',
+        };
+        const response = await fetch(
+            `${CLOUD_API_URL}/img2img`,
+            requestOptions
+        );
+        console.log(response);
+
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
+}
+
+/**
+ * This function is used to generate image using the bashful image api
+ *
+ * @returns {Object}
+ */
+export async function BAPITxt2Img(
+    imgb64Str: ArrayBuffer,
+    layerContext: LayerAIContext
+): Promise<ImageResponse> {
+    try {
+        const payload: BashfulAPITxt2ImgRequest = {
+            prompt: layerContext.generateContextualizedPrompt(),
+            seed: layerContext.seed,
+            guidance: layerContext.getStylingStrength(),
+            negative_prompt: layerContext.negativePrompt,
+            model_config: layerContext.model_config,
+            calling_application: 'Bashful: The AI Powered Photoshop Plugin',
+        };
+
+        const requestOptions: RequestInit = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify(payload),
+            redirect: 'follow',
+        };
+        const response = await fetch(
+            `${CLOUD_API_URL}/txt2img`,
+            requestOptions
+        );
+
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
+}
 
 /**
  * @returns {Object}
@@ -33,8 +118,12 @@ let API_URL = 'http://127.0.0.1:7860';
 export async function img2img(
     imgb64Str: string,
     layerContext: LayerAIContext
-): Promise<ImageResponse> {
+): Promise<ImageResponse | BashfulImageAPIResponse> {
     try {
+        if (layerContext.is_cloud_run) {
+            return await BAPIImg2Img(imgb64Str, layerContext);
+        }
+
         const payload: Img2ImgRequest = {
             init_images: [imgb64Str],
             resize_mode: 0,
@@ -71,7 +160,6 @@ export async function img2img(
             styles: [],
             sampler_name: null,
         };
-        console.log(payload);
 
         const requestOptions: RequestInit = {
             method: 'POST',
@@ -80,7 +168,7 @@ export async function img2img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${API_URL}/sdapi/v1/img2img`,
+            `${LOCAL_API_URL}/sdapi/v1/img2img`,
             requestOptions
         );
 
@@ -139,7 +227,7 @@ export const txt2img = async (
 
     try {
         const response = await fetch(
-            `${API_URL}/sdapi/v1/txt2img`,
+            `${LOCAL_API_URL}/sdapi/v1/txt2img`,
             requestOptions
         );
 
@@ -166,33 +254,10 @@ export const getArtists = async (): Promise<ArtistType[]> => {
         headers: myHeaders,
     };
     try {
-        console.log(API_URL);
         const response = await fetch(
-            `${API_URL}/sdapi/v1/artists`,
+            `${LOCAL_API_URL}/sdapi/v1/artists`,
             requestOptions
         );
-        return await response.json();
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-};
-
-/**
- * @returns Array of artist categoties
- */
-export const getArtistCategories = async (): Promise<ArtistCategories> => {
-    const requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-    };
-    try {
-        console.log(API_URL);
-        const response = await fetch(
-            `${API_URL}/sdapi/v1/artist-categories`,
-            requestOptions
-        );
-
         return await response.json();
     } catch (error) {
         console.log(error);
@@ -227,7 +292,7 @@ export async function generateImageLayerUsingOnlyContext(
         try {
             const response = await txt2img(layerContext);
             console.log(response);
-            genb64Str = formatBase64Image(response['images'][0]);
+            genb64Str = addB64Header(response['images'][0]);
         } catch (e) {
             console.log(e);
             throw e;
@@ -280,15 +345,26 @@ export async function generateImageLayerUsingLayer(
         let b64Data = await getBase64OfImgInPluginDataFolder(
             contextHistoryFileEntry.name
         );
+        let generatedResponse = null;
 
         // So we send off the new image that we saved and got it's string representation for 👏
         // What we will get back from the ai is an image.  The string representation in base64 encoding!
         try {
-            const response = await img2img(
-                formatBase64Image(b64Data),
-                layerContext
-            );
-            genb64Str = formatBase64Image(response['images'][0]);
+            if (!layerContext.is_cloud_run) {
+                generatedResponse = (await img2img(
+                    addB64Header(b64Data),
+                    layerContext
+                )) as ImageResponse;
+                genb64Str = addB64Header(generatedResponse['images'][0]);
+            } else {
+                generatedResponse = (await img2img(
+                    removeB64Header(b64Data),
+                    layerContext
+                )) as BashfulImageAPIResponse;
+                genb64Str = await getB64StringFromImageUrl(
+                    generatedResponse['url']
+                );
+            }
         } catch (e) {
             console.log(e);
             throw e;
@@ -331,9 +407,9 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     };
 
     try {
-        console.log(API_URL);
+        console.log(LOCAL_API_URL);
         const response = await fetch(
-            `${API_URL}/sdapi/v1/progress?skip_current_image=false`,
+            `${LOCAL_API_URL}/sdapi/v1/progress?skip_current_image=false`,
             requestOptions
         );
 
@@ -357,7 +433,7 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
     };
     try {
         let response = await fetch(
-            `${API_URL}/sdapi/v1/sd-models`,
+            `${LOCAL_API_URL}/sdapi/v1/sd-models`,
             requestOptions
         );
         let data = await response.json();
@@ -391,7 +467,7 @@ export async function getAPIConfig(): Promise<ConfigAPIResponse> {
     };
     try {
         let response = await fetch(
-            `${API_URL}/sdapi/v1/options`,
+            `${LOCAL_API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -418,7 +494,7 @@ export async function setAPIConfig(config: any) {
     };
     try {
         let response = await fetch(
-            `${API_URL}/sdapi/v1/options`,
+            `${LOCAL_API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -456,7 +532,7 @@ export async function getUpScaledB64(
     };
     try {
         let response = await fetch(
-            `${API_URL}/sdapi/v1/extra-single-image`,
+            `${LOCAL_API_URL}/sdapi/v1/extra-single-image`,
             requestOptions
         );
         return await response.json();
@@ -532,7 +608,7 @@ export async function getImg2ImgDepth(
     };
     try {
         let response = await fetch(
-            `${API_URL}/sdapi/v1/img2img/script`,
+            `${LOCAL_API_URL}/sdapi/v1/img2img/script`,
             requestOptions
         );
         return await response.json();
