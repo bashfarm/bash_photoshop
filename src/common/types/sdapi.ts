@@ -7,6 +7,7 @@ export type BashfulAPIImg2ImgRequest = {
     negative_prompt: string;
     model_config: string;
     calling_application: string;
+    styling_strength: number;
 };
 
 export type BashfulAPITxt2ImgRequest = {
@@ -16,6 +17,7 @@ export type BashfulAPITxt2ImgRequest = {
     negative_prompt: string;
     model_config: string;
     calling_application: string;
+    styling_strength: number;
 };
 
 export type BashfulImageAPIResponse = {

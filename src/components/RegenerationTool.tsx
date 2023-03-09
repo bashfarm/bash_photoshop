@@ -1,11 +1,8 @@
 import { ContextType } from 'bashConstants';
 import photoshop from 'photoshop';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import Progressbar from 'react-uxp-spectrum/dist/Progressbar';
-import {
-    generateAILayer,
-    getImageProcessingProgress,
-} from 'services/ai_service';
+import { generateAILayer } from 'services/ai_service';
 import {
     createMaskFromLayerForLayer,
     deleteLayer,
@@ -29,35 +26,15 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
     const [isHovered, setIsHovered] = useState(false);
-    // Set up a state variable to hold the progress value
-    const [imageProgress, setImageProgress] = useState(0);
-    const [retryCount, setRetryCount] = useState(0);
-    // Set up a state variable to hold the interval ID
-    const [intervalTimer, setIntervalTimer] = useState<NodeJS.Timer | null>(
-        null
+
+    const layerContext = getContextFromStore(
+        props.contextId,
+        ContextType.LAYER
     );
-    let prevVal = -1;
 
-    // Define a function to update the progress value
-    const updateImageProgress = async (): Promise<void> => {
-        setRetryCount(retryCount + 1);
-        // Call the getImageProcessingProgress function
-        const progressResponse = await getImageProcessingProgress();
-        // Update the imageProgress state variable with the progress value from the response
-        setImageProgress(progressResponse?.progress ?? 0.1);
-        prevVal = progressResponse.progress;
-        // Check if the progress is 1
+    let animationRef = useRef<HTMLDivElement>(null);
+    let [animation, setAnimationTimeline] = useState<gsap.core.Timeline>(null);
 
-        if (prevVal == 0 || retryCount >= 2) {
-            setImageProgress(1);
-        }
-    };
-
-    // Define a function to start the progress updates
-    const startProgressUpdates = (): void => {
-        // Set the interval to call the updateImageProgress function every 1 second
-        // setIntervalTimer(setInterval(updateImageProgress, 1000));
-    };
     async function regenerateLayer(
         deleteOldLayer: boolean = false,
         contextID: string
@@ -70,8 +47,14 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                 ContextType.LAYER
             );
             const oldLayer = layerContext.currentLayer;
-            const copyOfContext = layerContext.copy();
-
+            let copyOfContext = layerContext.copy();
+            let newLayercontext = getContextFromStore(
+                contextID,
+                ContextType.LAYER
+            );
+            let copyOfNewContext = newLayercontext.copy();
+            copyOfNewContext.isGenerating = true;
+            saveContextToStore(copyOfNewContext);
             if (await layerContext.hasLayerMask()) {
                 duplicatedLayer = await layerContext.duplicateCurrentLayer();
                 copyOfContext.currentLayerName = duplicatedLayer.name;
@@ -79,7 +62,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
             }
 
             const newLayer = await generateAILayer(layerContext);
-
+            copyOfContext.isGenerating = false;
             copyOfContext.currentLayerName = newLayer.name;
             saveContextToStore(copyOfContext);
 
@@ -105,59 +88,55 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         }
     }
 
-    useEffect(() => {
-        if (imageProgress == 1) {
-            clearInterval(intervalTimer);
-        } else if (retryCount >= 2) {
-            clearInterval(intervalTimer);
-        }
-
-        console.log('retryCount', retryCount);
-        console.log('imageProgress', imageProgress);
-    }, [imageProgress, retryCount]);
-
-    const handleButtonClick = (): void => {
-        regenerateLayer(false, props.contextId);
-        startProgressUpdates();
-    };
+    async function handleButtonClick() {
+        await regenerateLayer(false, props.contextId);
+    }
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
-            onMouseLeave={() => setIsHovered(false)}
-            onMouseEnter={() => setIsHovered(true)}
             onClick={handleButtonClick}
         >
-            {props.icon && (
-                <props.icon
-                    {...{
-                        style: {
-                            color: isHovered
-                                ? 'var(--uxp-host-text-color-secondary)'
-                                : 'var(--uxp-host-text-color)',
-                        },
-                        fontSize: 'small',
-                    }}
-                />
-            )}
-            {props.label && (
-                <div
-                    className="ml-1 mr-10 whitespace-nowrap"
-                    style={{
-                        color: isHovered
-                            ? 'var(--uxp-host-text-color-secondary)'
-                            : 'var(--uxp-host-label-text-color)',
-                    }}
-                >
-                    {props.label}
+            {/* I don't know why the logic is backwards here. */}
+            {!getContextFromStore(props.contextId, ContextType.LAYER)
+                .isGenerating ? (
+                <div>
+                    <props.icon
+                        {...{
+                            fontSize: 'small',
+                            style: { color: 'var(--uxp-host-text-color)' },
+                        }}
+                    />
+
+                    <span
+                        className={`ml-1 mr-10 whitespace-nowrap`}
+                        style={{
+                            color: 'var(--uxp-host-label-text-color)',
+                        }}
+                    >
+                        {props.label}
+                    </span>
+                </div>
+            ) : (
+                <div>
+                    <h1
+                        className={`inline-block font-bold text-xl `}
+                        style={{
+                            color: '#71f79f',
+                        }}
+                    >
+                        Generating
+                    </h1>
+                    <h1
+                        className={`inline-block font-bold text-xl `}
+                        style={{
+                            color: '#7e4dfb',
+                        }}
+                    >
+                        ...
+                    </h1>
                 </div>
             )}
-            <Progressbar
-                min={0}
-                max={1}
-                value={imageProgress}
-                className="py-2 min-w-[50px] w-full"
-            />
         </div>
     );
 }
