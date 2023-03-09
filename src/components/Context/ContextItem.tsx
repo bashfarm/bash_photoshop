@@ -50,10 +50,10 @@ export default function ContextItem(props: ContextItemProps) {
                     className="w-full select-none"
                     inputDelayTime={1000}
                 />
-                <ContextTagArea
+                {/* <ContextTagArea
                     contextID={props.contextID}
                     contextType={ContextType.LAYER}
-                />
+                /> */}
             </div>
         </div>
     );
