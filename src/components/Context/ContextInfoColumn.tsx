@@ -1,9 +1,13 @@
 import { ContextType } from 'bashConstants';
-import { ModelResponse } from 'common/types/sdapi';
+import { ModelConfigResponse, ModelResponse } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
-import React from 'react';
-import { getAvailableModels, swapModel } from 'services/ai_service';
+import React, { useState } from 'react';
+import {
+    getAvailableModelConfigs,
+    getAvailableModels,
+    swapModel,
+} from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextDropdown from './ContextDropdown';
 import ContextLabel from './ContextLabel';
@@ -25,9 +29,71 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
         state.getContextFromStore(props.contextID, ContextType.LAYER)
     );
+
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
+    );
+
+    let saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
+    );
+
     let { loading, value } = useAsyncEffect(async () => {
-        return getAvailableModels();
-    }, []);
+        if (layerContext.is_cloud_run == false) {
+            // While this does work, this is for the future where we batch run the models, currently
+            // we would have to make sure each local user swaps out the models when they want to use
+            // a different model on a specific layer.  We will collect the selection of models for them
+            // queue them up and run them in sequence using the currently loaded model and swap only when
+            // necessary.
+            // return getAvailableModels();
+            return [];
+        } else {
+            return getAvailableModelConfigs();
+        }
+    }, [layerContext.is_cloud_run]);
+
+    function getDropDownOptions() {
+        if (loading) {
+            return ['loading models...'];
+        } else {
+            if (layerContext.is_cloud_run == false) {
+                return value
+                    .map((modelObj: ModelResponse) => {
+                        return modelObj.title;
+                    })
+                    .filter((name: string) => name != null);
+            } else {
+                return value
+                    .map((modelObj: ModelConfigResponse) => {
+                        return modelObj.display_name;
+                    })
+                    .filter((name: string) => name != null);
+            }
+        }
+    }
+
+    function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
+        let copyOfContext = getContextFromStore(
+            props.contextID,
+            ContextType.LAYER
+        ).copy();
+        copyOfContext.model_config = selectedConfigObj.name;
+        saveContextToStore(copyOfContext);
+    }
+
+    function getSelectedModelConfig(name: string) {
+        return value.find((modelObj: ModelConfigResponse) => {
+            return modelObj.display_name == name;
+        });
+    }
+
+    function getCorrectContextKey() {
+        if (!layerContext.is_cloud_run) {
+            return 'generationModelName' as keyof typeof LayerAIContext;
+        }
+
+        return 'model_config' as keyof typeof LayerAIContext;
+    }
 
     try {
         return (
@@ -36,12 +102,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     value={layerContext.currentLayer?.name}
                     labelText={'Layer Name:'}
                 />
-                {/* <ContextDropdown
-					contextID={props.contextID}
-					contextKey={
-						'docType' as keyof typeof LayerAIContext
-					}
-					options={["illustration", "doodle", "photo", "dream", "3D animation"]} /> */}
                 {loading ? (
                     <ContextDropdown
                         label="Model:"
@@ -50,20 +110,27 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                         options={['loading models...']}
                     />
                 ) : (
-                    <ContextDropdown
-                        label="Model:"
-                        contextID={props.contextID}
-                        contextType={ContextType.LAYER}
-                        contextKey={
-                            'generationModelName' as keyof typeof LayerAIContext
-                        }
-                        options={value.map((modelObj: ModelResponse) => {
-                            return modelObj.title;
-                        })}
-                        onChange={(event: any) => {
-                            swapModel(event.target.value);
-                        }}
-                    />
+                    getDropDownOptions().length > 0 && (
+                        <ContextDropdown
+                            // Not sure why, but is_cloud_run is backwards
+                            label={
+                                !layerContext.is_cloud_run
+                                    ? 'Model:'
+                                    : 'Art Type:'
+                            }
+                            contextID={props.contextID}
+                            contextType={ContextType.LAYER}
+                            contextKey={getCorrectContextKey()}
+                            options={getDropDownOptions()}
+                            onChange={(event: any) => {
+                                // swapModel(event.target.value);
+                                let selectedConfigObj = getSelectedModelConfig(
+                                    event.target.value
+                                );
+                                saveSelectedModelConfig(selectedConfigObj);
+                            }}
+                        />
+                    )
                 )}
             </div>
         );
