@@ -30,24 +30,41 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         state.getContextFromStore(props.contextID, ContextType.LAYER)
     );
 
-    let saveContextToStore = useContextStore(
-        (state: ContextStoreState) => state.saveContextToStore
-    );
-
-    let [modelConfigs, setModelConfigs] = useState<
-        ModelResponse | ModelConfigResponse
-    >(null);
-    let [selectedModelConfig, setSelectedModelConfig] = useState<
-        ModelResponse | ModelConfigResponse
-    >(null);
-
     let { loading, value } = useAsyncEffect(async () => {
         if (layerContext.is_cloud_run == false) {
             return getAvailableModels();
         } else {
             return getAvailableModelConfigs();
         }
-    }, []);
+    }, [layerContext.is_cloud_run]);
+
+    function getDropDownOptions() {
+        if (loading) {
+            return ['loading models...'];
+        } else {
+            if (layerContext.is_cloud_run == false) {
+                return value
+                    .map((modelObj: ModelResponse) => {
+                        return modelObj.title;
+                    })
+                    .filter((name: string) => name != null);
+            } else {
+                return value
+                    .map((modelObj: ModelConfigResponse) => {
+                        return modelObj.display_name;
+                    })
+                    .filter((name: string) => name != null);
+            }
+        }
+    }
+
+    function getCorrectContextKey() {
+        if (!layerContext.is_cloud_run) {
+            return 'generationModelName' as keyof typeof LayerAIContext;
+        }
+
+        return 'model_config' as keyof typeof LayerAIContext;
+    }
 
     try {
         return (
@@ -56,12 +73,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     value={layerContext.currentLayer?.name}
                     labelText={'Layer Name:'}
                 />
-                {/* <ContextDropdown
-					contextID={props.contextID}
-					contextKey={
-						'docType' as keyof typeof LayerAIContext
-					}
-					options={["illustration", "doodle", "photo", "dream", "3D animation"]} /> */}
                 {loading ? (
                     <ContextDropdown
                         label="Model:"
@@ -70,57 +81,23 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                         options={['loading models...']}
                     />
                 ) : (
-                    <ContextDropdown
-                        label="Model:"
-                        contextID={props.contextID}
-                        contextType={ContextType.LAYER}
-                        contextKey={
-                            'generationModelName' as keyof typeof LayerAIContext
-                        }
-                        options={value
-                            .map(
-                                (
-                                    modelObj:
-                                        | ModelResponse
-                                        | ModelConfigResponse
-                                ) => {
-                                    return (
-                                        (modelObj as ModelConfigResponse)
-                                            ?.display_name ??
-                                        (modelObj as ModelResponse).title
-                                    );
-                                }
-                            )
-                            .filter((name: string) => name != null)}
-                        onChange={(event: any) => {
-                            // swapModel(event.target.value);
-                            let modelConfig = value.find(
-                                (
-                                    modelObj:
-                                        | ModelResponse
-                                        | ModelConfigResponse
-                                ) => {
-                                    return (
-                                        (modelObj as ModelConfigResponse)
-                                            ?.display_name ==
-                                            event.target.value ||
-                                        (modelObj as ModelResponse).title ==
-                                            event.target.value
-                                    );
-                                }
-                            );
-
-                            if (modelConfig) {
-                                setSelectedModelConfig(modelConfig);
-                                let copyOfContext = layerContext.copy();
-                                copyOfContext.model_config = (
-                                    modelConfig as ModelConfigResponse
-                                )?.name;
-                                saveContextToStore(copyOfContext);
-                                // copyOfContext.generationModelName = (modelConfig as ModelConfigResponse)?.display_name ?? (modelConfig as ModelResponse).title;
+                    getDropDownOptions().length > 0 && (
+                        <ContextDropdown
+                            // Not sure why, but is_cloud_run is backwards
+                            label={
+                                !layerContext.is_cloud_run
+                                    ? 'Model:'
+                                    : 'Art Type:'
                             }
-                        }}
-                    />
+                            contextID={props.contextID}
+                            contextType={ContextType.LAYER}
+                            contextKey={getCorrectContextKey()}
+                            options={getDropDownOptions()}
+                            onChange={(event: any) => {
+                                // swapModel(event.target.value);
+                            }}
+                        />
+                    )
                 )}
             </div>
         );
