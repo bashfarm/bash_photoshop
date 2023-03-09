@@ -53,3 +53,36 @@ export function performHeaderAnimationTimeline(
             });
     }, someRef);
 }
+
+export function performWaveTextTimeline(
+    someRef: React.MutableRefObject<HTMLDivElement>,
+    animate: boolean = true
+) {
+    let t1 = gsap
+        .timeline()
+        .to('.wave', {
+            color: '#7e4dfb',
+            stagger: 0.1,
+            delay: 0.2,
+            duration: 0.3,
+        })
+        .delay(0.5)
+        .to('.wave', {
+            color: '#71f79f',
+            stagger: 0.1,
+            delay: 1,
+            duration: 0.3,
+        })
+        .delay(0.5)
+        .to('.wave', {
+            color: '#7e4dfb',
+            stagger: 0.1,
+            delay: 1,
+            duration: 0.3,
+        })
+        .repeat(-1)
+        .yoyo(true)
+        .paused(true);
+
+    return t1;
+}

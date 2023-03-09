@@ -82,6 +82,8 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
 
     let [dropDownLayers, setDropDownLayers] = useState<Array<LayerDTO>>([]);
 
+    console.log(layerContext);
+
     function onChange() {
         setDropDownToAllLayers();
     }
