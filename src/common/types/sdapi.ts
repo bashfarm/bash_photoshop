@@ -153,6 +153,15 @@ export type ModelResponse = {
     config: string;
 };
 
+export type ModelConfigResponse = {
+    display_name: string;
+    name: string;
+    negative_prompt: string;
+    prompt_prefix: string;
+    prompt_suffix: string;
+    thumbnail_url: string;
+};
+
 export type ConfigAPIResponse = {
     samples_save: boolean;
     samples_format: string;

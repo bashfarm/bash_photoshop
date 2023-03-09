@@ -21,6 +21,7 @@ import {
     BashfulImageAPIResponse,
     ConfigAPIResponse,
     Img2ImgRequestDepthMask,
+    ModelConfigResponse,
     ModelResponse,
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
@@ -445,6 +446,32 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
     try {
         let response = await fetch(
             `${LOCAL_API_URL}/sdapi/v1/sd-models`,
+            requestOptions
+        );
+        let data = await response.json();
+        console.log(data);
+        return data;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * This will retrieve and up to date list of models from the API!  We even get the file path of the model.  Very useful if we
+ * want to manage their models too!
+ * @returns
+ */
+export async function getAvailableModelConfigs(): Promise<
+    Array<ModelConfigResponse>
+> {
+    const requestOptions: RequestInit = {
+        method: 'GET',
+        headers: myHeaders,
+        redirect: 'follow',
+    };
+    try {
+        let response = await fetch(
+            `${CLOUD_API_URL}/get_model_configs`,
             requestOptions
         );
         let data = await response.json();
