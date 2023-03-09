@@ -32,7 +32,7 @@ myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
 const LOCAL_API_URL = 'http://127.0.0.1:7860';
-// const CLOUD_API_URL = 'http://127.0.0.1:7860';
+const CLOUD_TESTING_URL = 'http://127.0.0.1:7860';
 const CLOUD_API_URL =
     'https://us-central1-bashful-photoshop.cloudfunctions.net/';
 
@@ -69,10 +69,9 @@ export async function BAPIImg2Img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${CLOUD_API_URL}/img2img`,
+            `${CLOUD_TESTING_URL}/img2img`,
             requestOptions
         );
-        console.log(response);
 
         return await response.json();
     } catch (e) {

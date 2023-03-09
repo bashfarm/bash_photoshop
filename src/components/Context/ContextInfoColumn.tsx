@@ -30,9 +30,23 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         state.getContextFromStore(props.contextID, ContextType.LAYER)
     );
 
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
+    );
+
+    let saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
+    );
+
     let { loading, value } = useAsyncEffect(async () => {
         if (layerContext.is_cloud_run == false) {
-            return getAvailableModels();
+            // While this does work, this is for the future where we batch run the models, currently
+            // we would have to make sure each local user swaps out the models when they want to use
+            // a different model on a specific layer.  We will collect the selection of models for them
+            // queue them up and run them in sequence using the currently loaded model and swap only when
+            // necessary.
+            // return getAvailableModels();
+            return [];
         } else {
             return getAvailableModelConfigs();
         }
@@ -56,6 +70,21 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     .filter((name: string) => name != null);
             }
         }
+    }
+
+    function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
+        let copyOfContext = getContextFromStore(
+            props.contextID,
+            ContextType.LAYER
+        ).copy();
+        copyOfContext.model_config = selectedConfigObj.name;
+        saveContextToStore(copyOfContext);
+    }
+
+    function getSelectedModelConfig(name: string) {
+        return value.find((modelObj: ModelConfigResponse) => {
+            return modelObj.display_name == name;
+        });
     }
 
     function getCorrectContextKey() {
@@ -95,6 +124,10 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                             options={getDropDownOptions()}
                             onChange={(event: any) => {
                                 // swapModel(event.target.value);
+                                let selectedConfigObj = getSelectedModelConfig(
+                                    event.target.value
+                                );
+                                saveSelectedModelConfig(selectedConfigObj);
                             }}
                         />
                     )
