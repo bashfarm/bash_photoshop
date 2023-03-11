@@ -111,7 +111,7 @@ export async function BAPITxt2Img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${CLOUD_API_URL}/txt2img`,
+            `${GCP_LOCAL_TESTING_URL}/txt2img`,
             requestOptions
         );
 
