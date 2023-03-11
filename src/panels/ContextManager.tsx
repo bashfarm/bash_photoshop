@@ -1,10 +1,10 @@
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextItem from './Context/ContextItem';
+import ContextItem from '../components/Context/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
-import ContextToolBar from './ContextManagerToolBar';
+import ContextToolBar from '../components/ContextManagerToolBar';
 import _ from 'lodash';
 
 export default function ContextManager() {
