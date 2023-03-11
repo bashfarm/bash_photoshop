@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import _ from 'lodash';
+import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 interface ModalProps {
     handle: ExtendedHTMLDialogElement;
@@ -8,6 +9,14 @@ interface ModalProps {
 }
 
 export default function ContextPalette() {
+    let AIBrushContexts = useContextStore(
+        (state: ContextStoreState) => state.AIBrushContexts
+    );
+
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
+    );
+
     // async function regenerateLayer(
     // 	contextID: string,
     // 	layerNanme: string,
@@ -65,5 +74,9 @@ export default function ContextPalette() {
     // 	}
     // }
 
-    return <></>;
+    return (
+        <>
+            <div>yolo</div>
+        </>
+    );
 }

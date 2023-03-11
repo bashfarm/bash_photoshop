@@ -3,7 +3,7 @@ import React from 'react';
 import ContextTextarea from './ContextTextarea';
 import { ContextType } from 'bashConstants';
 import LayerAIContext from 'models/LayerAIContext';
-import PromptAIContext from 'models/PromptAIContext';
+import AIBrushContext from 'models/AIBrushContext';
 import ContextTagArea from './ContextTagArea';
 
 interface ContextDropdownProps extends ContextProps {
@@ -14,7 +14,7 @@ export default function ContextPrompt(props: ContextDropdownProps) {
     function getContextKey() {
         return props.contextType === ContextType.LAYER
             ? ('currentPrompt' as keyof typeof LayerAIContext)
-            : ('currentPrompt' as keyof typeof PromptAIContext);
+            : ('currentPrompt' as keyof typeof AIBrushContext);
     }
     return (
         <>

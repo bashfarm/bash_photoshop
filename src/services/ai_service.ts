@@ -25,7 +25,8 @@ import {
     ModelResponse,
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
-import PromptAIContext from 'models/PromptAIContext';
+import AIBrushContext from 'models/AIBrushContext';
+import Jimp from 'jimp';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -88,7 +89,6 @@ export async function BAPIImg2Img(
  * @returns {Object}
  */
 export async function BAPITxt2Img(
-    imgb64Str: ArrayBuffer,
     layerContext: LayerAIContext
 ): Promise<BashfulImageAPIResponse> {
     try {
@@ -102,6 +102,8 @@ export async function BAPITxt2Img(
             calling_application: calling_application,
         };
 
+        console.log(payload);
+
         const requestOptions: RequestInit = {
             method: 'POST',
             headers: myHeaders,
@@ -109,7 +111,7 @@ export async function BAPITxt2Img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${CLOUD_API_URL}/txt2img`,
+            `${GCP_LOCAL_TESTING_URL}/txt2img`,
             requestOptions
         );
 
@@ -198,6 +200,8 @@ export async function img2img(
 export const txt2img = async (
     layerContext: LayerAIContext
 ): Promise<ImageResponse> => {
+    if (layerContext.is_cloud_run) {
+    }
     const payload: Text2ImgRequest = {
         enable_hr: false,
         denoising_strength: 0,
@@ -302,13 +306,19 @@ export async function generateImageLayerUsingOnlyContext(
         // So we send off the new image that we saved and got it's string representation for 👏
         // What we will get back from the ai is an image.  The string representation in base64 encoding!
         let genb64Str = null;
-        try {
-            const response = await txt2img(layerContext);
-            console.log(response);
-            genb64Str = addB64Header(response['images'][0]);
-        } catch (e) {
-            console.log(e);
-            throw e;
+        if (!layerContext.is_cloud_run) {
+            try {
+                const response = await txt2img(layerContext);
+                console.log(response);
+                genb64Str = addB64Header(response['images'][0]);
+            } catch (e) {
+                console.log(e);
+                throw e;
+            }
+        } else {
+            const response = await BAPITxt2Img(layerContext);
+            genb64Str = await getB64StringFromImageUrl(response['url']);
+            console.log(genb64Str);
         }
 
         if (genb64Str) {
@@ -659,7 +669,7 @@ export async function getImg2ImgDepth(
 function inpaint(
     b64ImgStr: string,
     b64MaskStr: string,
-    promptContext: PromptAIContext,
+    promptContext: AIBrushContext,
     layerContext: LayerAIContext
 ) {
     const payload = {

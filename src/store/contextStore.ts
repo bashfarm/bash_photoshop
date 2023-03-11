@@ -2,7 +2,7 @@ import LayerAIContext from 'models/LayerAIContext';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
-import PromptAIContext from 'models/PromptAIContext';
+import AIBrushContext from 'models/AIBrushContext';
 import { ContextType } from 'bashConstants';
 import { logCallingFunction } from 'utils/general_utils';
 import { BashfulObject } from 'models/BashfulObject';
@@ -10,9 +10,10 @@ import { BashfulObject } from 'models/BashfulObject';
 export class ContextStoreState extends BashfulObject {
     [immerable] = true;
     layerContextCache: Record<string, LayerAIContext> = {};
-    promptContextCache: Record<string, PromptAIContext> = {};
+    promptContextCache: Record<string, AIBrushContext> = {};
     layerContexts: Record<string, LayerAIContext> = {};
-    promptContexts: Record<string, PromptAIContext> = {};
+    AIBrushContexts: Record<string, AIBrushContext> = {};
+    selectedAIBrushContext: LayerAIContext = null;
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
@@ -20,17 +21,36 @@ export class ContextStoreState extends BashfulObject {
         this.layerContextCache = {};
         this.promptContextCache = {};
         this.layerContexts = {};
+        this.selectedAIBrushContext = null;
         this.set = set;
         this.get = get;
     }
-    public saveContextToStore = (context: LayerAIContext | PromptAIContext) => {
+    public setSelectedAIBrushContext = (context: LayerAIContext) => {
+        logCallingFunction(this.setSelectedAIBrushContext);
+        try {
+            this.set((state: ContextStoreState) => {
+                state.selectedAIBrushContext = context;
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    };
+    public getSelectedAIBrushContext = () => {
+        logCallingFunction(this.getSelectedAIBrushContext);
+        try {
+            return this.get().aiBrushContext;
+        } catch (e) {
+            console.error(e);
+        }
+    };
+    public saveContextToStore = (context: LayerAIContext | AIBrushContext) => {
         logCallingFunction(this.saveContextToStore);
         try {
             this.set((state: ContextStoreState) => {
                 if (context instanceof LayerAIContext) {
                     state.layerContexts[context.id] = context;
-                } else if (context instanceof PromptAIContext) {
-                    state.promptContexts[context.id] = context;
+                } else if (context instanceof AIBrushContext) {
+                    state.AIBrushContexts[context.id] = context;
                 }
             });
         } catch (e) {
@@ -51,7 +71,7 @@ export class ContextStoreState extends BashfulObject {
                 } else if (contextType === ContextType.PROMPT) {
                     state.promptContextCache[contextID] =
                         this.get().promptContexts[contextID];
-                    delete state.promptContexts[contextID];
+                    delete state.AIBrushContexts[contextID];
                 }
             });
         } catch (e) {
@@ -134,8 +154,8 @@ export class ContextStoreState extends BashfulObject {
         this.set((state: any) => {
             state.promptContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
-                let instantiatedPromptContext = new PromptAIContext(
-                    stateData.promptContexts[key]
+                let instantiatedPromptContext = new AIBrushContext(
+                    stateData.AIBrushContexts[key]
                 );
                 state.promptContexts[instantiatedPromptContext.id] =
                     instantiatedPromptContext;

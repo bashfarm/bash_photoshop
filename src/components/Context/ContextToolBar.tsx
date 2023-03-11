@@ -184,23 +184,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 />
             </ToolSection>
             <ToolbarDivider />
-            <ToolSection>
-                <Tool
-                    icon={GridViewIcon}
-                    label="Context Painter"
-                    onClick={() =>
-                        popUpModal(
-                            popupRef,
-                            <ContextPainterModal
-                                handle={popupRef.current}
-                                contextID={props.contextID}
-                            />,
-                            'Context Painter'
-                        )
-                    }
-                />
-            </ToolSection>
-            <ToolbarDivider />
+
             <ToolSection>
                 <RegenerationTool
                     icon={RefreshIcon}
