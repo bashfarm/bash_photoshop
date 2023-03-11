@@ -1,11 +1,12 @@
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextItem from './Context/ContextItem';
+import LayerContextItem from './Context/LayerContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from './ContextManagerToolBar';
 import _ from 'lodash';
+import { ContextType } from 'bashConstants';
 
 export default function ContextManager() {
     const saveContextToStore = useContextStore(
@@ -62,7 +63,7 @@ function ContextItems() {
                 let context = contexts[key];
                 return (
                     <>
-                        <ContextItem key={context.id} contextID={context.id} />
+                        <LayerContextItem key={context.id} contextID={context.id} contextType={ContextType.LAYER}/>
                         <Divider
                             key={_.uniqueId()}
                             className="my-2"

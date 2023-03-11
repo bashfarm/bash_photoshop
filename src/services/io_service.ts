@@ -175,6 +175,7 @@ export async function saveDocumentToPluginData(
 ): Promise<void> {
     try {
         let entry = await createDataFolderEntry(fileName);
+		console.log('entry', entry)
         saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
@@ -251,7 +252,10 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             layer.visible = prevVisibility;
         });
 
-        return await getDataFolderEntry(fileName);
+		console.log(`Saved layer ${layer} to ${fileName}`);
+		let entry = await getDataFolderEntry(fileName);
+		console.log(entry);
+        return entry
     } catch (e) {
         console.error(e);
     }

@@ -14,6 +14,7 @@ import ContextLabel from './ContextLabel';
 
 export type ContextInfoColumnProps = {
     contextID: string;
+	contextType: ContextType;
 };
 
 function DefaultContextInfoColumn() {
@@ -26,8 +27,8 @@ function DefaultContextInfoColumn() {
 }
 
 export default function ContextInfoColumn(props: ContextInfoColumnProps) {
-    let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID, ContextType.LAYER)
+    let genAISettings = useContextStore((state: ContextStoreState) =>
+        state.getContextFromStore(props.contextID, props.contextType)
     );
 
     let getContextFromStore = useContextStore(
@@ -39,7 +40,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     );
 
     let { loading, value } = useAsyncEffect(async () => {
-        if (layerContext.is_cloud_run == false) {
+        if (!(genAISettings?.is_cloud_run)) {
             // While this does work, this is for the future where we batch run the models, currently
             // we would have to make sure each local user swaps out the models when they want to use
             // a different model on a specific layer.  We will collect the selection of models for them
@@ -50,13 +51,13 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         } else {
             return getAvailableModelConfigs();
         }
-    }, [layerContext.is_cloud_run]);
+    }, [genAISettings?.is_cloud_run]);
 
     function getDropDownOptions() {
         if (loading) {
             return ['loading models...'];
         } else {
-            if (layerContext.is_cloud_run == false) {
+            if (genAISettings.is_cloud_run == false) {
                 return value
                     .map((modelObj: ModelResponse) => {
                         return modelObj.title;
@@ -75,7 +76,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
         let copyOfContext = getContextFromStore(
             props.contextID,
-            ContextType.LAYER
+            props.contextType
         ).copy();
         copyOfContext.model_config = selectedConfigObj.name;
         saveContextToStore(copyOfContext);
@@ -88,7 +89,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function getCorrectContextKey() {
-        if (!layerContext.is_cloud_run) {
+        if (!genAISettings.is_cloud_run) {
             return 'generationModelName' as keyof typeof LayerAIContext;
         }
 
@@ -99,14 +100,14 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         return (
             <div className="flex flex-col min-w-fit justify-center">
                 <ContextLabel
-                    value={layerContext.currentLayer?.name}
+                    value={genAISettings.currentLayer?.name}
                     labelText={'Layer Name:'}
                 />
                 {loading ? (
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
-                        contextType={ContextType.LAYER}
+                        contextType={props.contextType}
                         options={['loading models...']}
                     />
                 ) : (
@@ -114,12 +115,12 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                         <ContextDropdown
                             // Not sure why, but is_cloud_run is backwards
                             label={
-                                !layerContext.is_cloud_run
+                                !genAISettings.is_cloud_run
                                     ? 'Model:'
                                     : 'Art Type:'
                             }
                             contextID={props.contextID}
-                            contextType={ContextType.LAYER}
+                            contextType={props.contextType}
                             contextKey={getCorrectContextKey()}
                             options={getDropDownOptions()}
                             onChange={(event: any) => {

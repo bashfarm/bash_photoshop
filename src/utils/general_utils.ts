@@ -26,6 +26,34 @@ export async function popUpModal(
         ReactDOM.render(modalComponent, ref.current);
     }
     document.body.appendChild(ref.current);
+	console.dir(ref.current.uxpShow)
+	console.dir(ref.current.uxpShowModal)
+    await ref.current.uxpShowModal({
+        title: title,
+        resize: 'both',
+        size: {
+            width: 800,
+            height: 600,
+        },
+    });
+    ref.current.remove();
+    ref.current = null;
+}
+
+export async function popUp(
+    ref: React.MutableRefObject<ExtendedHTMLDialogElement>,
+    modalComponent: ReactElement,
+    title: string
+) {
+    if (!ref.current) {
+        ref.current = document.createElement(
+            'dialog'
+        ) as ExtendedHTMLDialogElement;
+        ReactDOM.render(modalComponent, ref.current);
+    }
+	console.log("ref.current", ref.current)
+    document.body.appendChild(ref.current);
+	console.log(ref.current)
     await ref.current.uxpShowModal({
         title: title,
         resize: 'both',

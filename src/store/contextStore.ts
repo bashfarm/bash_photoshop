@@ -13,6 +13,7 @@ export class ContextStoreState extends BashfulObject {
     promptContextCache: Record<string, PromptAIContext> = {};
     layerContexts: Record<string, LayerAIContext> = {};
     promptContexts: Record<string, PromptAIContext> = {};
+    selectedPromptContext: PromptAIContext = null;
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
@@ -140,6 +141,12 @@ export class ContextStoreState extends BashfulObject {
                 state.promptContexts[instantiatedPromptContext.id] =
                     instantiatedPromptContext;
             }
+        });
+    };
+	public setSelectedPromptContext = (promptContext: PromptAIContext) => {
+        logCallingFunction(this.setSelectedPromptContext);
+        this.set((state: any) => {
+            state.selectedPromptContext = promptContext;
         });
     };
 }

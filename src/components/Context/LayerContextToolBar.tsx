@@ -12,15 +12,16 @@ import {
     toggleOffContextHidingTool,
     toggleOnContextHidingTool,
 } from 'services/tools_service';
-import { popUpModal } from 'utils/general_utils';
+import { popUp, popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import photoshop from 'photoshop';
 import Spectrum, { Checkbox, Label } from 'react-uxp-spectrum';
 import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
-import ContextPainterModal from 'components/modals/ContextPainterModal';
+import ContextPainterModal from 'components/modals/ContextPaletteModal';
 import { ContextType } from 'bashConstants';
 import { Layer } from 'photoshop/dom/Layer';
+import { entrypoints } from 'uxp';
 
 const events = [
     'make',
@@ -56,7 +57,7 @@ export type ContexToolBarColumnProps = {
     contextID: string;
 };
 
-export default function ContextToolBar(props: ContexToolBarColumnProps) {
+export default function LayerContextToolBar(props: ContexToolBarColumnProps) {
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
@@ -190,13 +191,16 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     }
                 />
             </ToolSection>
-            <ToolbarDivider />
+            {/* <ToolbarDivider />
             <ToolSection>
                 <Tool
                     icon={GridViewIcon}
                     label="Context Painter"
                     onClick={() =>
-                        popUpModal(
+						{
+
+							console.log(popupRef.current);
+							popUpModal(
                             popupRef,
                             <ContextPainterModal
                                 handle={popupRef.current}
@@ -204,9 +208,10 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                             />,
                             'Context Painter'
                         )
+						}
                     }
                 />
-            </ToolSection>
+            </ToolSection> */}
             <ToolbarDivider />
             <ToolSection>
                 <RegenerationTool
@@ -214,6 +219,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     label="Regenerate Layer"
                     contextId={props.contextID}
                     newLayerDTOSelectionFunc={setSelectedLayerDTO}
+					contextType={ContextType.LAYER}
                 />
             </ToolSection>
             <ToolbarDivider />
