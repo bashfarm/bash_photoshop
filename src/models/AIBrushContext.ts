@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import ContextObject from './ContextObject';
 
-export default class PromptAIContext extends ContextObject {
+export default class AIBrushContext extends ContextObject {
     constructor(
         options: any = {
             currentPrompt: '',
