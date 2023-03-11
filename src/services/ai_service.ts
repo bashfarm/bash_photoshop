@@ -31,8 +31,8 @@ const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
-const LOCAL_API_URL = 'http://127.0.0.1:7860';
-const CLOUD_TESTING_URL = 'http://127.0.0.1:7860';
+const AUTO1111_API_URL = 'http://127.0.0.1:7860';
+const GCP_LOCAL_TESTING_URL = 'http://127.0.0.1:8080';
 const CLOUD_API_URL =
     'https://us-central1-bashful-photoshop.cloudfunctions.net/';
 
@@ -69,11 +69,13 @@ export async function BAPIImg2Img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${CLOUD_TESTING_URL}/img2img`,
+            `${CLOUD_API_URL}/img2img`,
             requestOptions
         );
 
-        return await response.json();
+        let data = response.json();
+
+        return data;
     } catch (e) {
         console.error(e);
         throw e;
@@ -179,7 +181,7 @@ export async function img2img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/img2img`,
+            `${AUTO1111_API_URL}/sdapi/v1/img2img`,
             requestOptions
         );
 
@@ -238,7 +240,7 @@ export const txt2img = async (
 
     try {
         const response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/txt2img`,
+            `${AUTO1111_API_URL}/sdapi/v1/txt2img`,
             requestOptions
         );
 
@@ -266,7 +268,7 @@ export const getArtists = async (): Promise<ArtistType[]> => {
     };
     try {
         const response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/artists`,
+            `${AUTO1111_API_URL}/sdapi/v1/artists`,
             requestOptions
         );
         return await response.json();
@@ -418,9 +420,9 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     };
 
     try {
-        console.log(LOCAL_API_URL);
+        console.log(AUTO1111_API_URL);
         const response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/progress?skip_current_image=false`,
+            `${AUTO1111_API_URL}/sdapi/v1/progress?skip_current_image=false`,
             requestOptions
         );
 
@@ -444,7 +446,7 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
     };
     try {
         let response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/sd-models`,
+            `${AUTO1111_API_URL}/sdapi/v1/sd-models`,
             requestOptions
         );
         let data = await response.json();
@@ -504,7 +506,7 @@ export async function getAPIConfig(): Promise<ConfigAPIResponse> {
     };
     try {
         let response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/options`,
+            `${AUTO1111_API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -531,7 +533,7 @@ export async function setAPIConfig(config: any) {
     };
     try {
         let response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/options`,
+            `${AUTO1111_API_URL}/sdapi/v1/options`,
             requestOptions
         );
         return await response.json();
@@ -569,7 +571,7 @@ export async function getUpScaledB64(
     };
     try {
         let response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/extra-single-image`,
+            `${AUTO1111_API_URL}/sdapi/v1/extra-single-image`,
             requestOptions
         );
         return await response.json();
@@ -645,7 +647,7 @@ export async function getImg2ImgDepth(
     };
     try {
         let response = await fetch(
-            `${LOCAL_API_URL}/sdapi/v1/img2img/script`,
+            `${AUTO1111_API_URL}/sdapi/v1/img2img/script`,
             requestOptions
         );
         return await response.json();
