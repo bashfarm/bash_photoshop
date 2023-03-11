@@ -134,32 +134,25 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
                     {dropDownLayers &&
-                        dropDownLayers
-                            .sort((a, b) =>
-                                a.name.toLowerCase() > b.name.toLowerCase()
-                                    ? 1
-                                    : -1
-                            )
-                            .map((layerDTO: LayerDTO) => {
-                                try {
-                                    return (
-                                        <Spectrum.MenuItem
-                                            key={layerDTO.id}
-                                            onClick={() =>
-                                                onDropDownSelect(layerDTO)
-                                            }
-                                            selected={
-                                                selectedLayerDTO?.id ==
-                                                layerDTO.id
-                                            }
-                                        >
-                                            {layerDTO.name}
-                                        </Spectrum.MenuItem>
-                                    );
-                                } catch (e) {
-                                    console.error(e);
-                                }
-                            })}
+                        dropDownLayers.map((layerDTO: LayerDTO) => {
+                            try {
+                                return (
+                                    <Spectrum.MenuItem
+                                        key={layerDTO.id}
+                                        onClick={() =>
+                                            onDropDownSelect(layerDTO)
+                                        }
+                                        selected={
+                                            selectedLayerDTO?.id == layerDTO.id
+                                        }
+                                    >
+                                        {layerDTO.name}
+                                    </Spectrum.MenuItem>
+                                );
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        })}
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ToolSection>

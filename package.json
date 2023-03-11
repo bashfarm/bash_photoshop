@@ -5,7 +5,6 @@
         "preinstall": "npx npm-force-resolutions",
         "build": "webpack --config webpack.dev.js",
         "watch": "nodemon -w src -e ts,tsx,js,json,jsx,css,html -w plugin -x \"npm run build\"",
-        "watch-gcp": "nodemon -w src -e ts,tsx,js,json,jsx,css,html -w plugin -x \"npm run build\" -- --env.gcp",
         "prod": "webpack --config webpack.prod.js",
         "prepare": "husky install",
         "test": "jest"
