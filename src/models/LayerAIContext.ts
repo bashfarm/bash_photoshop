@@ -7,7 +7,6 @@ import {
 } from 'utils/context_utils';
 import { storage } from 'uxp';
 import LayerAIContextHistory from './LayerAIHistory';
-import SmallDetailContext from './SmallDetailContext';
 import bashful from 'bashful';
 import { ContextHistoryEnum } from '../bashConstants';
 import _ from 'lodash';
@@ -17,7 +16,6 @@ import ContextObject from './ContextObject';
 
 export default class LayerAIContext extends ContextObject {
     name: string;
-    smallDetails: Array<SmallDetailContext>; // The details from the above object
     generationModelName: string;
     currentLayer: Layer; // the layer that the context is assigned to
     history: Array<LayerAIContextHistory>; // the hisory of the context

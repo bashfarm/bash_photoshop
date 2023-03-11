@@ -15,7 +15,8 @@ type RegenerationToolProps = {
     icon?: FC<any>;
     label?: string;
     contextId: string;
-    newLayerDTOSelectionFunc: Function;
+	contextType: ContextType;
+    newLayerDTOSelectionFunc?: Function;
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
@@ -25,43 +26,53 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     const saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-    const [isHovered, setIsHovered] = useState(false);
 
-    const layerContext = getContextFromStore(
+    const genAISettings = getContextFromStore(
         props.contextId,
-        ContextType.LAYER
+        props.contextType
     );
 
-    let animationRef = useRef<HTMLDivElement>(null);
-    let [animation, setAnimationTimeline] = useState<gsap.core.Timeline>(null);
+	async function regenerateMask(){
+		// get updated context to apply
+		const genAISettings = getContextFromStore(
+			props.contextId,
+			props.contextType
+		);
+
+		// get mask from photoshop selection
+		// get layer from photoshop selection
+
+		// save layer as image and send to server
+		// save selection as image and send to server
+	}
+
 
     async function regenerateLayer(
         deleteOldLayer: boolean = false,
-        contextID: string
     ) {
         let duplicatedLayer = null;
 
         try {
-            const layerContext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
+            const genAISettings = getContextFromStore(
+                props.contextId,
+                props.contextType
             );
-            const oldLayer = layerContext.currentLayer;
-            let copyOfContext = layerContext.copy();
-            let newLayercontext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
+            const oldLayer = genAISettings.currentLayer;
+            let copyOfContext = genAISettings.copy();
+            let newGenAISettings = getContextFromStore(
+                props.contextId,
+                props.contextType
             );
-            let copyOfNewContext = newLayercontext.copy();
+            let copyOfNewContext = newGenAISettings.copy();
             copyOfNewContext.isGenerating = true;
             saveContextToStore(copyOfNewContext);
-            if (await layerContext.hasLayerMask()) {
-                duplicatedLayer = await layerContext.duplicateCurrentLayer();
+            if (await genAISettings.hasLayerMask()) {
+                duplicatedLayer = await genAISettings.duplicateCurrentLayer();
                 copyOfContext.currentLayerName = duplicatedLayer.name;
                 await copyOfContext.applyLayerMask();
             }
 
-            const newLayer = await generateAILayer(layerContext);
+            const newLayer = await generateAILayer(genAISettings);
             copyOfContext.isGenerating = false;
             copyOfContext.currentLayerName = newLayer.name;
             saveContextToStore(copyOfContext);
@@ -89,7 +100,13 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     }
 
     async function handleButtonClick() {
-        await regenerateLayer(false, props.contextId);
+		if (props.contextType === ContextType.LAYER){
+			await regenerateLayer(false);
+
+		}
+		else if (props.contextType === ContextType.PROMPT){
+			// await regenerateMaskedSection(true)
+		}
     }
 
     return (
@@ -98,8 +115,8 @@ export default function RegenerationTool(props: RegenerationToolProps) {
             onClick={handleButtonClick}
         >
             {/* I don't know why the logic is backwards here. */}
-            {!getContextFromStore(props.contextId, ContextType.LAYER)
-                .isGenerating ? (
+            {!(getContextFromStore(props.contextId, props.contextType)
+                ?.isGenerating) ? (
                 <div>
                     <props.icon
                         {...{

@@ -17,7 +17,7 @@ export default class ContextObject extends BashfulObject {
     styleReferences: Array<StyleReference>;
     tags: Record<string, ContextTag>;
     model_config: string;
-    is_cloud_run: true;
+    is_cloud_run: boolean;
     isGenerating: false;
 
     constructor(

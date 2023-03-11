@@ -90,6 +90,45 @@ export function getSelectedLayers(layers: Layer[]): Layer[] {
 }
 
 /**
+ * Retrive the first seen layer that is selected in the app.
+ * @returns 
+ */
+export function getTopSelectedLayer(): Layer {
+	return getSelectedLayers(app.activeDocument.layers)[0];
+}
+
+export function getMaskSelectionFromLayer(layer: Layer): Layer {
+	// return layer. ss;
+	return null;
+}
+
+export async function createLayerFromSelection(){
+	await executeInPhotoshop(createLayerFromSelection, async () => {
+        return await bp(
+            [
+				{"_obj":"copyToLayer"}
+            ],
+            {}
+        );
+    });
+
+	return getTopSelectedLayer()
+}
+
+export async function cutToLayerFromSelection(){
+	await executeInPhotoshop(createLayerFromSelection, async () => {
+        return await bp(
+            [
+				{"_obj":"cutToLayer"}
+            ],
+            {}
+        );
+    });
+
+	return getTopSelectedLayer()
+}
+
+/**
  * Retrieve the top most layer in the app.
  */
 export function getTopLayer(
