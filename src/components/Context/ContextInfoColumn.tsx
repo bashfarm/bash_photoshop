@@ -1,4 +1,3 @@
-import { ContextType } from 'bashConstants';
 import { ModelConfigResponse, ModelResponse } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
@@ -6,7 +5,6 @@ import React, { useState } from 'react';
 import {
     getAvailableModelConfigs,
     getAvailableModels,
-    swapModel,
 } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextDropdown from './ContextDropdown';
@@ -27,7 +25,7 @@ function DefaultContextInfoColumn() {
 
 export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID, ContextType.LAYER)
+        state.getContextFromStore(props.contextID)
     );
 
     let getContextFromStore = useContextStore(
@@ -45,8 +43,8 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
             // a different model on a specific layer.  We will collect the selection of models for them
             // queue them up and run them in sequence using the currently loaded model and swap only when
             // necessary.
-            // return getAvailableModels();
-            return [];
+            return getAvailableModels();
+            // return [];
         } else {
             return getAvailableModelConfigs();
         }
@@ -73,10 +71,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
-        let copyOfContext = getContextFromStore(
-            props.contextID,
-            ContextType.LAYER
-        ).copy();
+        let copyOfContext = getContextFromStore(props.contextID).copy();
         copyOfContext.model_config = selectedConfigObj.name;
         saveContextToStore(copyOfContext);
     }
@@ -106,7 +101,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
-                        contextType={ContextType.LAYER}
                         options={['loading models...']}
                     />
                 ) : (
@@ -119,7 +113,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                                     : 'Art Type:'
                             }
                             contextID={props.contextID}
-                            contextType={ContextType.LAYER}
                             contextKey={getCorrectContextKey()}
                             options={getDropDownOptions()}
                             onChange={(event: any) => {

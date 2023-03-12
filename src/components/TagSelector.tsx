@@ -17,22 +17,16 @@ export default function TagSelector(props: TagSelectorProps) {
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-    let tags = getContextFromStore(props.contextID, props.contextType).tags;
+    let tags = getContextFromStore(props.contextID).tags;
 
     function removeTagFromContext(tag: ContextTag) {
-        let copyOfContext = getContextFromStore(
-            props.contextID,
-            props.contextType
-        ).copy();
+        let copyOfContext = getContextFromStore(props.contextID).copy();
         copyOfContext.removeTag(tag);
         saveContextToStore(copyOfContext);
     }
 
     function addTagToContext(tag: ContextTag) {
-        let copyOfContext = getContextFromStore(
-            props.contextID,
-            props.contextType
-        ).copy();
+        let copyOfContext = getContextFromStore(props.contextID).copy();
         copyOfContext.addTag(tag);
         saveContextToStore(copyOfContext);
     }
@@ -51,8 +45,7 @@ export default function TagSelector(props: TagSelectorProps) {
                         onDelete={() => removeTagFromContext(tag)}
                         onSliderChange={(value: number) => {
                             let copyOfContext = getContextFromStore(
-                                props.contextID,
-                                props.contextType
+                                props.contextID
                             ).copy();
                             let copyOfTag = tag.copy();
                             copyOfTag.value = value;

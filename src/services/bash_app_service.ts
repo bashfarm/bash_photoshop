@@ -31,7 +31,6 @@ export async function saveBashfulProject(contextStore: ContextStoreState) {
         let zip = new JSZip();
         let storeCopy = _.cloneDeep(contextStore);
         storeCopy.layerContextCache = {};
-        storeCopy.promptContextCache = {};
         zip.file(stateFileEntry.nativePath, JSON.stringify(storeCopy));
         zip.file(
             psdFileEntry.nativePath,

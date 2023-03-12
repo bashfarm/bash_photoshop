@@ -1,9 +1,10 @@
-import { ContextType } from 'bashConstants';
 import photoshop from 'photoshop';
 import React, { FC, useEffect, useRef, useState } from 'react';
+import { Checkbox, Label } from 'react-uxp-spectrum';
 import Progressbar from 'react-uxp-spectrum/dist/Progressbar';
 import { generateAILayer } from 'services/ai_service';
 import {
+    applyMask,
     createMaskFromLayerForLayer,
     deleteLayer,
     moveLayer,
@@ -25,42 +26,26 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     const saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-    const [isHovered, setIsHovered] = useState(false);
 
-    const layerContext = getContextFromStore(
-        props.contextId,
-        ContextType.LAYER
-    );
+    const layerContext = getContextFromStore(props.contextId);
 
-    let animationRef = useRef<HTMLDivElement>(null);
-    let [animation, setAnimationTimeline] = useState<gsap.core.Timeline>(null);
-
-    async function regenerateLayer(
-        deleteOldLayer: boolean = false,
-        contextID: string
-    ) {
-        let duplicatedLayer = null;
-
+    async function regenerateLayer(contextID: string) {
         try {
-            const layerContext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
-            );
+            const layerContext = getContextFromStore(contextID);
             const oldLayer = layerContext.currentLayer;
             let copyOfContext = layerContext.copy();
-            let newLayercontext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
-            );
+            let newLayercontext = getContextFromStore(contextID);
             let copyOfNewContext = newLayercontext.copy();
             copyOfNewContext.isGenerating = true;
             saveContextToStore(copyOfNewContext);
-            if (await layerContext.hasLayerMask()) {
+            let layerHadMask = await layerContext.hasLayerMask();
+            let duplicatedLayer = null;
+            if (copyOfContext.maintainTransparency) {
                 duplicatedLayer = await layerContext.duplicateCurrentLayer();
-                copyOfContext.currentLayerName = duplicatedLayer.name;
-                await copyOfContext.applyLayerMask();
+                if (layerHadMask) {
+                    applyMask(duplicatedLayer);
+                }
             }
-
             const newLayer = await generateAILayer(layerContext);
             copyOfContext.isGenerating = false;
             copyOfContext.currentLayerName = newLayer.name;
@@ -72,13 +57,13 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                 photoshop.constants.ElementPlacement.PLACEBEFORE
             );
 
-            if (deleteOldLayer) {
-                await deleteLayer(oldLayer);
-            }
             await scaleAndFitLayerToCanvas(newLayer);
 
             if (duplicatedLayer) {
                 await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
+                if (!layerHadMask) {
+                    await applyMask(newLayer);
+                }
                 await deleteLayer(duplicatedLayer);
             }
 
@@ -89,7 +74,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     }
 
     async function handleButtonClick() {
-        await regenerateLayer(false, props.contextId);
+        await regenerateLayer(props.contextId);
     }
 
     return (
@@ -98,8 +83,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
             onClick={handleButtonClick}
         >
             {/* I don't know why the logic is backwards here. */}
-            {!getContextFromStore(props.contextId, ContextType.LAYER)
-                .isGenerating ? (
+            {!getContextFromStore(props.contextId).isGenerating ? (
                 <div>
                     <props.icon
                         {...{

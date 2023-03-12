@@ -82,12 +82,6 @@ export const negativePromptTagSuggestions = [
     'signature',
 ];
 
-export const enum ContextType {
-    LAYER = 'layer',
-    DOCUMENT = 'document',
-    PROMPT = 'prompt',
-}
-
 export const enum DialogType {
     OPEN = 'open',
     SAVE = 'save',

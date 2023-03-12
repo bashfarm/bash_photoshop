@@ -19,6 +19,7 @@ export default class ContextObject extends BashfulObject {
     model_config: string;
     is_cloud_run: true;
     isGenerating: false;
+    maintainTransparency: true;
 
     constructor(
         options: any = {
@@ -36,6 +37,7 @@ export default class ContextObject extends BashfulObject {
             model_config: 'OpenJourney-Config',
             is_cloud_run: true,
             isGenerating: false,
+            maintainTransparency: true,
         }
     ) {
         super();
@@ -54,6 +56,7 @@ export default class ContextObject extends BashfulObject {
         this.model_config = options.model_config;
         this.is_cloud_run = options.is_cloud_run;
         this.isGenerating = options.isGenerating;
+        this.maintainTransparency = options.maintainTransparency;
     }
 
     public getStylingStrength() {
