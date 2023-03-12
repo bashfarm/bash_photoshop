@@ -2,7 +2,10 @@ import { ModelConfigResponse, ModelResponse } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useState } from 'react';
-import { getAvailableModelConfigs } from 'services/ai_service';
+import {
+    getAvailableModelConfigs,
+    getAvailableModels,
+} from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextDropdown from './ContextDropdown';
 import ContextLabel from './ContextLabel';
@@ -40,8 +43,8 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
             // a different model on a specific layer.  We will collect the selection of models for them
             // queue them up and run them in sequence using the currently loaded model and swap only when
             // necessary.
-            // return getAvailableModels();
-            return [];
+            return getAvailableModels();
+            // return [];
         } else {
             return getAvailableModelConfigs();
         }

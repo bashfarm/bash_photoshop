@@ -15,6 +15,8 @@ import photoshop from 'photoshop';
 import Spectrum, { Checkbox, Label } from 'react-uxp-spectrum';
 import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
+import { getAvailableModels } from 'services/ai_service';
+import { useAsyncEffect } from 'hooks/fetchHooks';
 
 const events = [
     'make',
@@ -122,6 +124,14 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         copyOfContext.currentLayer = getPSLayerByID(layerDTO.id);
         saveContextToStore(copyOfContext);
     }
+    let { loading, value } = useAsyncEffect(async () => {
+        // While this does work, this is for the future where we batch run the models, currently
+        // we would have to make sure each local user swaps out the models when they want to use
+        // a different model on a specific layer.  We will collect the selection of models for them
+        // queue them up and run them in sequence using the currently loaded model and swap only when
+        // necessary.
+        return getAvailableModels();
+    });
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
@@ -150,17 +160,22 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
             <ToolSection>
-                <Label>Use Auto1111</Label>
-                <Checkbox
-                    onChange={async () => {
-                        let copyOfContext = layerContext.copy();
-                        copyOfContext.is_cloud_run =
-                            !copyOfContext.is_cloud_run;
-                        saveContextToStore(copyOfContext);
-                    }}
-                />
+                {value?.length > 0 && (
+                    <>
+                        <Label>Use Auto1111</Label>
+                        <Checkbox
+                            onChange={async () => {
+                                let copyOfContext = layerContext.copy();
+                                copyOfContext.is_cloud_run =
+                                    !copyOfContext.is_cloud_run;
+                                saveContextToStore(copyOfContext);
+                            }}
+                        />
+                    </>
+                )}
             </ToolSection>
 
+            <ToolbarDivider />
             <ToolSection>
                 <Tool
                     icon={VisibilityOffRounded}
@@ -174,6 +189,21 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     label="Unhide"
                     onClick={async () =>
                         await toggleOffContextHidingTool(layerContext)
+                    }
+                />
+                <ToolbarDivider />
+                <Label>Keep Transparency</Label>
+                <Checkbox
+                    onChange={async () => {
+                        let copyOfContext = layerContext.copy();
+                        copyOfContext.maintainTransparency =
+                            !getContextFromStore(props.contextID)
+                                .maintainTransparency;
+                        saveContextToStore(copyOfContext);
+                    }}
+                    checked={
+                        getContextFromStore(props.contextID)
+                            .maintainTransparency
                     }
                 />
             </ToolSection>

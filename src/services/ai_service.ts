@@ -110,11 +110,15 @@ export async function BAPITxt2Img(
             redirect: 'follow',
         };
         const response = await fetch(
-            `${CLOUD_API_URL}/txt2img`,
+            `${GCP_LOCAL_TESTING_URL}/txt2img`,
             requestOptions
         );
+        console.log(response);
 
-        return await response.json();
+        let data = response.json();
+        console.log(data);
+
+        return data;
     } catch (e) {
         console.error(e);
         throw e;
@@ -316,6 +320,7 @@ export async function generateImageLayerUsingOnlyContext(
             }
         } else {
             const response = await BAPITxt2Img(layerContext);
+            console.log(response);
             genb64Str = await getB64StringFromImageUrl(response['url']);
             console.log(genb64Str);
         }
