@@ -1,13 +1,8 @@
-import { ContextType } from 'bashConstants';
 import { ModelConfigResponse, ModelResponse } from 'common/types/sdapi';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useState } from 'react';
-import {
-    getAvailableModelConfigs,
-    getAvailableModels,
-    swapModel,
-} from 'services/ai_service';
+import { getAvailableModelConfigs } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextDropdown from './ContextDropdown';
 import ContextLabel from './ContextLabel';
@@ -27,7 +22,7 @@ function DefaultContextInfoColumn() {
 
 export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID, ContextType.LAYER)
+        state.getContextFromStore(props.contextID)
     );
 
     let getContextFromStore = useContextStore(
@@ -73,10 +68,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
-        let copyOfContext = getContextFromStore(
-            props.contextID,
-            ContextType.LAYER
-        ).copy();
+        let copyOfContext = getContextFromStore(props.contextID).copy();
         copyOfContext.model_config = selectedConfigObj.name;
         saveContextToStore(copyOfContext);
     }
@@ -106,7 +98,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
-                        contextType={ContextType.LAYER}
                         options={['loading models...']}
                     />
                 ) : (
@@ -119,7 +110,6 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                                     : 'Art Type:'
                             }
                             contextID={props.contextID}
-                            contextType={ContextType.LAYER}
                             contextKey={getCorrectContextKey()}
                             options={getDropDownOptions()}
                             onChange={(event: any) => {

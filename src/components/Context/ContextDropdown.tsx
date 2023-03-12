@@ -33,8 +33,7 @@ export default function ContextDropdown(props: ContextDropdownProps) {
                                             if (props.contextKey) {
                                                 let copyOfContext =
                                                     getContextFromStore(
-                                                        props.contextID,
-                                                        props.contextType
+                                                        props.contextID
                                                     ).copy();
                                                 copyOfContext[
                                                     props.contextKey

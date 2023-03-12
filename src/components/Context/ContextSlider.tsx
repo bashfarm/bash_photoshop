@@ -42,17 +42,15 @@ export default function ContextSlider(props: ContextProps) {
                     max={100}
                     value={
                         parseFloat(
-                            getContextFromStore(
-                                props.contextID,
-                                props.contextType
-                            )[props.contextKey]
+                            getContextFromStore(props.contextID)[
+                                props.contextKey
+                            ]
                         ) * 100 || parseInt(sliderValue)
                     }
                     onChange={(event: any) => {
                         setSliderValue(event.target.value);
                         let copyOfContext = getContextFromStore(
-                            props.contextID,
-                            props.contextType
+                            props.contextID
                         ).copy();
                         copyOfContext[props.contextKey] =
                             parseInt(event.target.value) / 100;

@@ -82,63 +82,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "panel",
-      "id": "contextpalette",
-      "label": {
-        "default": "AI Brush"
-      },
-      "minimumSize": {
-        "width": 400,
-        "height": 150
-      },
-      "maximumSize": {
-        "width": 1340,
-        "height": 1516
-      },
-      "preferredDockedSize": {
-        "width": 340,
-        "height": 516
-      },
-      "preferredFloatingSize": {
-        "width": 340,
-        "height": 315
-      },
-      "icons": [
-        {
-          "width": 23,
-          "height": 23,
-          "path": "icons/bashful_23.png",
-          "scale": [
-            1,
-            2
-          ],
-          "theme": [
-            "dark",
-            "darkest"
-          ],
-          "species": [
-            "chrome"
-          ]
-        },
-        {
-          "width": 23,
-          "height": 23,
-          "path": "icons/bashful_23.png",
-          "scale": [
-            1,
-            2
-          ],
-          "theme": [
-            "lightest",
-            "light"
-          ],
-          "species": [
-            "chrome"
-          ]
-        }
-      ]
     }
   ],
   "icons": [

@@ -2,8 +2,6 @@ import React, { FC, useRef, useState, useEffect } from 'react';
 import {
     VisibilityOffRounded,
     VisibilityRounded,
-    PaletteIcon,
-    GridViewIcon,
     RefreshIcon,
     DeleteIcon,
 } from 'components/Icons';
@@ -12,15 +10,11 @@ import {
     toggleOffContextHidingTool,
     toggleOnContextHidingTool,
 } from 'services/tools_service';
-import { popUpModal } from 'utils/general_utils';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import photoshop from 'photoshop';
 import Spectrum, { Checkbox, Label } from 'react-uxp-spectrum';
 import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
-import ContextPainterModal from 'components/modals/ContextPainterModal';
-import { ContextType } from 'bashConstants';
-import { Layer } from 'photoshop/dom/Layer';
 
 const events = [
     'make',
@@ -74,7 +68,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
     }
 
     const popupRef = useRef<ExtendedHTMLDialogElement>();
-    let layerContext = getContextFromStore(props.contextID, ContextType.LAYER);
+    let layerContext = getContextFromStore(props.contextID);
     let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>({
         name: getPSLayerNameFromLayerID(layerContext?.currentLayer?._id),
         id: layerContext?.currentLayer?._id,
@@ -198,12 +192,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 <Tool
                     icon={DeleteIcon}
                     label="Delete Context"
-                    onClick={() =>
-                        removeContextFromStore(
-                            layerContext.id,
-                            ContextType.LAYER
-                        )
-                    }
+                    onClick={() => removeContextFromStore(layerContext.id)}
                 />
             </ToolSection>
         </div>

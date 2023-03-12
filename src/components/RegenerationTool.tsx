@@ -1,4 +1,3 @@
-import { ContextType } from 'bashConstants';
 import photoshop from 'photoshop';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import Progressbar from 'react-uxp-spectrum/dist/Progressbar';
@@ -27,10 +26,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     );
     const [isHovered, setIsHovered] = useState(false);
 
-    const layerContext = getContextFromStore(
-        props.contextId,
-        ContextType.LAYER
-    );
+    const layerContext = getContextFromStore(props.contextId);
 
     let animationRef = useRef<HTMLDivElement>(null);
     let [animation, setAnimationTimeline] = useState<gsap.core.Timeline>(null);
@@ -42,16 +38,10 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         let duplicatedLayer = null;
 
         try {
-            const layerContext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
-            );
+            const layerContext = getContextFromStore(contextID);
             const oldLayer = layerContext.currentLayer;
             let copyOfContext = layerContext.copy();
-            let newLayercontext = getContextFromStore(
-                contextID,
-                ContextType.LAYER
-            );
+            let newLayercontext = getContextFromStore(contextID);
             let copyOfNewContext = newLayercontext.copy();
             copyOfNewContext.isGenerating = true;
             saveContextToStore(copyOfNewContext);
@@ -98,8 +88,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
             onClick={handleButtonClick}
         >
             {/* I don't know why the logic is backwards here. */}
-            {!getContextFromStore(props.contextId, ContextType.LAYER)
-                .isGenerating ? (
+            {!getContextFromStore(props.contextId).isGenerating ? (
                 <div>
                     <props.icon
                         {...{
