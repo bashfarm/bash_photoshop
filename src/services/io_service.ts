@@ -1,6 +1,6 @@
 import base64js from 'base64-js';
 import _ from 'lodash';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
 import { storage } from 'uxp';
 import { removeB64Header } from '../utils/io_utils';
@@ -29,21 +29,6 @@ export async function getB64StringFromImageUrl(
     return base64js.fromByteArray(new Uint8Array(await response.arrayBuffer()));
 }
 
-/**
- * Save the given text to a file in the plugin data folder
- * @param {String} fileName
- * @param {*} data
- */
-export async function saveTextFileToDataFolder(fileName: string, data: string) {
-    try {
-        const entry = await createDataFolderEntry(fileName);
-        const res = (await entry) as storage.File;
-        res.write(data, { format: formats.utf8 });
-    } catch (e) {
-        console.log('something not write');
-        console.log(e);
-    }
-}
 
 /**
  * Save the given data to a file
@@ -58,26 +43,58 @@ export async function saveTextFile(
         const res = await fileEntry;
         res.write(data, { format: formats.utf8 });
     } catch (e) {
-        console.log('something not write');
-        console.log(e);
+        console.error("Saving Text File",e);
     }
 }
 
-/**
- * Create a Temp File Entry
- * @param {String} fileEntry
- * @param {*} data
- */
+
 export async function createTempFileEntry(tempName: string) {
     try {
         const tempFolder: storage.Folder = await lfs.getTemporaryFolder();
         const entry = tempFolder.createEntry(tempName, {
             type: types.file,
             overwrite: true,
-        });
-        return entry as Promise<storage.File>;
+        }) as Promise<storage.File>;
+		return entry;
     } catch (e) {
         console.error(e);
+    }
+}
+
+export async function saveImgDataToDataFolder(
+    fileName: string,
+    imgData: Uint8Array | string
+): Promise<storage.File> {
+    try {
+        let serializer: any = null;
+        if (typeof imgData === 'string' || imgData instanceof String) {
+            serializer = saveB64ImageToBinaryFileToDataFolder;
+        } else {
+            serializer = saveBinaryFileToDataFolder;
+        }
+        return await serializer(fileName, imgData);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**
+ * Given a base64 image string, save it as binary in the plugin data folder.
+ * @param {String} fileName
+ * @param {String} data
+ * @returns
+ */
+export async function saveB64ImageToBinaryFileToDataFolder(
+    fileName: string,
+    data: string
+): Promise<storage.File> {
+    try {
+        return await saveBinaryFileToDataFolder(
+            fileName,
+            base64js.toByteArray(removeB64Header(data))
+        );
+    } catch (e) {
+        console.debug(e);
     }
 }
 
@@ -100,25 +117,6 @@ export async function saveBinaryFileToDataFolder(
     }
 }
 
-/**
- * Given a base64 image string, save it as binary in the plugin data folder.
- * @param {String} fileName
- * @param {String} data
- * @returns
- */
-export async function saveB64ImageToBinaryFileToDataFolder(
-    fileName: string,
-    data: string
-): Promise<storage.File> {
-    try {
-        return await saveBinaryFileToDataFolder(
-            fileName,
-            base64js.toByteArray(removeB64Header(data))
-        );
-    } catch (e) {
-        console.log(e);
-    }
-}
 
 /**
  * Create an entry for the plugin data folder.
@@ -208,7 +206,7 @@ export async function saveActiveDocument(
         }
 
         await executeInPhotoshop(saveDocumentAsPNG, async () => {
-            await photoshop.app.activeDocument.saveAs.psd(await fileRef);
+            await photoshop.app.activeDocument.saveAs.psd((await fileRef) as storage.File);
         });
     } catch (e) {
         console.error(e);

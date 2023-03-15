@@ -24,9 +24,9 @@ function DefaultContextInfoColumn() {
 }
 
 export default function ContextInfoColumn(props: ContextInfoColumnProps) {
-    let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID)
-    );
+    // let layerContext = useContextStore((state: ContextStoreState) =>
+    //     state.getContextFromStore(props.contextID)
+    // );
 
     let getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
@@ -37,7 +37,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     );
 
     let { loading, value } = useAsyncEffect(async () => {
-        if (layerContext.is_cloud_run == false) {
+        if (getContextFromStore(props.contextID).is_cloud_run == false) {
             // While this does work, this is for the future where we batch run the models, currently
             // we would have to make sure each local user swaps out the models when they want to use
             // a different model on a specific layer.  We will collect the selection of models for them
@@ -48,13 +48,13 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         } else {
             return getAvailableModelConfigs();
         }
-    }, [layerContext.is_cloud_run]);
+    }, []);
 
     function getDropDownOptions() {
         if (loading) {
             return ['loading models...'];
         } else {
-            if (layerContext.is_cloud_run == false) {
+            if (getContextFromStore(props.contextID).is_cloud_run == false) {
                 return value
                     .map((modelObj: ModelResponse) => {
                         return modelObj.title;
@@ -83,7 +83,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function getCorrectContextKey() {
-        if (!layerContext.is_cloud_run) {
+        if (!getContextFromStore(props.contextID).is_cloud_run) {
             return 'generationModelName' as keyof typeof LayerAIContext;
         }
 
@@ -93,10 +93,10 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     try {
         return (
             <div className="flex flex-col min-w-fit justify-center">
-                <ContextLabel
+                {/* <ContextLabel
                     value={layerContext.currentLayer?.name}
                     labelText={'Layer Name:'}
-                />
+                /> */}
                 {loading ? (
                     <ContextDropdown
                         label="Model:"
@@ -108,7 +108,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                         <ContextDropdown
                             // Not sure why, but is_cloud_run is backwards
                             label={
-                                !layerContext.is_cloud_run
+                                !getContextFromStore(props.contextID).is_cloud_run
                                     ? 'Model:'
                                     : 'Art Type:'
                             }

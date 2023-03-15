@@ -8,7 +8,6 @@ import ContextSlider from './ContextSlider';
 import _ from 'lodash';
 import LayerAIContext from 'models/LayerAIContext';
 import ContextTextarea from './ContextTextarea';
-import ContextTagArea from './ContextTagArea';
 export type ContextItemProps = {
     contextID: string;
 };
@@ -46,10 +45,7 @@ export default function ContextItem(props: ContextItemProps) {
                     className="w-full select-none"
                     inputDelayTime={1000}
                 />
-                {/* <ContextTagArea
-                    contextID={props.contextID}
-                    contextType={ContextType.LAYER}
-                /> */}
+
             </div>
         </div>
     );

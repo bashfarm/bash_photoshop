@@ -1,5 +1,5 @@
 import LayerAIContext from 'models/LayerAIContext';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import ContextItem from '../components/Context/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
@@ -12,57 +12,32 @@ export default function ContextManager() {
         (state) => state.saveContextToStore
     );
 
-    // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
-    async function createNewContext() {
-        let context = new LayerAIContext();
-        saveContextToStore(context);
-        return context;
-    }
+
+	let [contexts, setContexts] = React.useState<LayerAIContext[]>([])
+
 
     try {
         return (
             <>
-                <BashfulHeader animate={true} />
+                {/* <BashfulHeader animate={true} /> */}
                 <ContextToolBar />
                 <div className="mb-1">
                     <Button
                         variant="primary"
                         onClick={async () => {
-                            let newContext = await createNewContext();
-                            console.log(newContext);
+							let context = new LayerAIContext();
+							saveContextToStore(context);
+							setContexts([...contexts, context])
+							return context;
                         }}
                     >
                         Create New AI Setting
                     </Button>
                 </div>
-                <ContextItems />
-            </>
-        );
-    } catch (e) {
-        console.error(e);
-        return <div>error</div>;
-    }
-}
-
-/**
- * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
- * in the order the layers are found in the document.
- * @returns
- */
-// TODO: move to its own file or something else - needs refactoring though
-function ContextItems() {
-    let contexts = useContextStore(
-        (state: ContextStoreState) => state.layerContexts
-    );
-
-    console.log('rerender');
-    return (
-        <>
-            {Object.keys(contexts).map((key) => {
-                let context = contexts[key];
+                {contexts.map((context: LayerAIContext) => {
                 return (
                     <>
-                        <ContextItem key={context.id} contextID={context.id} />
+                        <ContextItem key={_.uniqueId()} contextID={context.id} />
                         <Divider
                             key={_.uniqueId()}
                             className="my-2"
@@ -71,6 +46,10 @@ function ContextItems() {
                     </>
                 );
             })}
-        </>
-    );
+            </>
+        );
+    } catch (e) {
+        console.error(e);
+        return <div>error</div>;
+    }
 }

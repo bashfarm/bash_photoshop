@@ -53,7 +53,7 @@ export default function ContextTextarea(props: ContextProps) {
                                 props.onChange(event);
                             }
                         } catch (e) {
-                            console.log(e);
+                            console.debug(e);
                         }
                     }}
                 />

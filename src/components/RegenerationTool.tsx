@@ -8,6 +8,7 @@ import {
     createMaskFromLayerForLayer,
     deleteLayer,
     moveLayer,
+    regenerateLayer,
     scaleAndFitLayerToCanvas,
 } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -29,60 +30,28 @@ export default function RegenerationTool(props: RegenerationToolProps) {
 
     const layerContext = getContextFromStore(props.contextId);
 
-    async function regenerateLayer(contextID: string) {
+    async function regenLayer(contextID: string) {
         try {
-            const layerContext = getContextFromStore(contextID);
-            const oldLayer = layerContext.currentLayer;
-            let copyOfContext = layerContext.copy();
-            let newLayercontext = getContextFromStore(contextID);
-            let copyOfNewContext = newLayercontext.copy();
-            copyOfNewContext.isGenerating = true;
-            saveContextToStore(copyOfNewContext);
-            let layerHadMask = await layerContext.hasLayerMask();
-            let duplicatedLayer = null;
-            if (copyOfContext.maintainTransparency) {
-                duplicatedLayer = await layerContext.duplicateCurrentLayer();
-                if (layerHadMask) {
-                    applyMask(duplicatedLayer);
-                }
-            }
-            const newLayer = await generateAILayer(layerContext);
-            copyOfContext.isGenerating = false;
-            copyOfContext.currentLayerName = newLayer.name;
-            saveContextToStore(copyOfContext);
+			let context = getContextFromStore(contextID)
+			let copyOfContext = context.copy();
+			copyOfContext.isGenerating = true;
+			saveContextToStore(copyOfContext);
+            let newLayerName = await regenerateLayer(copyOfContext);
+			copyOfContext.isGenerating = false;
 
-            await moveLayer(
-                newLayer,
-                oldLayer,
-                photoshop.constants.ElementPlacement.PLACEBEFORE
-            );
+			saveContextToStore(copyOfContext)
 
-            await scaleAndFitLayerToCanvas(newLayer);
-
-            if (duplicatedLayer) {
-                await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
-                if (!layerHadMask) {
-                    await applyMask(newLayer);
-                }
-                await deleteLayer(duplicatedLayer);
-            }
-
-            props.newLayerDTOSelectionFunc(newLayer.name);
+            props.newLayerDTOSelectionFunc(newLayerName);
         } catch (e) {
             console.error(e);
         }
     }
 
-    async function handleButtonClick() {
-        await regenerateLayer(props.contextId);
-    }
-
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
-            onClick={handleButtonClick}
+            onClick={async () => {await regenLayer(props.contextId)}}
         >
-            {/* I don't know why the logic is backwards here. */}
             {!getContextFromStore(props.contextId).isGenerating ? (
                 <div>
                     <props.icon

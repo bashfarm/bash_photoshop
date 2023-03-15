@@ -2,7 +2,6 @@ import LayerAIContext from 'models/LayerAIContext';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
-import { logCallingFunction } from 'utils/general_utils';
 import { BashfulObject } from 'models/BashfulObject';
 
 export class ContextStoreState extends BashfulObject {
@@ -22,7 +21,6 @@ export class ContextStoreState extends BashfulObject {
     }
 
     public saveContextToStore = (context: LayerAIContext) => {
-        logCallingFunction(this.saveContextToStore);
         try {
             this.set((state: ContextStoreState) => {
                 state.layerContexts[context.id] = context;
@@ -32,7 +30,6 @@ export class ContextStoreState extends BashfulObject {
         }
     };
     public removeContextFromStore = (contextID: string) => {
-        logCallingFunction(this.removeContextFromStore);
         try {
             this.set((state: ContextStoreState) => {
                 state.layerContextCache[contextID] =
@@ -76,11 +73,9 @@ export class ContextStoreState extends BashfulObject {
         }
     };
     public setContextStore = (stateData: ContextStoreState) => {
-        logCallingFunction(this.setContextStore);
         this.setInstantiatedLayerContexts(stateData);
     };
     private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
-        logCallingFunction(this.setInstantiatedLayerContexts);
         this.set((state: any) => {
             state.layerContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
@@ -99,7 +94,7 @@ const log = (config: any) => (set: Function, get: Function, api: any) =>
     config(
         (...args: any) => {
             set(...args);
-            console.log('CONTEXT STORE👊 NEW STATE:', get());
+            console.debug('CONTEXT STORE👊 NEW STATE:', get());
         },
         get,
         api

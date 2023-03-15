@@ -82,7 +82,6 @@ async function extractPhotoshopPSD(zip: JSZip) {
     }
 
     const file = matchingFiles[0];
-    console.log(file);
 
     // Extract the file contents as a Blob
     return await file.async('arraybuffer');
@@ -98,7 +97,6 @@ async function extractStateData(zip: JSZip) {
     }
 
     const file = matchingFiles[0];
-    console.log(file);
 
     // Extract the file contents as a Blob
     return await file.async('string');
