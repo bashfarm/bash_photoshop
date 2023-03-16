@@ -98,18 +98,22 @@ export function getTopLayer(
     selected: boolean = false,
     active: boolean = false
 ): Layer {
-    if (selected) return getSelectedLayers(app.activeDocument.layers)[0];
+    if (selected) {
+        return getSelectedLayers(app.activeDocument.layers)[0];
+    }
 
-    if (active) return photoshop.app.activeDocument.activeLayers[0];
+    if (active) {
+        return photoshop.app.activeDocument.activeLayers[0];
+    }
     return photoshop.app.activeDocument.layers[0];
 }
 
 /**
  * Convenience function to move this layer to the top of the app.
  */
-export function moveLayerToTop(layer: Layer) {
+export async function moveLayerToTop(layer: Layer) {
     try {
-        moveLayer(layer, getTopLayer());
+        await moveLayer(layer, getTopLayer());
     } catch (e) {
         console.error('Moving Layer to Top', e);
     }
@@ -125,6 +129,8 @@ export async function moveLayer(
         .PLACEBEFORE
 ): Promise<void> {
     await executeInPhotoshop(moveLayer, async () => {
+        console.debug('Moving Layer');
+        console.debug('Active Document', app.activeDocument);
         layer.move(relativeLayer, placement);
     });
 }
@@ -260,6 +266,7 @@ export function getNewestLayer(layers: Layer[]) {
 export async function makeLayersInvisible(layers: Layer[]) {
     await executeInPhotoshop(makeLayersInvisible, async () => {
         layers.forEach((layer) => {
+            console.debug(`Making layer ${layer.name} visible`, layer);
             layer.visible = false;
         });
     });
@@ -638,43 +645,66 @@ export async function regenerateLayer(
     isBatchRan: boolean = false
 ) {
     try {
-        const oldLayer = layerContext.tempLayer;
-
-        applyMask(layerContext.tempLayer);
-        const newLayer = await generateAILayer(layerContext);
-
-        if (moveToTop) {
-            await moveLayerToTop(newLayer);
-        } else {
-            await moveLayer(
-                newLayer,
-                oldLayer,
-                photoshop.constants.ElementPlacement.PLACEBEFORE
+        if (!layerContext.currentLayer?.visible) {
+            console.warn(
+                `The layer given is currently invisible and will be skipped ${layerContext.currentLayer.name}`
             );
+            return;
         }
-        await scaleAndFitLayerToCanvas(newLayer);
 
+        let oldLayer = layerContext.currentLayer;
+
+        if (await layerContext.hasLayerMask()) {
+            await applyMask(layerContext.tempLayer);
+        }
+        let duplicatedLayer = layerContext.tempLayer;
+        let newLayer = await generateAILayer(layerContext);
+        // await moveLayer(
+        // 	newLayer,
+        // 	oldLayer,
+        // 	photoshop.constants.ElementPlacement.PLACEBEFORE
+        // );
+        await moveLayerToTop(newLayer);
         console.debug('oldLayer', oldLayer.name);
         console.debug('newLayer', newLayer.name);
-        console.debug('duplicatedLayer', layerContext.tempLayer?.name);
-        await createMaskFromLayerForLayer(layerContext.tempLayer, newLayer);
+        console.debug('duplicatedLayer', duplicatedLayer?.name);
+        await scaleAndFitLayerToCanvas(newLayer);
+        await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
         await applyMask(newLayer);
-        await deleteLayer(layerContext.tempLayer);
-        return newLayer.name;
+        await deleteLayer(duplicatedLayer);
+        await hideLayer(oldLayer);
+
+        layerContext.tempLayer = null;
     } catch (e) {
         console.error(e);
     }
 }
 
-export async function createTempLayers(layerContexts: LayerAIContext[]) {
+export async function regenLayer(
+    layer: Layer,
+    layerContext: LayerAIContext,
+    maskingLayer: Layer,
+    moveToTop: boolean = false,
+    isBatchRan: boolean = false
+) {
     try {
-        let finishedContexts = [];
-        for (let context of layerContexts) {
-            let duplicatedLayer = await context.duplicateCurrentLayer();
-            context.tempLayer = duplicatedLayer;
-            finishedContexts.push(context);
+        if (!layerContext.currentLayer?.visible) {
+            console.warn(
+                `The layer given is currently invisible and will be skipped ${layerContext.currentLayer.name}`
+            );
+            return;
         }
-        return finishedContexts;
+
+        if (await layerContext.hasLayerMask()) {
+            await applyMask(layerContext.tempLayer);
+        }
+        let newLayer = await generateAILayer(layerContext);
+        return newLayer;
+        // await moveLayer(
+        // 	newLayer,
+        // 	oldLayer,
+        // 	photoshop.constants.ElementPlacement.PLACEBEFORE
+        // );
     } catch (e) {
         console.error(e);
     }
@@ -715,6 +745,20 @@ export async function regenerateVisibleLayers(layerContexts: LayerAIContext[]) {
             newContexts.push(layerContext);
         }
         return newContexts;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export async function createTempLayers(layerContexts: LayerAIContext[]) {
+    try {
+        let finishedContexts = [];
+        for (let context of layerContexts) {
+            let duplicatedLayer = await context.duplicateCurrentLayer();
+            context.tempLayer = duplicatedLayer;
+            finishedContexts.push(context);
+        }
+        return finishedContexts;
     } catch (e) {
         console.error(e);
     }

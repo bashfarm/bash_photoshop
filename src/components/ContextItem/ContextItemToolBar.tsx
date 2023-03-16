@@ -191,8 +191,6 @@ export default function ContextItemToolBar(props: ContexToolBarColumnProps) {
                         await toggleOffContextHidingTool(layerContext)
                     }
                 />
-                <ToolbarDivider />
-                <Label>Keep Transparency</Label>
             </ToolSection>
             <ToolbarDivider />
 

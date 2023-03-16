@@ -47,7 +47,10 @@ export async function executeInPhotoshop(
                 // console.debug(func)
                 let result = await executingFunction();
                 stopExecution(executingFunction);
-
+                console.debug(
+                    'after executing function, also here is the suspension id',
+                    suspensionID
+                );
                 // We are going to have to rerun this function after we do a lock
                 if (!isExecuting) {
                     await hostControl.resumeHistory(suspensionID);

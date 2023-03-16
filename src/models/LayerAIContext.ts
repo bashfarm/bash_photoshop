@@ -69,7 +69,7 @@ export default class LayerAIContext extends ContextObject {
      * @param layerAIContext
      * @returns
      */
-    public async createTempFile() {
+    public async createTempImageFileOfLayer() {
         try {
             let fileName = `temp_${this.currentLayer.name}.png`;
             console.debug(`trying to save layer with file name ${fileName}`);

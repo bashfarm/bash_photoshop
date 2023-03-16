@@ -11,6 +11,7 @@ import {
 } from './layer_service';
 
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
+import { alert } from 'services/alert_service';
 
 const [lfs, types, formats] = [
     storage.localFileSystem,
@@ -231,22 +232,31 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             photoshop.app.activeDocument.layers
         );
         const prevVisibility = layer.visible;
+        console.debug(
+            `Saving layer ${layer.name} to plugin data folder`,
+            layer
+        );
         await executeInPhotoshop(saveLayerToPluginData, async () => {
             // Make layers inivisible so we only export the document with the the selected layer
             await makeLayersInvisible(visibleLayers);
+            // alert(`made layers invisible`)
 
             // Cause we want only the layer that was passed to us to be visible when we export
             layer.visible = true;
+            // alert(`made single Layer visible`)
 
             // so now we need to export the document
             // We can't just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
             await saveDocumentToPluginData(fileName);
+            // alert(`saved document`)
 
             // make the given layers visible again
-            makeLayersVisible(visibleLayers);
+            await makeLayersVisible(visibleLayers);
+            // alert(`made previous layers visible`)
 
             // Set the layer back to what it was before
             layer.visible = prevVisibility;
+            // alert(`set our original layer back to visible`)
         });
 
         return await getDataFolderEntry(fileName);

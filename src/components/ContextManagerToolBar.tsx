@@ -15,10 +15,18 @@ import {
 } from 'services/bash_app_service';
 import { getPhotoshopLayerFromName } from 'utils/ps_utils';
 import {
+    applyMask,
+    createMaskFromLayerForLayer,
     createTempLayers,
+    deleteLayer,
+    hideLayer,
+    moveLayerToTop,
     regenerateLayer,
-    regenerateVisibleLayers,
+    regenLayer,
+    scaleAndFitLayerToCanvas,
 } from 'services/layer_service';
+import { saveLayerToPluginData } from 'services/io_service';
+import { Layer } from 'photoshop/dom/Layer';
 
 const ToolbarDivider = () => {
     return (
@@ -50,15 +58,37 @@ export default function ContextToolBar() {
             return context.currentLayer?.visible;
         });
         let newContexts = await createTempLayers(contextsToGenerateFrom);
+        let isLayerSaving = false;
+        newContexts.forEach(async (context) => {
+            let layer = context.currentLayer;
+            console.debug('Regenerating layer', layer?.name);
+            while (isLayerSaving) {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+            isLayerSaving = true;
+            // await regenerateLayer(context, true, true);
+            await saveLayerToPluginData(`${layer.name}.png`, layer);
+            let newLayer = regenLayer(layer, context, context.tempLayer);
+            cleanUpRegenLayer(newLayer, context);
 
-        // newContexts.forEach((context) => {
-        //     let layer = context.currentLayer;
-        //     console.debug('Regenerating layer', layer?.name);
-        //     regenerateLayer(context, true);
-        // });
+            isLayerSaving = false;
+        });
 
-        console.debug('Regenerating visible layers');
-        regenerateVisibleLayers(contexts);
+        async function cleanUpRegenLayer(
+            newLayerPromise: Promise<Layer>,
+            context: LayerAIContext
+        ) {
+            let newLayer = await newLayerPromise;
+            await moveLayerToTop(newLayer);
+            await scaleAndFitLayerToCanvas(newLayer);
+            await createMaskFromLayerForLayer(context.currentLayer, newLayer);
+            await applyMask(newLayer);
+            await deleteLayer(context.tempLayer);
+            // await hideLayer(context.currentLayer);
+        }
+
+        // console.debug('Regenerating visible layers');
+        // regenerateVisibleLayers(contexts);
     }
 
     return (
