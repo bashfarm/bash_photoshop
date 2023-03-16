@@ -93,7 +93,7 @@ export default class LayerAIContext extends ContextObject {
         temp: boolean = false
     ) {
         try {
-            let fileName = `${this.currentLayer.name} (regenerated)`;
+            let fileName = `${this.currentLayer.name} (regenerated).png`;
             await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {

@@ -38,7 +38,6 @@ export class ContextStoreState extends BashfulObject {
         try {
             this.set((state: ContextStoreState) => {
                 delete state.layerContexts[contextID];
-                console.log(state.layerContexts[contextID]);
             });
         } catch (e) {
             console.error(e);
@@ -110,7 +109,6 @@ const log = (config: any) => (set: Function, get: Function, api: any) =>
     config(
         (...args: any) => {
             set(...args);
-            console.log('CONTEXT STORE👊 NEW STATE:', get());
             console.debug('CONTEXT STORE👊 NEW STATE:', get());
         },
         get,

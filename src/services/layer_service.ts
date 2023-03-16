@@ -286,6 +286,15 @@ export async function deleteLayer(layer: Layer) {
 }
 
 /**
+ * Deletes this layer from the document.
+ */
+export async function hideLayer(layer: Layer) {
+    await executeInPhotoshop(deleteLayer, async () => {
+        layer.visible = false;
+    });
+}
+
+/**
  * Flips the layer on one or both axis.
  *
  * ```javascript
@@ -623,46 +632,6 @@ export async function deSelectLayer(layer: Layer) {
     });
 }
 
-// export async function regenerateLayer(layerContext: LayerAIContext, moveToTop: boolean = false) {
-// 	try {
-// 		const oldLayer = layerContext.currentLayer;
-
-// 		let layerHadMask = await layerContext.hasLayerMask();
-// 		let duplicatedLayer = null;
-// 		if (layerContext.maintainTransparency) {
-// 			duplicatedLayer = await layerContext.duplicateCurrentLayer();
-// 			if (layerHadMask) {
-// 				applyMask(duplicatedLayer);
-// 			}
-// 		}
-// 		const newLayer = await generateAILayer(layerContext);
-
-// 		if (moveToTop) {
-// 			await moveLayerToTop(newLayer);
-// 		} else {
-// 			await moveLayer(
-// 				newLayer,
-// 				oldLayer,
-// 				photoshop.constants.ElementPlacement.PLACEBEFORE
-// 			);
-// 		}
-// 		await scaleAndFitLayerToCanvas(newLayer);
-
-// 		console.debug('oldLayer', oldLayer.name)
-// 		console.debug('newLayer', newLayer.name)
-// 		console.debug('duplicatedLayer', duplicatedLayer?.name)
-// 		if (duplicatedLayer) {
-// 			await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
-// 			await applyMask(newLayer);
-// 			await deleteLayer(duplicatedLayer);
-// 		}
-// 		return newLayer.name
-
-// 	} catch (e) {
-// 		console.error(e);
-// 	}
-// }
-
 export async function regenerateLayer(
     layerContext: LayerAIContext,
     moveToTop: boolean = false,
@@ -724,7 +693,7 @@ export async function regenerateVisibleLayers(layerContexts: LayerAIContext[]) {
             if (await layerContext.hasLayerMask()) {
                 await applyMask(layerContext.tempLayer);
             }
-            let duplicatedLayer = await layerContext.duplicateCurrentLayer();
+            let duplicatedLayer = await layerContext.tempLayer;
             let newLayerPromise = generateAILayer(layerContext);
             // await moveLayer(
             // 	newLayer,
@@ -740,6 +709,8 @@ export async function regenerateVisibleLayers(layerContexts: LayerAIContext[]) {
             await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
             await applyMask(newLayer);
             await deleteLayer(duplicatedLayer);
+            await hideLayer(oldLayer);
+
             layerContext.tempLayer = null;
             newContexts.push(layerContext);
         }

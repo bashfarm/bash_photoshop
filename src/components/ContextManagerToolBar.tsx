@@ -51,13 +51,14 @@ export default function ContextToolBar() {
         });
         let newContexts = await createTempLayers(contextsToGenerateFrom);
 
-        newContexts.forEach((context) => {
-            let layer = context.currentLayer;
-            console.debug('Regenerating layer', layer?.name);
-            regenerateLayer(context, true);
-        });
+        // newContexts.forEach((context) => {
+        //     let layer = context.currentLayer;
+        //     console.debug('Regenerating layer', layer?.name);
+        //     regenerateLayer(context, true);
+        // });
 
-        // regenerateVisibleLayers(contexts)
+        console.debug('Regenerating visible layers');
+        regenerateVisibleLayers(contexts);
     }
 
     return (
