@@ -50,3 +50,39 @@ export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function createLayerFileName(
+    inputString: string,
+    regenerated?: boolean
+) {
+    let newName = inputString;
+    // Check if the string has "(regenerated)"
+    if (inputString.includes('(regenerated)')) {
+        // split the string into 2 variables by the "(regenerated)"
+        const [firstPart, secondPart] = inputString.split('(regenerated)');
+        // Check if the second part has "x" and split the string into 2 variables by the "x" if so
+        if (secondPart.includes('x')) {
+            const [secondPartFirstPart, secondPartSecondPart] =
+                secondPart.split('x');
+            // Increment the number by 1 and return the updated string
+            const newNumber = parseInt(secondPartSecondPart, 10) + 1;
+            newName = firstPart + '(regenerated)' + 'x' + newNumber;
+        } else {
+            // Append "x2" to the string and return the updated string
+            newName =
+                firstPart +
+                '(regenerated)' +
+                secondPart.replace('.png', '') +
+                'x2';
+        }
+    } else {
+        if (regenerated) {
+            // Append "(regenerated)" to the string and return the updated string
+            newName = inputString.replace('.png', '') + ' (regenerated)';
+        }
+    }
+    if (newName.includes('.png') === false) {
+        newName = newName + '.png';
+    }
+
+    return newName;
+}

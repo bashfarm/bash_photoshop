@@ -8,6 +8,7 @@ import _ from 'lodash';
 import photoshop from 'photoshop';
 import { applyMask, duplicateLayer, hasMask } from 'services/layer_service';
 import ContextObject from './ContextObject';
+import { createLayerFileName } from 'utils/general_utils';
 
 export default class LayerAIContext extends ContextObject {
     name: string;
@@ -71,7 +72,7 @@ export default class LayerAIContext extends ContextObject {
      */
     public async createTempImageFileOfLayer() {
         try {
-            let fileName = `temp_${this.currentLayer.name}.png`;
+            let fileName = createLayerFileName(this.currentLayer.name);
             console.debug(`trying to save layer with file name ${fileName}`);
             let tempImgEntry = await saveLayerToPluginData(
                 fileName,
@@ -93,7 +94,7 @@ export default class LayerAIContext extends ContextObject {
         temp: boolean = false
     ) {
         try {
-            let fileName = `${this.currentLayer.name} (regenerated).png`;
+            let fileName = createLayerFileName(this.currentLayer.name, true);
             await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {

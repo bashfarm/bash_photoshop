@@ -1,4 +1,7 @@
-import { randomlyPickLayerName } from '../utils/general_utils';
+import {
+    createLayerFileName,
+    randomlyPickLayerName,
+} from '../utils/general_utils';
 import { getDataFolderEntry, saveLayerToPluginData } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { Layer } from 'photoshop/dom/Layer';
@@ -639,52 +642,33 @@ export async function deSelectLayer(layer: Layer) {
     });
 }
 
+export async function createTempLayers(layerContexts: LayerAIContext[]) {
+    try {
+        let finishedContexts = [];
+        for (let context of layerContexts) {
+            let duplicatedLayer = await context.duplicateCurrentLayer();
+            context.tempLayer = duplicatedLayer;
+            finishedContexts.push(context);
+        }
+        return finishedContexts;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 export async function regenerateLayer(
     layerContext: LayerAIContext,
     moveToTop: boolean = false,
     isBatchRan: boolean = false
 ) {
     try {
-        if (!layerContext.currentLayer?.visible) {
-            console.warn(
-                `The layer given is currently invisible and will be skipped ${layerContext.currentLayer.name}`
-            );
-            return;
-        }
-
-        let oldLayer = layerContext.currentLayer;
-
-        if (await layerContext.hasLayerMask()) {
-            await applyMask(layerContext.tempLayer);
-        }
-        let duplicatedLayer = await layerContext.duplicateCurrentLayer();
-        await saveLayerToPluginData(
-            `${layerContext.currentLayer.name}.png`,
-            oldLayer
-        );
-        let newLayer = await generateAILayer(layerContext);
-        await moveLayer(
-            newLayer,
-            oldLayer,
-            photoshop.constants.ElementPlacement.PLACEBEFORE
-        );
-        await moveLayerToTop(newLayer);
-        console.debug('oldLayer', oldLayer.name);
-        console.debug('newLayer', newLayer.name);
-        console.debug('duplicatedLayer', duplicatedLayer?.name);
-        await scaleAndFitLayerToCanvas(newLayer);
-        await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
-        await applyMask(newLayer);
-        await deleteLayer(duplicatedLayer);
-        await hideLayer(oldLayer);
-
-        layerContext.tempLayer = null;
+        regenLayers([layerContext]);
     } catch (e) {
         console.error(e);
     }
 }
 
-export async function regenLayer(
+async function regenLayer(
     layer: Layer,
     layerContext: LayerAIContext,
     maskingLayer: Layer,
@@ -704,66 +688,47 @@ export async function regenLayer(
         }
         let newLayer = await generateAILayer(layerContext);
         return newLayer;
-        // await moveLayer(
-        // 	newLayer,
-        // 	oldLayer,
-        // 	photoshop.constants.ElementPlacement.PLACEBEFORE
-        // );
     } catch (e) {
         console.error(e);
     }
 }
 
-export async function regenerateVisibleLayers(layerContexts: LayerAIContext[]) {
-    try {
-        let newContexts = [];
-        for (let layerContext of layerContexts) {
-            if (!layerContext.currentLayer?.visible) {
-                continue;
-            }
-
-            let oldLayer = layerContext.currentLayer;
-
-            if (await layerContext.hasLayerMask()) {
-                await applyMask(layerContext.tempLayer);
-            }
-            let duplicatedLayer = await layerContext.tempLayer;
-            let newLayerPromise = generateAILayer(layerContext);
-            // await moveLayer(
-            // 	newLayer,
-            // 	oldLayer,
-            // 	photoshop.constants.ElementPlacement.PLACEBEFORE
-            // );
-            let newLayer = await newLayerPromise;
-            moveLayerToTop(newLayer);
-            console.debug('oldLayer', oldLayer.name);
-            console.debug('newLayer', newLayer.name);
-            console.debug('duplicatedLayer', duplicatedLayer?.name);
-            await scaleAndFitLayerToCanvas(newLayer);
-            await createMaskFromLayerForLayer(duplicatedLayer, newLayer);
-            await applyMask(newLayer);
-            await deleteLayer(duplicatedLayer);
-            await hideLayer(oldLayer);
-
-            layerContext.tempLayer = null;
-            newContexts.push(layerContext);
+export async function regenLayers(contexts: Array<LayerAIContext>) {
+    let contextsToGenerateFrom = contexts.filter((context) => {
+        return context.currentLayer?.visible;
+    });
+    let newContexts = await createTempLayers(contextsToGenerateFrom);
+    let isLayerSaving = false;
+    newContexts.forEach(async (context) => {
+        let layer = context.currentLayer;
+        console.debug('Regenerating layer', layer?.name);
+        while (isLayerSaving) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        return newContexts;
-    } catch (e) {
-        console.error(e);
-    }
+        isLayerSaving = true;
+        // await regenerateLayer(context, true, true);
+        let layerName = createLayerFileName(layer.name, false);
+        await saveLayerToPluginData(layerName, layer);
+        let newLayer = regenLayer(layer, context, context.tempLayer);
+        cleanUpRegenLayer(newLayer, context);
+
+        isLayerSaving = false;
+    });
 }
 
-export async function createTempLayers(layerContexts: LayerAIContext[]) {
-    try {
-        let finishedContexts = [];
-        for (let context of layerContexts) {
-            let duplicatedLayer = await context.duplicateCurrentLayer();
-            context.tempLayer = duplicatedLayer;
-            finishedContexts.push(context);
-        }
-        return finishedContexts;
-    } catch (e) {
-        console.error(e);
+export async function cleanUpRegenLayer(
+    newLayerPromise: Promise<Layer>,
+    context: LayerAIContext
+) {
+    let newLayer = await newLayerPromise;
+    await moveLayerToTop(newLayer);
+    await scaleAndFitLayerToCanvas(newLayer);
+    if (context.tempLayer) {
+        await createMaskFromLayerForLayer(context.tempLayer, newLayer);
+        await applyMask(newLayer);
+        await deleteLayer(context.tempLayer);
+        context.currentLayer = null;
     }
+    return context;
+    // await hideLayer(context.currentLayer);
 }
