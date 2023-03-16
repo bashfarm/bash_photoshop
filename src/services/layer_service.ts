@@ -1,5 +1,5 @@
 import { randomlyPickLayerName } from '../utils/general_utils';
-import { getDataFolderEntry } from './io_service';
+import { getDataFolderEntry, saveLayerToPluginData } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { Layer } from 'photoshop/dom/Layer';
 import {
@@ -657,13 +657,17 @@ export async function regenerateLayer(
         if (await layerContext.hasLayerMask()) {
             await applyMask(layerContext.tempLayer);
         }
-        let duplicatedLayer = layerContext.tempLayer;
+        let duplicatedLayer = await layerContext.duplicateCurrentLayer();
+        await saveLayerToPluginData(
+            `${layerContext.currentLayer.name}.png`,
+            oldLayer
+        );
         let newLayer = await generateAILayer(layerContext);
-        // await moveLayer(
-        // 	newLayer,
-        // 	oldLayer,
-        // 	photoshop.constants.ElementPlacement.PLACEBEFORE
-        // );
+        await moveLayer(
+            newLayer,
+            oldLayer,
+            photoshop.constants.ElementPlacement.PLACEBEFORE
+        );
         await moveLayerToTop(newLayer);
         console.debug('oldLayer', oldLayer.name);
         console.debug('newLayer', newLayer.name);
