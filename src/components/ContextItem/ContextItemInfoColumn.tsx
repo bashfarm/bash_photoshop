@@ -7,8 +7,8 @@ import {
     getAvailableModels,
 } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextDropdown from './ContextDropdown';
-import ContextLabel from './ContextLabel';
+import ContextDropdown from './ContextItemDropdown';
+import ContextItemLabel from './ContextItemLabel';
 
 export type ContextInfoColumnProps = {
     contextID: string;
@@ -17,13 +17,16 @@ export type ContextInfoColumnProps = {
 function DefaultContextInfoColumn() {
     return (
         <div className="flex flex-col min-w-fit justify-center">
-            <ContextLabel value="No layer Selected" labelText={'Layer Name:'} />
+            <ContextItemLabel
+                value="No layer Selected"
+                labelText={'Layer Name:'}
+            />
             {/*<ContextLabel value="No layer Selected" labelText={'Context ID:'} /> */}
         </div>
     );
 }
 
-export default function ContextInfoColumn(props: ContextInfoColumnProps) {
+export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     // let layerContext = useContextStore((state: ContextStoreState) =>
     //     state.getContextFromStore(props.contextID)
     // );
@@ -108,7 +111,8 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                         <ContextDropdown
                             // Not sure why, but is_cloud_run is backwards
                             label={
-                                !getContextFromStore(props.contextID).is_cloud_run
+                                !getContextFromStore(props.contextID)
+                                    .is_cloud_run
                                     ? 'Model:'
                                     : 'Art Type:'
                             }

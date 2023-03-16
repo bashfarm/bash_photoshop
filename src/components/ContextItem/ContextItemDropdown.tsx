@@ -1,13 +1,13 @@
 import Spectrum, { Label } from 'react-uxp-spectrum';
-import { ContextProps } from './ContextProps';
+import { ContextItemProps } from './ContextItemProps';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 
-interface ContextDropdownProps extends ContextProps {
+interface ContextItemDropdownProps extends ContextItemProps {
     options: Array<string>;
 }
 
-export default function ContextDropdown(props: ContextDropdownProps) {
+export default function ContextDropdown(props: ContextItemDropdownProps) {
     const [selectedValue, setSelectedValue] = React.useState<string>(null);
 
     let saveContextToStore = useContextStore((state: ContextStoreState) => {

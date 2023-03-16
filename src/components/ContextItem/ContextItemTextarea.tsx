@@ -1,11 +1,11 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { ContextProps } from './ContextProps';
+import { ContextItemProps } from './ContextItemProps';
 import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export default function ContextTextarea(props: ContextProps) {
+export default function ContextItemTextarea(props: ContextItemProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

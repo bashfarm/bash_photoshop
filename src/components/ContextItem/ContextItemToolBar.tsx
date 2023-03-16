@@ -4,7 +4,7 @@ import {
     VisibilityRounded,
     RefreshIcon,
     DeleteIcon,
-} from 'components/Icons';
+} from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import {
     toggleOffContextHidingTool,
@@ -52,13 +52,15 @@ export type ContexToolBarColumnProps = {
     contextID: string;
 };
 
-export default function ContextToolBar(props: ContexToolBarColumnProps) {
+export default function ContextItemToolBar(props: ContexToolBarColumnProps) {
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
+
     const removeContextFromStore = useContextStore(
         (state: ContextStoreState) => state.removeContextFromStore
     );
+
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
@@ -191,19 +193,6 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 />
                 <ToolbarDivider />
                 <Label>Keep Transparency</Label>
-                <Checkbox
-                    onChange={async () => {
-                        let copyOfContext = layerContext.copy();
-                        copyOfContext.maintainTransparency =
-                            !getContextFromStore(props.contextID)
-                                .maintainTransparency;
-                        saveContextToStore(copyOfContext);
-                    }}
-                    checked={
-                        getContextFromStore(props.contextID)
-                            .maintainTransparency
-                    }
-                />
             </ToolSection>
             <ToolbarDivider />
 

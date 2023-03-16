@@ -1,5 +1,8 @@
 import { Layer } from 'photoshop/dom/Layer';
-import { saveImgDataToDataFolder, saveLayerToPluginData } from 'services/io_service';
+import {
+    saveImgDataToDataFolder,
+    saveLayerToPluginData,
+} from 'services/io_service';
 
 import _ from 'lodash';
 import photoshop from 'photoshop';
@@ -60,26 +63,26 @@ export default class LayerAIContext extends ContextObject {
         );
     }
 
-	/**
+    /**
      * Save the current layer context to the contexts historical files.  Return the new file name entry
      *
      * @param layerAIContext
      * @returns
      */
-	public async createTempFile() {
-		try {
-			let fileName = `temp_${this.currentLayer.name}`
-			console.debug(`trying to save layer with file name ${fileName}`);
-			let tempImgEntry = await saveLayerToPluginData(
-				fileName,
-				this.currentLayer
-			);
-			console.debug('Temp File Entry Created', tempImgEntry);
-			return tempImgEntry;
-		} catch (e) {
-			console.error(e);
-		}
-	}
+    public async createTempFile() {
+        try {
+            let fileName = `temp_${this.currentLayer.name}.png`;
+            console.debug(`trying to save layer with file name ${fileName}`);
+            let tempImgEntry = await saveLayerToPluginData(
+                fileName,
+                this.currentLayer
+            );
+            console.debug('Temp File Entry Created', tempImgEntry);
+            return tempImgEntry;
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     /**
      * Create the next available historical file for the LayerContext
@@ -91,11 +94,10 @@ export default class LayerAIContext extends ContextObject {
     ) {
         try {
             let fileName = `${this.currentLayer.name} (regenerated)`;
-			await saveImgDataToDataFolder(fileName, imgData);
+            await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {
             console.error(e);
         }
     }
-
 }

@@ -1,11 +1,11 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { ContextProps } from './ContextProps';
+import { ContextItemProps } from './ContextItemProps';
 import { Slider } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export default function ContextSlider(props: ContextProps) {
+export default function ContextItemSlider(props: ContextItemProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

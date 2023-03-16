@@ -3,8 +3,8 @@ import React from 'react';
 
 interface DropdownProps {
     options: Array<string>;
-	label: string;
-	onChange?: (event: any) => void; 
+    label: string;
+    onChange?: (event: any) => void;
 }
 
 export default function Dropdown(props: DropdownProps) {

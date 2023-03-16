@@ -29,7 +29,6 @@ export async function getB64StringFromImageUrl(
     return base64js.fromByteArray(new Uint8Array(await response.arrayBuffer()));
 }
 
-
 /**
  * Save the given data to a file
  * @param {String} fileEntry
@@ -43,10 +42,9 @@ export async function saveTextFile(
         const res = await fileEntry;
         res.write(data, { format: formats.utf8 });
     } catch (e) {
-        console.error("Saving Text File",e);
+        console.error('Saving Text File', e);
     }
 }
-
 
 export async function createTempFileEntry(tempName: string) {
     try {
@@ -55,7 +53,7 @@ export async function createTempFileEntry(tempName: string) {
             type: types.file,
             overwrite: true,
         }) as Promise<storage.File>;
-		return entry;
+        return entry;
     } catch (e) {
         console.error(e);
     }
@@ -117,7 +115,6 @@ export async function saveBinaryFileToDataFolder(
     }
 }
 
-
 /**
  * Create an entry for the plugin data folder.
  * @param {String} fileName
@@ -173,6 +170,7 @@ export async function saveDocumentToPluginData(
 ): Promise<void> {
     try {
         let entry = await createDataFolderEntry(fileName);
+        console.log('Saving document to plugin data folder', entry);
         saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
@@ -206,7 +204,9 @@ export async function saveActiveDocument(
         }
 
         await executeInPhotoshop(saveDocumentAsPNG, async () => {
-            await photoshop.app.activeDocument.saveAs.psd((await fileRef) as storage.File);
+            await photoshop.app.activeDocument.saveAs.psd(
+                (await fileRef) as storage.File
+            );
         });
     } catch (e) {
         console.error(e);
@@ -239,7 +239,7 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             layer.visible = true;
 
             // so now we need to export the document
-            // We can just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
+            // We can't just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
             await saveDocumentToPluginData(fileName);
 
             // make the given layers visible again
