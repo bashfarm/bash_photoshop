@@ -642,13 +642,18 @@ export async function deSelectLayer(layer: Layer) {
     });
 }
 
-export async function createTempLayers(layerContexts: LayerAIContext[]) {
+export async function createTempLayers(
+    layerContexts: LayerAIContext[],
+    saveContextToStore: Function
+) {
     try {
         let finishedContexts = [];
         for (let context of layerContexts) {
             let duplicatedLayer = await context.duplicateCurrentLayer();
             context.tempLayer = duplicatedLayer;
             finishedContexts.push(context);
+            context.isGenerating = true;
+            saveContextToStore(context);
         }
         return finishedContexts;
     } catch (e) {
@@ -658,11 +663,11 @@ export async function createTempLayers(layerContexts: LayerAIContext[]) {
 
 export async function regenerateLayer(
     layerContext: LayerAIContext,
-    moveToTop: boolean = false,
-    isBatchRan: boolean = false
+    saveContextToStore: Function,
+    getContextFromStore: Function
 ) {
     try {
-        regenLayers([layerContext]);
+        regenLayers([layerContext], saveContextToStore, getContextFromStore);
     } catch (e) {
         console.error(e);
     }
@@ -693,11 +698,18 @@ async function regenLayer(
     }
 }
 
-export async function regenLayers(contexts: Array<LayerAIContext>) {
+export async function regenLayers(
+    contexts: Array<LayerAIContext>,
+    saveContextToStore: Function,
+    getContextFromStore: Function
+) {
     let contextsToGenerateFrom = contexts.filter((context) => {
         return context.currentLayer?.visible;
     });
-    let newContexts = await createTempLayers(contextsToGenerateFrom);
+    let newContexts = await createTempLayers(
+        contextsToGenerateFrom,
+        saveContextToStore
+    );
     let isLayerSaving = false;
     newContexts.forEach(async (context) => {
         let layer = context.currentLayer;
@@ -706,19 +718,24 @@ export async function regenLayers(contexts: Array<LayerAIContext>) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         isLayerSaving = true;
-        // await regenerateLayer(context, true, true);
-        let layerName = createLayerFileName(layer.name, false);
-        await saveLayerToPluginData(layerName, layer);
-        let newLayer = regenLayer(layer, context, context.tempLayer);
-        cleanUpRegenLayer(newLayer, context);
-
+        let copyOfcontext = context.copy();
+        copyOfcontext.isGenerating = true;
+        saveContextToStore(copyOfcontext);
+        await saveLayerToPluginData(
+            createLayerFileName(layer.name, false),
+            layer
+        );
         isLayerSaving = false;
+
+        let newLayer = regenLayer(layer, context, context.tempLayer);
+        cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
     });
 }
 
 export async function cleanUpRegenLayer(
     newLayerPromise: Promise<Layer>,
-    context: LayerAIContext
+    context: LayerAIContext,
+    saveContextToStore?: Function
 ) {
     let newLayer = await newLayerPromise;
     await moveLayerToTop(newLayer);
@@ -729,6 +746,11 @@ export async function cleanUpRegenLayer(
         await deleteLayer(context.tempLayer);
         context.currentLayer = null;
     }
-    return context;
+
+    let copyOfcontext = context.copy();
+    copyOfcontext.isGenerating = false;
+    saveContextToStore(copyOfcontext);
+
+    // saveContextToStore(context)
     // await hideLayer(context.currentLayer);
 }

@@ -35,6 +35,10 @@ export default function ContextToolBar() {
         (state: ContextStoreState) => state.setContextStore
     );
 
+    const saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
+    );
+
     const popupRef = useRef<ExtendedHTMLDialogElement>();
 
     return (
@@ -42,7 +46,7 @@ export default function ContextToolBar() {
             <ToolSection>
                 <Tool
                     icon={VisibilityOffRounded}
-                    label="Regenerate Visible layers"
+                    label="Regenerate layers"
                     onClick={async () => {
                         console.debug('Regenerating layers');
                         try {
@@ -50,7 +54,9 @@ export default function ContextToolBar() {
                                 Object.values(
                                     (getContextStore() as ContextStoreState)
                                         .layerContexts
-                                )
+                                ),
+                                saveContextToStore,
+                                getContextStore
                             );
                         } catch (e) {
                             console.error('Regenerating Visible Layers', e);

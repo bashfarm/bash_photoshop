@@ -1,16 +1,5 @@
-import photoshop from 'photoshop';
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { Checkbox, Label } from 'react-uxp-spectrum';
-import Progressbar from 'react-uxp-spectrum/dist/Progressbar';
-import { generateAILayer } from 'services/ai_service';
-import {
-    applyMask,
-    createMaskFromLayerForLayer,
-    deleteLayer,
-    moveLayer,
-    regenerateLayer,
-    scaleAndFitLayerToCanvas,
-} from 'services/layer_service';
+import React, { FC, useEffect, useState } from 'react';
+import { regenerateLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 type RegenerationToolProps = {
@@ -28,31 +17,30 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    const layerContext = getContextFromStore(props.contextId);
-
-    async function regenLayer(contextID: string) {
-        try {
-			let context = getContextFromStore(contextID)
-			let copyOfContext = context.copy();
-			copyOfContext.isGenerating = true;
-			saveContextToStore(copyOfContext);
-            let newLayerName = await regenerateLayer(copyOfContext);
-			copyOfContext.isGenerating = false;
-
-			saveContextToStore(copyOfContext)
-
-            props.newLayerDTOSelectionFunc(newLayerName);
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    let layerContext = getContextFromStore(props.contextId);
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
-            onClick={async () => {await regenLayer(props.contextId)}}
+            onClick={async () => {
+                {
+                    let copyOfContext = getContextFromStore(
+                        props.contextId
+                    ).copy();
+                    copyOfContext.isGenerating = true;
+                    saveContextToStore(copyOfContext);
+                    await regenerateLayer(
+                        layerContext,
+                        saveContextToStore,
+                        getContextFromStore
+                    );
+                    copyOfContext = getContextFromStore(props.contextId).copy();
+                    copyOfContext.isGenerating = false;
+                    saveContextToStore(copyOfContext);
+                }
+            }}
         >
-            {!getContextFromStore(props.contextId).isGenerating ? (
+            {!getContextFromStore(props.contextId)?.isGenerating ? (
                 <div>
                     <props.icon
                         {...{

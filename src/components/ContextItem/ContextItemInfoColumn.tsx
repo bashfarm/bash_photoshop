@@ -51,7 +51,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
         } else {
             return getAvailableModelConfigs();
         }
-    }, []);
+    }, [getContextFromStore(props.contextID).is_cloud_run]);
 
     function getDropDownOptions() {
         if (loading) {
