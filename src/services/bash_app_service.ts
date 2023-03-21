@@ -127,8 +127,8 @@ async function extractPhotoshopFile(zip: JSZip) {
  */
 async function openBashfulFileDialog(dialogType: DialogType) {
     if (dialogType === DialogType.SAVE) {
-        let bashfulProjectEntry = await lfs.getFileForSaving('', {
-            types: ['bashful'],
+        let bashfulProjectEntry = await lfs.getFileForSaving('.bashful', {
+            types: ['bashful', 'zip'],
         });
 
         return bashfulProjectEntry;
@@ -136,6 +136,7 @@ async function openBashfulFileDialog(dialogType: DialogType) {
 
     return (await lfs.getFileForOpening({
         allowMultiple: false,
+        types: ['bashful', 'zip'],
     })) as storage.File;
 }
 

@@ -14,12 +14,6 @@ import {
 } from 'services/bash_app_service';
 import { regenLayers } from 'services/layer_service';
 
-const ToolbarDivider = () => {
-    return (
-        <div className="border-r border-[color:var(--uxp-host-border-color)] mx-1 self-stretch" />
-    );
-};
-
 interface ToolSectionProps {
     children: React.ReactNode;
 }
