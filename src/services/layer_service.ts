@@ -667,7 +667,11 @@ export async function regenerateLayer(
     getContextFromStore: Function
 ) {
     try {
-        regenLayers([layerContext], saveContextToStore, getContextFromStore);
+        await regenLayers(
+            [layerContext],
+            saveContextToStore,
+            getContextFromStore
+        );
     } catch (e) {
         console.error(e);
     }
@@ -744,13 +748,10 @@ export async function cleanUpRegenLayer(
         await createMaskFromLayerForLayer(context.tempLayer, newLayer);
         await applyMask(newLayer);
         await deleteLayer(context.tempLayer);
-        context.currentLayer = null;
     }
 
     let copyOfcontext = context.copy();
     copyOfcontext.isGenerating = false;
     saveContextToStore(copyOfcontext);
-
-    // saveContextToStore(context)
-    // await hideLayer(context.currentLayer);
+    console.debug('Finished regenerating layer', newLayer.name);
 }

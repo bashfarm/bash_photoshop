@@ -13,12 +13,17 @@ import { createLayerFileName } from 'utils/general_utils';
 export default class LayerAIContext extends ContextObject {
     name: string;
     generationModelName: string;
-    currentLayer: Layer; // the layer that the context is assigned to
-    tempLayer: Layer; // typically a duplicate of the current layer
+    currentLayerName: string; // the layer that the context is assigned to
+    tempLayerName: string; // typically a duplicate of the current layer
+    currentLayerId: number;
+    tempLayerId: number;
 
     constructor(
         options: any = {
-            currentLayer: null,
+            currentLayerName: '',
+            currentLayerId: '',
+            tempLayerName: '',
+            tempLayerId: '',
             name: null,
             generationModelName: 'model.ckpt',
             docType: '"illustration"',
@@ -32,7 +37,7 @@ export default class LayerAIContext extends ContextObject {
     ) {
         super();
         this.name = options.name;
-        this.currentLayer = options.currentLayer ?? this.currentLayer;
+        this.currentLayerName = options.currentLayer ?? this.currentLayerName;
         this.generationModelName =
             options.generationModelName ?? this.generationModelName;
         this.currentPrompt = options.currentPrompt ?? this.currentPrompt;
@@ -42,6 +47,34 @@ export default class LayerAIContext extends ContextObject {
             options.consistencyStrength ?? this.consistencyStrength;
         this.stylingStrength = options.stylingStrength ?? this.stylingStrength;
         this.negativePrompt = options.negativePrompt ?? this.negativePrompt;
+    }
+
+    public get currentLayer(): Layer {
+        return this.getPhotoshopLayerFromId(this.currentLayerId);
+    }
+
+    public get tempLayer(): Layer {
+        return this.getPhotoshopLayerFromId(this.tempLayerId);
+    }
+
+    public set currentLayer(layer: Layer) {
+        this.currentLayerId = layer.id;
+    }
+
+    public set tempLayer(layer: Layer) {
+        this.tempLayerId = layer.id;
+    }
+
+    public getPhotoshopLayerFromName(layerName: string) {
+        return photoshop.app.activeDocument?.layers?.filter(
+            (layer) => layerName?.toLowerCase() == layer?.name?.toLowerCase()
+        )[0];
+    }
+
+    public getPhotoshopLayerFromId(layerId: number) {
+        return photoshop.app.activeDocument?.layers?.filter(
+            (layer) => layerId == layer?.id
+        )[0];
     }
 
     public async hasLayerMask(): Promise<boolean> {

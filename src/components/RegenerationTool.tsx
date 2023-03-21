@@ -6,7 +6,6 @@ type RegenerationToolProps = {
     icon?: FC<any>;
     label?: string;
     contextId: string;
-    newLayerDTOSelectionFunc: Function;
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
@@ -17,30 +16,28 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    let layerContext = getContextFromStore(props.contextId);
+    useEffect(() => {
+        console.debug('RegenerationTool useEffect');
+        console.debug(
+            'RegenerationTool useEffect',
+            getContextFromStore(props.contextId).isGenerating
+        );
+    }, [getContextFromStore(props.contextId)]);
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
             onClick={async () => {
                 {
-                    let copyOfContext = getContextFromStore(
-                        props.contextId
-                    ).copy();
-                    copyOfContext.isGenerating = true;
-                    saveContextToStore(copyOfContext);
                     await regenerateLayer(
-                        layerContext,
+                        getContextFromStore(props.contextId),
                         saveContextToStore,
                         getContextFromStore
                     );
-                    copyOfContext = getContextFromStore(props.contextId).copy();
-                    copyOfContext.isGenerating = false;
-                    saveContextToStore(copyOfContext);
                 }
             }}
         >
-            {!getContextFromStore(props.contextId)?.isGenerating ? (
+            {!getContextFromStore(props.contextId).isGenerating ? (
                 <div>
                     <props.icon
                         {...{
