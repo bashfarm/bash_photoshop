@@ -30,7 +30,6 @@ export async function saveBashfulProject(contextStore: ContextStoreState) {
 
         let zip = new JSZip();
         let storeCopy = _.cloneDeep(contextStore);
-        storeCopy.layerContextCache = {};
         zip.file(stateFileEntry.nativePath, JSON.stringify(storeCopy));
         zip.file(
             psdFileEntry.nativePath,
@@ -82,7 +81,6 @@ async function extractPhotoshopPSD(zip: JSZip) {
     }
 
     const file = matchingFiles[0];
-    console.log(file);
 
     // Extract the file contents as a Blob
     return await file.async('arraybuffer');
@@ -98,7 +96,6 @@ async function extractStateData(zip: JSZip) {
     }
 
     const file = matchingFiles[0];
-    console.log(file);
 
     // Extract the file contents as a Blob
     return await file.async('string');
@@ -130,8 +127,8 @@ async function extractPhotoshopFile(zip: JSZip) {
  */
 async function openBashfulFileDialog(dialogType: DialogType) {
     if (dialogType === DialogType.SAVE) {
-        let bashfulProjectEntry = await lfs.getFileForSaving('', {
-            types: ['bashful'],
+        let bashfulProjectEntry = await lfs.getFileForSaving('.bashful', {
+            types: ['bashful', 'zip'],
         });
 
         return bashfulProjectEntry;
@@ -139,6 +136,7 @@ async function openBashfulFileDialog(dialogType: DialogType) {
 
     return (await lfs.getFileForOpening({
         allowMultiple: false,
+        types: ['bashful', 'zip'],
     })) as storage.File;
 }
 
@@ -171,6 +169,7 @@ export async function loadBashfulProject(contextSetter: Function) {
     try {
         let bashfulData = await getBashfulData();
         let stateData = JSON.parse(await extractStateData(bashfulData));
+
         loadPhotoshopFile(await extractPhotoshopFile(bashfulData));
         contextSetter(stateData);
     } catch (e) {

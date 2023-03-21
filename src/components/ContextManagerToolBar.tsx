@@ -2,23 +2,17 @@ import React, { FC, useRef } from 'react';
 import {
     PublishIcon,
     SaveAltIcon,
+    SmartToyIcon,
     VisibilityOffRounded,
-    VisibilityRounded,
-} from 'components/Icons';
+} from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import Tool from 'components/Tool';
-import LayerAIContext from 'models/LayerAIContext';
 import {
     loadBashfulProject,
     saveBashfulProject,
 } from 'services/bash_app_service';
-
-const ToolbarDivider = () => {
-    return (
-        <div className="border-r border-[color:var(--uxp-host-border-color)] mx-1 self-stretch" />
-    );
-};
+import { regenLayers } from 'services/layer_service';
 
 interface ToolSectionProps {
     children: React.ReactNode;
@@ -36,49 +30,49 @@ export default function ContextToolBar() {
         (state: ContextStoreState) => state.setContextStore
     );
 
+    const saveContextToStore = useContextStore(
+        (state: ContextStoreState) => state.saveContextToStore
+    );
+
     const popupRef = useRef<ExtendedHTMLDialogElement>();
-
-    function regenerateLayers(contexts: Array<LayerAIContext>) {}
-
-    function regenerateSelectedLayers(contexts: Array<LayerAIContext>) {}
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <ToolSection>
-                {/* <Tool
-                    icon={VisibilityOffRounded}
-                    label="Regenerate All layers"
-                    onClick={async () =>
-                        await regenerateLayers(
-                            Object.values(getContextStore().LayerAIContexts)
-                        )
-                    }
-                />
                 <Tool
-                    icon={VisibilityRounded}
-                    label="Regenerate Selected Layers"
-                    onClick={async () =>
-                        await regenerateSelectedLayers(
-                            Object.values(getContextStore().LayerAIContexts)
-                        )
-                    }
-                /> */}
+                    icon={SmartToyIcon}
+                    label="Regenerate layers"
+                    onClick={async () => {
+                        try {
+                            await regenLayers(
+                                Object.values(
+                                    (getContextStore() as ContextStoreState)
+                                        .layerContexts
+                                ),
+                                saveContextToStore,
+                                getContextStore
+                            );
+                        } catch (e) {
+                            console.error('Regenerating Visible Layers', e);
+                        }
+                    }}
+                />
+
                 <Tool
                     icon={SaveAltIcon}
-                    label="Save Project"
+                    label="Export Bashful Template"
                     onClick={async () =>
                         await saveBashfulProject(getContextStore())
                     }
                 />
                 <Tool
                     icon={PublishIcon}
-                    label="Load Project"
+                    label="Import Bashful Template"
                     onClick={async () => {
                         await loadBashfulProject(setContextStore);
                     }}
                 />
             </ToolSection>
-            <ToolbarDivider />
         </div>
     );
 }

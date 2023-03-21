@@ -66,33 +66,6 @@ export const useFetch = async (url: string) => {
     return { data, loading, error };
 };
 
-/**
- *
- * @param makeFetchRequest Fetches data from the api
- * @returns
- */
-export const useAsyncEffectOLd = (makeFetchRequest: Function) => {
-    const [data, setData] = useState<any>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<any>(null);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await makeFetchRequest();
-                setData(response);
-            } catch (err) {
-                setError(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchData();
-    }, [makeFetchRequest]);
-    return { data, loading, error };
-};
-
 interface AsyncHookEffect {
     error: any;
     loading: boolean;

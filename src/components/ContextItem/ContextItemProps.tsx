@@ -1,7 +1,7 @@
 import { BashfulProps } from 'common/props/BashfulProps';
 import LayerAIContext from 'models/LayerAIContext';
 
-export interface ContextProps extends BashfulProps {
+export interface ContextItemProps extends BashfulProps {
     contextID: string;
     contextKey?: keyof typeof LayerAIContext;
     label?: string;

@@ -17,7 +17,6 @@ export function removeB64Header(b64imgStr: string): string {
  * @returns Formatted base64 encoded string
  */
 export function addB64Header(b64imgStr: string): string {
-    console.log(b64imgStr);
     if (!b64imgStr.includes('data:image')) return B64_IMAGE_HEADER + b64imgStr;
     return b64imgStr;
 }

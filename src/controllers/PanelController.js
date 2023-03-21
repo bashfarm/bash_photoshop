@@ -1,11 +1,9 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 
 const PanelController = (
     component,
     { menuItems = [], invokeMenu = () => {} }
 ) => {
-    // console.log(component)
     var root = null,
         attachment = null;
 
@@ -16,12 +14,9 @@ const PanelController = (
             root.style.overflow = 'auto';
             root.style.padding = '10px 20px';
             ReactDOM.render(component, root);
-            console.log('Panel created');
         },
 
-        destroy() {
-            console.log('Panel destroyed');
-        },
+        destroy() {},
 
         show(node) {
             if (!root) {
@@ -31,7 +26,6 @@ const PanelController = (
                 attachment = node; // the body
                 attachment.appendChild(root);
             }
-            console.log('Panel shown');
         },
 
         hide() {
@@ -39,7 +33,6 @@ const PanelController = (
                 attachment.removeChild(root);
                 attachment = null;
             }
-            console.log('Panel hidden');
         },
         menuItems,
         invokeMenu,

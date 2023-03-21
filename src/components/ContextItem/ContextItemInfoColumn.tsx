@@ -7,26 +7,34 @@ import {
     getAvailableModels,
 } from 'services/ai_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextDropdown from './ContextDropdown';
-import ContextLabel from './ContextLabel';
+import ContextDropdown from './ContextItemDropdown';
+import ContextItemLabel from './ContextItemLabel';
 
 export type ContextInfoColumnProps = {
     contextID: string;
 };
 
+interface DropDownOption {
+    value: string;
+    displayName: string;
+}
+
 function DefaultContextInfoColumn() {
     return (
         <div className="flex flex-col min-w-fit justify-center">
-            <ContextLabel value="No layer Selected" labelText={'Layer Name:'} />
+            <ContextItemLabel
+                value="No layer Selected"
+                labelText={'Layer Name:'}
+            />
             {/*<ContextLabel value="No layer Selected" labelText={'Context ID:'} /> */}
         </div>
     );
 }
 
-export default function ContextInfoColumn(props: ContextInfoColumnProps) {
-    let layerContext = useContextStore((state: ContextStoreState) =>
-        state.getContextFromStore(props.contextID)
-    );
+export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
+    // let layerContext = useContextStore((state: ContextStoreState) =>
+    //     state.getContextFromStore(props.contextID)
+    // );
 
     let getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
@@ -37,7 +45,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     );
 
     let { loading, value } = useAsyncEffect(async () => {
-        if (layerContext.is_cloud_run == false) {
+        if (getContextFromStore(props.contextID).is_cloud_run == false) {
             // While this does work, this is for the future where we batch run the models, currently
             // we would have to make sure each local user swaps out the models when they want to use
             // a different model on a specific layer.  We will collect the selection of models for them
@@ -48,24 +56,38 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
         } else {
             return getAvailableModelConfigs();
         }
-    }, [layerContext.is_cloud_run]);
+    }, [getContextFromStore(props.contextID).is_cloud_run]);
 
     function getDropDownOptions() {
         if (loading) {
             return ['loading models...'];
         } else {
-            if (layerContext.is_cloud_run == false) {
+            if (getContextFromStore(props.contextID).is_cloud_run == false) {
                 return value
                     .map((modelObj: ModelResponse) => {
-                        return modelObj.title;
+                        return {
+                            displayName: modelObj.title,
+                            value: modelObj.title,
+                        } as DropDownOption;
                     })
-                    .filter((name: string) => name != null);
+                    .filter(
+                        (option: DropDownOption) =>
+                            option.displayName != null &&
+                            option.displayName != ''
+                    );
             } else {
                 return value
                     .map((modelObj: ModelConfigResponse) => {
-                        return modelObj.display_name;
+                        return {
+                            displayName: modelObj.display_name,
+                            value: modelObj.name,
+                        } as DropDownOption;
                     })
-                    .filter((name: string) => name != null);
+                    .filter(
+                        (option: DropDownOption) =>
+                            option.displayName != null &&
+                            option.displayName != ''
+                    );
             }
         }
     }
@@ -83,7 +105,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function getCorrectContextKey() {
-        if (!layerContext.is_cloud_run) {
+        if (!getContextFromStore(props.contextID).is_cloud_run) {
             return 'generationModelName' as keyof typeof LayerAIContext;
         }
 
@@ -93,22 +115,28 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
     try {
         return (
             <div className="flex flex-col min-w-fit justify-center">
-                <ContextLabel
+                {/* <ContextLabel
                     value={layerContext.currentLayer?.name}
                     labelText={'Layer Name:'}
-                />
+                /> */}
                 {loading ? (
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
-                        options={['loading models...']}
+                        options={[
+                            {
+                                displayName: 'loading models...',
+                                value: 'loading models...',
+                            },
+                        ]}
                     />
                 ) : (
                     getDropDownOptions().length > 0 && (
                         <ContextDropdown
                             // Not sure why, but is_cloud_run is backwards
                             label={
-                                !layerContext.is_cloud_run
+                                !getContextFromStore(props.contextID)
+                                    .is_cloud_run
                                     ? 'Model:'
                                     : 'Art Type:'
                             }
@@ -118,7 +146,7 @@ export default function ContextInfoColumn(props: ContextInfoColumnProps) {
                             onChange={(event: any) => {
                                 // swapModel(event.target.value);
                                 let selectedConfigObj = getSelectedModelConfig(
-                                    event.target.value
+                                    event.target.value.value
                                 );
                                 saveSelectedModelConfig(selectedConfigObj);
                             }}

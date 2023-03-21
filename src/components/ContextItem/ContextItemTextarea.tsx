@@ -1,23 +1,22 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { ContextProps } from './ContextProps';
-import { Slider } from 'react-uxp-spectrum';
+import { ContextItemProps } from './ContextItemProps';
+import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 
-export default function ContextSlider(props: ContextProps) {
+export default function ContextItemTextarea(props: ContextItemProps) {
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });
     let getContextFromStore = useContextStore((state: ContextStoreState) => {
         return state.getContextFromStore;
     });
+    let [textValue, setTextValue] = useState<string>(null);
 
     let timelineAnimation = useRef<GSAPTimeline | null>();
-
-    let [sliderValue, setSliderValue] = useState<string>('0');
     let debouncedValue = delayStateEventsForStateValue(
-        sliderValue,
+        textValue,
         props.inputDelayTime || 0
     );
 
@@ -33,35 +32,27 @@ export default function ContextSlider(props: ContextProps) {
         }
     }, [debouncedValue]);
 
+    function saveText(event: any) {
+        let copyOfContext = getContextFromStore(props.contextID).copy();
+        copyOfContext.currentPrompt = event.target.value;
+        saveContextToStore(copyOfContext);
+        setTextValue(event.target.value);
+    }
+
     return (
-        <div ref={someRef}>
+        <div ref={someRef} className={props.className}>
             {(props.app == 'photoshop' || !props.app) && (
-                <Slider
-                    variant="filled"
-                    min={0}
-                    max={100}
-                    value={
-                        parseFloat(
-                            getContextFromStore(props.contextID)[
-                                props.contextKey
-                            ]
-                        ) * 100 || parseInt(sliderValue)
-                    }
-                    onChange={(event: any) => {
-                        setSliderValue(event.target.value);
-                        let copyOfContext = getContextFromStore(
-                            props.contextID
-                        ).copy();
-                        copyOfContext[props.contextKey] =
-                            parseInt(event.target.value) / 100;
-                        saveContextToStore(copyOfContext);
+                <Textarea
+                    className={props.className}
+                    placeholder="Enter a description of the content in this layer"
+                    value={getContextFromStore(props.contextID)?.currentPrompt}
+                    onInput={(event) => {
+                        saveText(event);
                         if (props.onChange) {
                             props.onChange(event);
                         }
                     }}
-                >
-                    <sp-label slot="label">{props.children}</sp-label>
-                </Slider>
+                />
             )}
         </div>
     );

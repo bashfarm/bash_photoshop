@@ -1,7 +1,5 @@
 import { BashfulObject } from './BashfulObject';
 import _ from 'lodash';
-import StyleReference from './StyleReference';
-import ContextTag from './ContextTag';
 
 export default class ContextObject extends BashfulObject {
     id: string; // this should be the id number of the layer
@@ -14,12 +12,9 @@ export default class ContextObject extends BashfulObject {
     imageWidth: number;
     batchSize: number;
     seed: number;
-    styleReferences: Array<StyleReference>;
-    tags: Record<string, ContextTag>;
     model_config: string;
-    is_cloud_run: true;
-    isGenerating: false;
-    maintainTransparency: true;
+    is_cloud_run: boolean;
+    isGenerating: boolean;
 
     constructor(
         options: any = {
@@ -28,16 +23,14 @@ export default class ContextObject extends BashfulObject {
             consistencyStrength: 0.0,
             seed: -1,
             negativePrompt: '',
-            docType: 'illustration',
+            docType: '',
             batchSize: 1,
             imageHeight: 1024,
             imageWidth: 1024,
-            styleReferences: [],
             tags: {},
             model_config: 'OpenJourney-Config',
             is_cloud_run: true,
             isGenerating: false,
-            maintainTransparency: true,
         }
     ) {
         super();
@@ -49,14 +42,11 @@ export default class ContextObject extends BashfulObject {
         this.negativePrompt = options.negativePrompt;
         this.docType = options.docType;
         this.batchSize = options.batchSize;
-        this.styleReferences = options.styleReferences;
         this.imageHeight = options.imageHeight;
         this.imageWidth = options.imageWidth;
-        this.tags = options.tags;
         this.model_config = options.model_config;
         this.is_cloud_run = options.is_cloud_run;
         this.isGenerating = options.isGenerating;
-        this.maintainTransparency = options.maintainTransparency;
     }
 
     public getStylingStrength() {
@@ -71,89 +61,5 @@ export default class ContextObject extends BashfulObject {
      */
     public getDenoisingStrength() {
         return 1 - this.consistencyStrength;
-    }
-
-    public removeTag(tag: ContextTag) {
-        this.tags = _.omit(this.tags, tag.id);
-    }
-
-    public addTag(tag: ContextTag) {
-        if (this.tagExists(tag.text)) {
-            tag.update(tag);
-        }
-
-        this.tags[tag.id] = tag;
-    }
-
-    public tagExists(tagName: string) {
-        return Object.values(this.tags).find(
-            (t) => t.text?.toLowerCase() === tagName?.toLowerCase()
-        );
-    }
-
-    public removeStyleReference(styleReference: StyleReference) {
-        this.styleReferences = this.styleReferences.filter(
-            (sr) => sr.id !== styleReference.id
-        );
-        return this.styleReferences;
-    }
-
-    public addStyleReference(styleReference: StyleReference) {
-        this.styleReferences.push(styleReference);
-        return this.styleReferences;
-    }
-
-    public getStyleReference(id: string) {
-        return this.styleReferences.find((sr) => sr.id === id);
-    }
-
-    public getTag(tagID: string) {
-        return this.tags[tagID];
-    }
-
-    public getTags() {
-        return this.tags;
-    }
-
-    public getStyleReferences() {
-        return this.styleReferences;
-    }
-
-    public getStyleReferenceCount() {
-        return this.styleReferences.length;
-    }
-
-    public generateContextualizedPrompt() {
-        let prompt: string = this.currentPrompt;
-        let categories: Array<string> = [];
-        let moods: Array<string> = [];
-        let artists: Array<string> = [];
-
-        for (let styleRef of this.styleReferences) {
-            categories = [...categories, ...styleRef.categories];
-            moods = [...moods, ...styleRef.moods];
-            artists = [...artists, ...styleRef.artists];
-        }
-
-        if (categories.length > 0) {
-            prompt += ` With styles like ${categories.join(', and ')}.`;
-        }
-        if (moods.length > 0) {
-            prompt += ` With moods like ${moods.join(', and ')}.`;
-        }
-        if (artists.length > 0) {
-            prompt += ` By the artists ${artists.join(', and ')}.`;
-        }
-        return prompt;
-    }
-
-    public generateContextualizedNegativePrompt() {
-        let negativePrompt: string = this.negativePrompt;
-
-        for (let tag of Object.values(this.tags)) {
-            negativePrompt += ` ${tag.getContextualizedText()}`;
-        }
-
-        return negativePrompt;
     }
 }

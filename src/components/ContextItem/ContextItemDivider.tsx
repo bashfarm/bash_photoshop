@@ -5,7 +5,7 @@ import { useRef, useState, useLayoutEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 
-export function ContextDivider(props: BashfulProps) {
+export function ContextItemDivider(props: BashfulProps) {
     let timelineAnimation = useRef<GSAPTimeline | null>();
 
     let someRef = useRef<HTMLDivElement>(null);

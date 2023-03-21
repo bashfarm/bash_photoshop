@@ -1,7 +1,7 @@
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextItem from '../components/Context/ContextItem';
+import ContextItem from '../components/ContextItem/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from '../components/ContextManagerToolBar';
@@ -22,7 +22,7 @@ export default function ContextManager() {
     try {
         return (
             <>
-                <BashfulHeader animate={true} />
+                <BashfulHeader animate={false} />
                 <ContextToolBar />
                 <div className="mb-1">
                     <Button
@@ -55,7 +55,6 @@ function ContextItems() {
         (state: ContextStoreState) => state.layerContexts
     );
 
-    console.log('rerender');
     return (
         <>
             {Object.keys(contexts).map((key) => {

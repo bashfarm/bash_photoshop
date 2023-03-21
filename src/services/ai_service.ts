@@ -2,6 +2,8 @@ import { addB64Header, removeB64Header } from '../utils/io_utils';
 import {
     getB64StringFromImageUrl,
     getBase64OfImgInPluginDataFolder,
+    getDataFolderEntry,
+    getTempFileEntry,
 } from './io_service';
 import { getNewestLayer, createNewLayerFromFile } from './layer_service';
 import {
@@ -14,7 +16,6 @@ import {
 import LayerAIContext from 'models/LayerAIContext';
 import { alert } from './alert_service';
 import photoshop from 'photoshop';
-import StyleReference from 'models/StyleReference';
 import {
     BashfulAPIImg2ImgRequest,
     BashfulAPITxt2ImgRequest,
@@ -51,7 +52,7 @@ export async function BAPIImg2Img(
         const payload: BashfulAPIImg2ImgRequest = {
             init_images: [imgb64Str],
             denoising_strength: layerContext.getDenoisingStrength(),
-            prompt: layerContext.generateContextualizedPrompt(),
+            prompt: layerContext.currentPrompt,
             seed: layerContext.seed,
             guidance: layerContext.getStylingStrength(),
             styling_strength: layerContext.getStylingStrength(),
@@ -59,8 +60,6 @@ export async function BAPIImg2Img(
             model_config: layerContext.model_config,
             calling_application: calling_application,
         };
-        console.log('payload');
-        console.log(payload);
 
         const requestOptions: RequestInit = {
             method: 'POST',
@@ -92,7 +91,7 @@ export async function BAPITxt2Img(
 ): Promise<BashfulImageAPIResponse> {
     try {
         const payload: BashfulAPITxt2ImgRequest = {
-            prompt: layerContext.generateContextualizedPrompt(),
+            prompt: layerContext.currentPrompt,
             seed: layerContext.seed,
             guidance: layerContext.getStylingStrength(),
             styling_strength: layerContext.getStylingStrength(),
@@ -100,8 +99,6 @@ export async function BAPITxt2Img(
             model_config: layerContext.model_config,
             calling_application: calling_application,
         };
-
-        console.log(payload);
 
         const requestOptions: RequestInit = {
             method: 'POST',
@@ -113,10 +110,8 @@ export async function BAPITxt2Img(
             `${CLOUD_API_URL}/txt2img`,
             requestOptions
         );
-        console.log(response);
 
         let data = response.json();
-        console.log(data);
 
         return data;
     } catch (e) {
@@ -134,7 +129,6 @@ export async function img2img(
 ): Promise<ImageResponse | BashfulImageAPIResponse> {
     try {
         if (layerContext.is_cloud_run) {
-            console.log(layerContext);
             let response = await BAPIImg2Img(imgb64Str, layerContext);
             if (response.url == undefined) {
                 console.error(response);
@@ -151,7 +145,7 @@ export async function img2img(
             inpaint_full_res: true,
             inpaint_full_res_padding: 0,
             inpainting_mask_invert: 0,
-            prompt: layerContext.generateContextualizedPrompt(),
+            prompt: layerContext.currentPrompt,
             seed: layerContext.seed,
             subseed: -1,
             subseed_strength: 0,
@@ -210,8 +204,8 @@ export const txt2img = async (
         denoising_strength: 0,
         firstphase_width: 0,
         firstphase_height: 0,
-        prompt: layerContext.generateContextualizedPrompt(),
-        styles: layerContext.styleReferences.map((s: StyleReference) => s.name),
+        prompt: layerContext.currentPrompt,
+        styles: [],
         seed: layerContext.seed,
         subseed: -1,
         subseed_strength: 0,
@@ -235,8 +229,6 @@ export const txt2img = async (
         override_settings: {},
         sampler_index: 'Euler',
     };
-
-    console.log(payload);
 
     const requestOptions: RequestInit = {
         method: 'POST',
@@ -266,26 +258,6 @@ export const txt2img = async (
  */
 
 /**
- * @returns Array of artist objects
- */
-export const getArtists = async (): Promise<ArtistType[]> => {
-    const requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-    };
-    try {
-        const response = await fetch(
-            `${AUTO1111_API_URL}/sdapi/v1/artists`,
-            requestOptions
-        );
-        return await response.json();
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-};
-
-/**
  * Generate a new AI Image for the given context and puts it in a layer.
  *
  * @param width
@@ -312,17 +284,14 @@ export async function generateImageLayerUsingOnlyContext(
         if (!layerContext.is_cloud_run) {
             try {
                 const response = await txt2img(layerContext);
-                console.log(response);
                 genb64Str = addB64Header(response['images'][0]);
             } catch (e) {
-                console.log(e);
+                console.error('Regenerating Layer With Only Prompt', e);
                 throw e;
             }
         } else {
             const response = await BAPITxt2Img(layerContext);
-            console.log(response);
             genb64Str = await getB64StringFromImageUrl(response['url']);
-            console.log(genb64Str);
         }
 
         if (genb64Str) {
@@ -330,8 +299,9 @@ export async function generateImageLayerUsingOnlyContext(
             // remember people will be editing this stuff and will want to go back to earlier
             // versions and bash them up.  So we want to keep working with the history like a
             // stack.
-            let generatedFileName =
-                await layerContext.createNewContextHistoryFile(genb64Str);
+            let generatedFileName = await layerContext.createTempGenFile(
+                genb64Str
+            );
 
             await createNewLayerFromFile(generatedFileName);
 
@@ -357,26 +327,23 @@ export async function generateImageLayerUsingLayer(
     let generatedLayer = null;
 
     try {
-        // This will save the current layer to plugin folder as a history file
-        // We save in the beginning to make sure we capture all changes that could have occurred to the layer
-        // before we send it off to the AI for regeneration.
-        let contextHistoryFileEntry =
-            await layerContext.saveLayerContexttoHistory(true);
+        let savedLayerFileEntry = await getDataFolderEntry(
+            `${layerContext.currentLayer.name}.png`
+        );
 
-        // No available file entry.  The user needs to remove some history or do inplace regeneration TODO(Might not happen)
-        if (!contextHistoryFileEntry) {
+        if (!savedLayerFileEntry) {
             return;
         }
 
         // Retrieve the base64 string representation of the image given the name of the image.
         let b64Data = await getBase64OfImgInPluginDataFolder(
-            contextHistoryFileEntry.name
+            savedLayerFileEntry.name
         );
-        let generatedResponse = null;
 
         // So we send off the new image that we saved and got it's string representation for 👏
         // What we will get back from the ai is an image.  The string representation in base64 encoding!
         try {
+            let generatedResponse = null;
             if (!layerContext.is_cloud_run) {
                 generatedResponse = (await img2img(
                     addB64Header(b64Data),
@@ -393,7 +360,7 @@ export async function generateImageLayerUsingLayer(
                 );
             }
         } catch (e) {
-            console.log(e);
+            console.error('Regenerating Layer Using Layer and Prompt', e);
             throw e;
         }
 
@@ -402,8 +369,9 @@ export async function generateImageLayerUsingLayer(
             // remember people will be editing this stuff and will want to go back to earlier
             // versions and bash them up.  So we want to keep working with the history like a
             // stack.
-            let generatedFileName =
-                await layerContext.createNewContextHistoryFile(genb64Str);
+            let generatedFileName = await layerContext.createTempGenFile(
+                genb64Str
+            );
 
             await createNewLayerFromFile(generatedFileName);
 
@@ -416,9 +384,7 @@ export async function generateImageLayerUsingLayer(
         return generatedLayer;
     } catch (e) {
         console.error(e);
-        alert(
-            `Something is wrong with retrieving information from the API.  Please check that your installation is working properly https://github.com/AUTOMATIC1111/stable-diffusion-webui`
-        );
+        alert(`Something is wrong with retrieving information from the API.`);
     }
 }
 
@@ -434,7 +400,6 @@ export async function getImageProcessingProgress(): Promise<ProgressResponse> {
     };
 
     try {
-        console.log(AUTO1111_API_URL);
         const response = await fetch(
             `${AUTO1111_API_URL}/sdapi/v1/progress?skip_current_image=false`,
             requestOptions
@@ -464,7 +429,6 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
             requestOptions
         );
         let data = await response.json();
-        console.log(data);
         return data;
     } catch (e) {
         console.error(e);
@@ -490,7 +454,6 @@ export async function getAvailableModelConfigs(): Promise<
             requestOptions
         );
         let data = await response.json();
-        console.log(data);
         return data;
     } catch (e) {
         console.error(e);
@@ -611,7 +574,7 @@ export async function getImg2ImgDepth(
         inpaint_full_res: true,
         inpaint_full_res_padding: 0,
         inpainting_mask_invert: 0,
-        prompt: layerContext.generateContextualizedPrompt(),
+        prompt: layerContext.currentPrompt,
         seed: layerContext.seed,
         subseed: -1,
         subseed_strength: 0,

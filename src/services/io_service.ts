@@ -1,6 +1,6 @@
 import base64js from 'base64-js';
 import _ from 'lodash';
-const photoshop = require('photoshop');
+import photoshop from 'photoshop';
 import { Layer } from 'photoshop/dom/Layer';
 import { storage } from 'uxp';
 import { removeB64Header } from '../utils/io_utils';
@@ -11,6 +11,7 @@ import {
 } from './layer_service';
 
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
+import { alert } from 'services/alert_service';
 
 const [lfs, types, formats] = [
     storage.localFileSystem,
@@ -30,22 +31,6 @@ export async function getB64StringFromImageUrl(
 }
 
 /**
- * Save the given text to a file in the plugin data folder
- * @param {String} fileName
- * @param {*} data
- */
-export async function saveTextFileToDataFolder(fileName: string, data: string) {
-    try {
-        const entry = await createDataFolderEntry(fileName);
-        const res = (await entry) as storage.File;
-        res.write(data, { format: formats.utf8 });
-    } catch (e) {
-        console.log('something not write');
-        console.log(e);
-    }
-}
-
-/**
  * Save the given data to a file
  * @param {String} fileEntry
  * @param {string} data
@@ -58,43 +43,35 @@ export async function saveTextFile(
         const res = await fileEntry;
         res.write(data, { format: formats.utf8 });
     } catch (e) {
-        console.log('something not write');
-        console.log(e);
+        console.error('Saving Text File', e);
     }
 }
 
-/**
- * Create a Temp File Entry
- * @param {String} fileEntry
- * @param {*} data
- */
 export async function createTempFileEntry(tempName: string) {
     try {
         const tempFolder: storage.Folder = await lfs.getTemporaryFolder();
         const entry = tempFolder.createEntry(tempName, {
             type: types.file,
             overwrite: true,
-        });
-        return entry as Promise<storage.File>;
+        }) as Promise<storage.File>;
+        return entry;
     } catch (e) {
         console.error(e);
     }
 }
 
-/**
- * Save the give data as binary to a file in the plugin data folder
- * @param {String} fileName
- * @param {*} data
- */
-export async function saveBinaryFileToDataFolder(
+export async function saveImgDataToDataFolder(
     fileName: string,
-    data: Uint8Array
+    imgData: Uint8Array | string
 ): Promise<storage.File> {
     try {
-        let entry = await createDataFolderEntry(fileName);
-        let res = (await entry) as storage.File;
-        res.write(data, { format: formats.binary });
-        return res;
+        let serializer: any = null;
+        if (typeof imgData === 'string' || imgData instanceof String) {
+            serializer = saveB64ImageToBinaryFileToDataFolder;
+        } else {
+            serializer = saveBinaryFileToDataFolder;
+        }
+        return await serializer(fileName, imgData);
     } catch (e) {
         console.error(e);
     }
@@ -116,7 +93,26 @@ export async function saveB64ImageToBinaryFileToDataFolder(
             base64js.toByteArray(removeB64Header(data))
         );
     } catch (e) {
-        console.log(e);
+        console.error(e);
+    }
+}
+
+/**
+ * Save the give data as binary to a file in the plugin data folder
+ * @param {String} fileName
+ * @param {*} data
+ */
+export async function saveBinaryFileToDataFolder(
+    fileName: string,
+    data: Uint8Array
+): Promise<storage.File> {
+    try {
+        let entry = await createDataFolderEntry(fileName);
+        let res = (await entry) as storage.File;
+        res.write(data, { format: formats.binary });
+        return res;
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -175,6 +171,7 @@ export async function saveDocumentToPluginData(
 ): Promise<void> {
     try {
         let entry = await createDataFolderEntry(fileName);
+        console.log('Saving document to plugin data folder', entry);
         saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
@@ -208,7 +205,9 @@ export async function saveActiveDocument(
         }
 
         await executeInPhotoshop(saveDocumentAsPNG, async () => {
-            await photoshop.app.activeDocument.saveAs.psd(await fileRef);
+            await photoshop.app.activeDocument.saveAs.psd(
+                (await fileRef) as storage.File
+            );
         });
     } catch (e) {
         console.error(e);
@@ -236,19 +235,24 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
         await executeInPhotoshop(saveLayerToPluginData, async () => {
             // Make layers inivisible so we only export the document with the the selected layer
             await makeLayersInvisible(visibleLayers);
+            // alert(`made layers invisible`)
 
             // Cause we want only the layer that was passed to us to be visible when we export
             layer.visible = true;
+            // alert(`made single Layer visible`)
 
             // so now we need to export the document
-            // We can just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
+            // We can't just save a layer :/.  Dunno how, so I just turn off layer visibility and export like that.
             await saveDocumentToPluginData(fileName);
+            // alert(`saved document`)
 
             // make the given layers visible again
-            makeLayersVisible(visibleLayers);
+            await makeLayersVisible(visibleLayers);
+            // alert(`made previous layers visible`)
 
             // Set the layer back to what it was before
             layer.visible = prevVisibility;
+            // alert(`set our original layer back to visible`)
         });
 
         return await getDataFolderEntry(fileName);

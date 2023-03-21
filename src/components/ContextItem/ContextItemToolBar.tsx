@@ -4,7 +4,8 @@ import {
     VisibilityRounded,
     RefreshIcon,
     DeleteIcon,
-} from 'components/Icons';
+    SmartToyIcon,
+} from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import {
     toggleOffContextHidingTool,
@@ -17,6 +18,7 @@ import Tool from 'components/Tool';
 import RegenerationTool from 'components/RegenerationTool';
 import { getAvailableModels } from 'services/ai_service';
 import { useAsyncEffect } from 'hooks/fetchHooks';
+import _ from 'lodash';
 
 const events = [
     'make',
@@ -39,11 +41,6 @@ interface ToolSectionProps {
     children: React.ReactNode;
 }
 
-interface LayerDTO {
-    name: string;
-    id: number;
-}
-
 const ToolSection: FC<ToolSectionProps> = ({ children }) => {
     return <div className="flex items-center justify-between">{children}</div>;
 };
@@ -52,78 +49,34 @@ export type ContexToolBarColumnProps = {
     contextID: string;
 };
 
-export default function ContextToolBar(props: ContexToolBarColumnProps) {
+interface DropDownOption {
+    displayName: string;
+    value: any;
+}
+
+export default function ContextItemToolBar(props: ContexToolBarColumnProps) {
+    // let contexts = useContextStore((state: ContextStoreState) => state.layerContexts);
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
+
     const removeContextFromStore = useContextStore(
         (state: ContextStoreState) => state.removeContextFromStore
     );
+
     let saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    function getPSLayerNameFromLayerID(layerID: number) {
-        return photoshop.app?.activeDocument?.layers.filter(
-            (layer) => layer.id == layerID
-        )[0]?.name;
-    }
+    let [dropDownLayers, setDropDownLayers] = useState<DropDownOption[]>(
+        photoshop.app.activeDocument?.layers?.map((layer) => {
+            return {
+                displayName: layer.name,
+                value: layer.id,
+            } as DropDownOption;
+        })
+    );
 
-    const popupRef = useRef<ExtendedHTMLDialogElement>();
-    let layerContext = getContextFromStore(props.contextID);
-    let [selectedLayerDTO, setSelectedLayerDTO] = useState<LayerDTO>({
-        name: getPSLayerNameFromLayerID(layerContext?.currentLayer?._id),
-        id: layerContext?.currentLayer?._id,
-    });
-
-    let [dropDownLayers, setDropDownLayers] = useState<Array<LayerDTO>>([]);
-
-    console.log(layerContext);
-
-    function onChange() {
-        setDropDownToAllLayers();
-    }
-
-    useEffect(() => {
-        photoshop.action.addNotificationListener(events, onChange);
-        return () => {
-            photoshop.action.removeNotificationListener(events, onChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        photoshop.action.addNotificationListener(events, onChange);
-        setDropDownToAllLayers();
-    }, [selectedLayerDTO]);
-
-    /**
-     * This function just takes all of the active document's layers and creates DTOs of them for
-     * the dropdown menu.
-     */
-    function setDropDownToAllLayers() {
-        setDropDownLayers(
-            photoshop.app.activeDocument?.layers?.map((layer) => {
-                let layerDTO: LayerDTO = {
-                    name: layer.name,
-                    id: layer.id,
-                };
-                return layerDTO;
-            })
-        );
-    }
-    function getPSLayerByID(layerID: number) {
-        return photoshop.app.activeDocument?.layers?.filter(
-            (layer) => layerID == layer.id
-        )[0];
-    }
-
-    function onDropDownSelect(layerDTO: LayerDTO) {
-        setSelectedLayerDTO(layerDTO);
-        console.warn(layerDTO);
-        let copyOfContext = layerContext.copy();
-        copyOfContext.currentLayer = getPSLayerByID(layerDTO.id);
-        saveContextToStore(copyOfContext);
-    }
     let { loading, value } = useAsyncEffect(async () => {
         // While this does work, this is for the future where we batch run the models, currently
         // we would have to make sure each local user swaps out the models when they want to use
@@ -133,24 +86,59 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
         return getAvailableModels();
     });
 
+    useEffect(() => {
+        setDropDownLayers(
+            photoshop.app.activeDocument?.layers?.map((layer) => {
+                return {
+                    displayName: layer.name,
+                    value: layer.id,
+                } as DropDownOption;
+            })
+        );
+    }, [getContextFromStore(props.contextID).isGenerating]);
+
+    function onChange() {
+        setDropDownLayers(
+            photoshop.app.activeDocument?.layers?.map((layer) => {
+                return {
+                    displayName: layer.name,
+                    value: layer.id,
+                } as DropDownOption;
+            })
+        );
+    }
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onChange);
+        return () => {
+            photoshop.action.removeNotificationListener(events, onChange);
+        };
+    }, []);
+
+    function onDropDownSelect(option: DropDownOption) {
+        let copyOfContext = getContextFromStore(props.contextID).copy();
+        copyOfContext.currentLayerName = option.displayName;
+        copyOfContext.currentLayerId = option.value;
+        saveContextToStore(copyOfContext);
+    }
+
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
                     {dropDownLayers &&
-                        dropDownLayers.map((layerDTO: LayerDTO) => {
+                        dropDownLayers.map((option: DropDownOption) => {
                             try {
                                 return (
                                     <Spectrum.MenuItem
-                                        key={layerDTO.id}
-                                        onClick={() =>
-                                            onDropDownSelect(layerDTO)
-                                        }
+                                        key={_.uniqueId()}
+                                        onClick={() => onDropDownSelect(option)}
                                         selected={
-                                            selectedLayerDTO?.id == layerDTO.id
+                                            getContextFromStore(props.contextID)
+                                                .currentLayerId == option.value
                                         }
                                     >
-                                        {layerDTO.name}
+                                        {option.displayName}
                                     </Spectrum.MenuItem>
                                 );
                             } catch (e) {
@@ -165,7 +153,9 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                         <Label>Use Auto1111</Label>
                         <Checkbox
                             onChange={async () => {
-                                let copyOfContext = layerContext.copy();
+                                let copyOfContext = getContextFromStore(
+                                    props.contextID
+                                ).copy();
                                 copyOfContext.is_cloud_run =
                                     !copyOfContext.is_cloud_run;
                                 saveContextToStore(copyOfContext);
@@ -181,29 +171,18 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                     icon={VisibilityOffRounded}
                     label="Hide"
                     onClick={async () =>
-                        await toggleOnContextHidingTool(layerContext)
+                        await toggleOnContextHidingTool(
+                            getContextFromStore(props.contextID)
+                        )
                     }
                 />
                 <Tool
                     icon={VisibilityRounded}
                     label="Unhide"
                     onClick={async () =>
-                        await toggleOffContextHidingTool(layerContext)
-                    }
-                />
-                <ToolbarDivider />
-                <Label>Keep Transparency</Label>
-                <Checkbox
-                    onChange={async () => {
-                        let copyOfContext = layerContext.copy();
-                        copyOfContext.maintainTransparency =
-                            !getContextFromStore(props.contextID)
-                                .maintainTransparency;
-                        saveContextToStore(copyOfContext);
-                    }}
-                    checked={
-                        getContextFromStore(props.contextID)
-                            .maintainTransparency
+                        await toggleOffContextHidingTool(
+                            getContextFromStore(props.contextID)
+                        )
                     }
                 />
             </ToolSection>
@@ -211,10 +190,9 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
 
             <ToolSection>
                 <RegenerationTool
-                    icon={RefreshIcon}
+                    icon={SmartToyIcon}
                     label="Regenerate Layer"
                     contextId={props.contextID}
-                    newLayerDTOSelectionFunc={setSelectedLayerDTO}
                 />
             </ToolSection>
             <ToolbarDivider />
@@ -222,7 +200,7 @@ export default function ContextToolBar(props: ContexToolBarColumnProps) {
                 <Tool
                     icon={DeleteIcon}
                     label="Delete Context"
-                    onClick={() => removeContextFromStore(layerContext.id)}
+                    onClick={() => removeContextFromStore(props.contextID)}
                 />
             </ToolSection>
         </div>

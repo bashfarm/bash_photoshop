@@ -26,8 +26,6 @@ export async function executeInPhotoshop(
         startExecution(executingFunction);
 
         // ok so sometimes we get the `unknown target document error` and sometimes we don't.  Async issue
-        // console.log(func) // unsure why this started working all of a sudden if I put this here
-
         let result = await executeAsModal(
             async (executionContext: any) => {
                 let hostControl = executionContext.hostControl;
@@ -46,10 +44,8 @@ export async function executeInPhotoshop(
                         );
                     }
                 }
-                // console.log(func)
                 let result = await executingFunction();
                 stopExecution(executingFunction);
-
                 // We are going to have to rerun this function after we do a lock
                 if (!isExecuting) {
                     await hostControl.resumeHistory(suspensionID);

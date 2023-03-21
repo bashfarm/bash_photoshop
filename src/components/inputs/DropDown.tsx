@@ -1,21 +1,14 @@
 import Spectrum, { Label } from 'react-uxp-spectrum';
-import { ContextProps } from './ContextProps';
 import React from 'react';
-import { ContextStoreState, useContextStore } from 'store/contextStore';
 
-interface ContextDropdownProps extends ContextProps {
+interface DropdownProps {
     options: Array<string>;
+    label: string;
+    onChange?: (event: any) => void;
 }
 
-export default function ContextDropdown(props: ContextDropdownProps) {
+export default function Dropdown(props: DropdownProps) {
     const [selectedValue, setSelectedValue] = React.useState<string>(null);
-
-    let saveContextToStore = useContextStore((state: ContextStoreState) => {
-        return state.saveContextToStore;
-    });
-    let getContextFromStore = useContextStore((state: ContextStoreState) => {
-        return state.getContextFromStore;
-    });
 
     return (
         <div>
@@ -30,18 +23,6 @@ export default function ContextDropdown(props: ContextDropdownProps) {
                                         key={value}
                                         onClick={(event: any) => {
                                             setSelectedValue(value);
-                                            if (props.contextKey) {
-                                                let copyOfContext =
-                                                    getContextFromStore(
-                                                        props.contextID
-                                                    ).copy();
-                                                copyOfContext[
-                                                    props.contextKey
-                                                ] = value;
-                                                saveContextToStore(
-                                                    copyOfContext
-                                                );
-                                            }
                                             props?.onChange?.(event);
                                         }}
                                         selected={selectedValue == value}

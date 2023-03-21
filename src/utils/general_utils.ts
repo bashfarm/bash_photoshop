@@ -50,39 +50,39 @@ export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// const popUpModal = async (popupRef: any) => {
-//     if (!popupRef.current) {
-// 		popupRef.current = document.createElement("dialog");
-//       ReactDOM.render(<popUpComponent dialog={popupRef.current} />, popupRef.current);
-//     }
-//     document.body.appendChild(popupRef.current);
+export function createLayerFileName(
+    inputString: string,
+    regenerated?: boolean
+) {
+    let newName = inputString;
+    // Check if the string has "(regenerated)"
+    if (inputString.includes('(regenerated)')) {
+        // split the string into 2 variables by the "(regenerated)"
+        const [firstPart, secondPart] = inputString.split('(regenerated)');
+        // Check if the second part has "x" and split the string into 2 variables by the "x" if so
+        if (secondPart.includes('x')) {
+            const [secondPartFirstPart, secondPartSecondPart] =
+                secondPart.split('x');
+            // Increment the number by 1 and return the updated string
+            const newNumber = parseInt(secondPartSecondPart, 10) + 1;
+            newName = firstPart + '(regenerated)' + 'x' + newNumber;
+        } else {
+            // Append "x2" to the string and return the updated string
+            newName =
+                firstPart +
+                '(regenerated)' +
+                secondPart.replace('.png', '') +
+                'x2';
+        }
+    } else {
+        if (regenerated) {
+            // Append "(regenerated)" to the string and return the updated string
+            newName = inputString.replace('.png', '') + ' (regenerated)';
+        }
+    }
+    if (newName.includes('.png') === false) {
+        newName = newName + '.png';
+    }
 
-//     const response = await popupRef.current.uxpShowModal({
-//       title: "Please authenticate...",
-//       resize: "both",
-//       size: {
-//         width: 400,
-//         height: 200
-//       }
-//     });
-//     authPopup.current.remove();
-//     console.log("RESPONZE", response);
-//     // God, why have I to do that
-//     if (!response ||
-//       response === "reasonCanceled" ||
-//       response.reason === "reasonCanceled") {
-//       console.log("nope");
-//       return;
-//     }
-
-//     if (response.reason === "OK") {
-//       console.log("response.credentials", response.credentials)
-//       // https://stackoverflow.com/a/58877875/1625148
-//       setCredentials(response.credentials);
-//     }
-
-//   }
-
-export function logCallingFunction(func: Function) {
-    console.log(func);
+    return newName;
 }

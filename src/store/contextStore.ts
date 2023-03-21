@@ -2,27 +2,25 @@ import LayerAIContext from 'models/LayerAIContext';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { immerable } from 'immer';
-import { logCallingFunction } from 'utils/general_utils';
 import { BashfulObject } from 'models/BashfulObject';
 
 export class ContextStoreState extends BashfulObject {
     [immerable] = true;
-    layerContextCache: Record<string, LayerAIContext> = {};
     layerContexts: Record<string, LayerAIContext> = {};
-    selectedAIBrushContext: LayerAIContext = null;
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
         super();
-        this.layerContextCache = {};
         this.layerContexts = {};
-        this.selectedAIBrushContext = null;
         this.set = set;
         this.get = get;
     }
 
+    /**
+     * Save the context to the context store.
+     * @param context
+     */
     public saveContextToStore = (context: LayerAIContext) => {
-        logCallingFunction(this.saveContextToStore);
         try {
             this.set((state: ContextStoreState) => {
                 state.layerContexts[context.id] = context;
@@ -31,25 +29,26 @@ export class ContextStoreState extends BashfulObject {
             console.error(e);
         }
     };
+
+    /**
+     * Remove the context from the context store.
+     * @param contextID
+     */
     public removeContextFromStore = (contextID: string) => {
-        logCallingFunction(this.removeContextFromStore);
         try {
             this.set((state: ContextStoreState) => {
-                state.layerContextCache[contextID] =
-                    this.get().layerContexts[contextID];
                 delete state.layerContexts[contextID];
             });
         } catch (e) {
             console.error(e);
         }
     };
-    public getContextFromCache = (contextID: string) => {
-        try {
-            return this.get().layerContextCache[contextID];
-        } catch (e) {
-            console.error(e);
-        }
-    };
+
+    /**
+     * Get a specific context from the context store.
+     * @param contextID
+     * @returns
+     */
     public getContextFromStore = (contextID: string) => {
         try {
             return this.get().layerContexts[contextID];
@@ -57,17 +56,20 @@ export class ContextStoreState extends BashfulObject {
             console.error(e);
         }
     };
-    public getContextsFromStore = (contextIDs: Array<string>) => {
-        if (contextIDs) {
-            return contextIDs.map((contextID) => {
-                try {
-                    return this.get().layerContexts[contextID];
-                } catch (e) {
-                    console.error(e);
-                }
-            });
-        }
+
+    /**
+     * Get all contexts from the context store.
+     * @param contextIDs
+     * @returns
+     */
+    public getContextsFromStore = () => {
+        return this.get().layerContexts;
     };
+
+    /**
+     * Get the most updated context store.
+     * @returns
+     */
     public getContextStore = () => {
         try {
             return this.get();
@@ -75,12 +77,20 @@ export class ContextStoreState extends BashfulObject {
             console.error(e);
         }
     };
+
+    /**
+     * Sets the context store to the given state data.  This is typically used when loading a bashful project.
+     * @param stateData
+     */
     public setContextStore = (stateData: ContextStoreState) => {
-        logCallingFunction(this.setContextStore);
         this.setInstantiatedLayerContexts(stateData);
     };
+
+    /**
+     * Instantiates the layer contexts from the given state data.
+     * @param stateData
+     */
     private setInstantiatedLayerContexts = (stateData: ContextStoreState) => {
-        logCallingFunction(this.setInstantiatedLayerContexts);
         this.set((state: any) => {
             state.layerContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
@@ -99,12 +109,12 @@ const log = (config: any) => (set: Function, get: Function, api: any) =>
     config(
         (...args: any) => {
             set(...args);
-            console.log('CONTEXT STORE👊 NEW STATE:', get());
+            console.debug('CONTEXT STORE👊 NEW STATE:', get());
         },
         get,
         api
     );
-
+// Create the context store
 export const useContextStore = create(
     immer(
         log((set: any, get: any) => {

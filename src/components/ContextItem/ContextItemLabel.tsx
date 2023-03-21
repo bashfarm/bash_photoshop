@@ -6,7 +6,7 @@ export type ContextLabelProps = {
     labelText: string;
 };
 
-export default function ContextLabel(props: ContextLabelProps) {
+export default function ContextItemLabel(props: ContextLabelProps) {
     return (
         <div className="flex flex-row">
             <Heading

@@ -1,5 +1,8 @@
-import { randomlyPickLayerName } from '../utils/general_utils';
-import { getDataFolderEntry } from './io_service';
+import {
+    createLayerFileName,
+    randomlyPickLayerName,
+} from '../utils/general_utils';
+import { getDataFolderEntry, saveLayerToPluginData } from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { Layer } from 'photoshop/dom/Layer';
 import {
@@ -13,6 +16,8 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
+import { generateAILayer } from './ai_service';
+import LayerAIContext from 'models/LayerAIContext';
 
 const lfs = storage.localFileSystem;
 const bp = photoshop.action.batchPlay;
@@ -96,20 +101,24 @@ export function getTopLayer(
     selected: boolean = false,
     active: boolean = false
 ): Layer {
-    if (selected) return getSelectedLayers(app.activeDocument.layers)[0];
+    if (selected) {
+        return getSelectedLayers(app.activeDocument.layers)[0];
+    }
 
-    if (active) return photoshop.app.activeDocument.activeLayers[0];
+    if (active) {
+        return photoshop.app.activeDocument.activeLayers[0];
+    }
     return photoshop.app.activeDocument.layers[0];
 }
 
 /**
  * Convenience function to move this layer to the top of the app.
  */
-export function moveLayerToTop(layer: Layer) {
+export async function moveLayerToTop(layer: Layer) {
     try {
-        moveLayer(layer, getTopLayer());
+        await moveLayer(layer, getTopLayer());
     } catch (e) {
-        console.log(e);
+        console.error('Moving Layer to Top', e);
     }
 }
 
@@ -284,6 +293,15 @@ export async function deleteLayer(layer: Layer) {
 }
 
 /**
+ * Deletes this layer from the document.
+ */
+export async function hideLayer(layer: Layer) {
+    await executeInPhotoshop(deleteLayer, async () => {
+        layer.visible = false;
+    });
+}
+
+/**
  * Flips the layer on one or both axis.
  *
  * ```javascript
@@ -345,7 +363,7 @@ export async function sendLayerToBack(layer: Layer) {
  * ```javascript
  * // link two layers together
  * const linkedLayers = await linkLayers(strokes, fillLayer)
- * linkedLayers.forEach((layer) => console.log(layer.name))
+ * linkedLayers.forEach((layer) => console.debug(layer.name))
  * > "strokes"
  * > "fillLayer"
  * ```
@@ -434,7 +452,6 @@ export async function scaleLayer(
     options?: { interpolation?: ResampleMethod }
 ) {
     await executeInPhotoshop(scaleLayer, async () => {
-        console.log('yolo');
         await layer.scale(width, height, anchor, options);
     });
 }
@@ -589,7 +606,6 @@ export async function createMaskFromLayerForLayer(
     fromLayer: Layer,
     forLayer: Layer
 ) {
-    console.log('createMaskFromLayerForLayer', fromLayer, forLayer);
     return await executeInPhotoshop(createMaskFromLayerForLayer, async () => {
         let command = {
             _obj: 'make',
@@ -621,4 +637,116 @@ export async function deSelectLayer(layer: Layer) {
     return await executeInPhotoshop(deSelectLayer, async () => {
         layer.selected = false;
     });
+}
+
+export async function createTempLayers(
+    layerContexts: LayerAIContext[],
+    saveContextToStore: Function
+) {
+    try {
+        let finishedContexts = [];
+        for (let context of layerContexts) {
+            let duplicatedLayer = await context.duplicateCurrentLayer();
+            context.tempLayer = duplicatedLayer;
+            finishedContexts.push(context);
+            context.isGenerating = true;
+            saveContextToStore(context);
+        }
+        return finishedContexts;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export async function regenerateLayer(
+    layerContext: LayerAIContext,
+    saveContextToStore: Function,
+    getContextFromStore: Function
+) {
+    try {
+        await regenLayers(
+            [layerContext],
+            saveContextToStore,
+            getContextFromStore
+        );
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function regenLayer(
+    layer: Layer,
+    layerContext: LayerAIContext,
+    maskingLayer: Layer,
+    moveToTop: boolean = false,
+    isBatchRan: boolean = false
+) {
+    try {
+        if (!layerContext.currentLayer?.visible) {
+            console.warn(
+                `The layer given is currently invisible and will be skipped ${layerContext.currentLayer.name}`
+            );
+            return;
+        }
+
+        if (await layerContext.hasLayerMask()) {
+            await applyMask(layerContext.tempLayer);
+        }
+        let newLayer = await generateAILayer(layerContext);
+        return newLayer;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export async function regenLayers(
+    contexts: Array<LayerAIContext>,
+    saveContextToStore: Function,
+    getContextFromStore: Function
+) {
+    let contextsToGenerateFrom = contexts.filter((context) => {
+        return context.currentLayer?.visible;
+    });
+    let newContexts = await createTempLayers(
+        contextsToGenerateFrom,
+        saveContextToStore
+    );
+    let isLayerSaving = false;
+    newContexts.forEach(async (context) => {
+        let layer = context.currentLayer;
+        while (isLayerSaving) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        isLayerSaving = true;
+        let copyOfcontext = context.copy();
+        copyOfcontext.isGenerating = true;
+        saveContextToStore(copyOfcontext);
+        await saveLayerToPluginData(
+            createLayerFileName(layer.name, false),
+            layer
+        );
+        isLayerSaving = false;
+
+        let newLayer = regenLayer(layer, context, context.tempLayer);
+        cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
+    });
+}
+
+export async function cleanUpRegenLayer(
+    newLayerPromise: Promise<Layer>,
+    context: LayerAIContext,
+    saveContextToStore?: Function
+) {
+    let newLayer = await newLayerPromise;
+    await moveLayerToTop(newLayer);
+    await scaleAndFitLayerToCanvas(newLayer);
+    if (context.tempLayer) {
+        await createMaskFromLayerForLayer(context.tempLayer, newLayer);
+        await applyMask(newLayer);
+        await deleteLayer(context.tempLayer);
+    }
+
+    let copyOfcontext = context.copy();
+    copyOfcontext.isGenerating = false;
+    saveContextToStore(copyOfcontext);
 }
