@@ -25,19 +25,23 @@ export default class LayerAIContext extends ContextObject {
             tempLayerName: '',
             tempLayerId: '',
             name: null,
-            generationModelName: 'model.ckpt',
-            docType: '"illustration"',
+            generationModelName: '',
+            docType: '',
             currentPrompt: '',
             imageHeight: 1024,
             imageWidth: 1024,
             consistencyStrength: 0.7,
             stylingStrength: 0.7,
             negativePrompt: '',
+            model_config: '',
         }
     ) {
         super();
         this.name = options.name;
-        this.currentLayerName = options.currentLayer ?? this.currentLayerName;
+        this.currentLayerName =
+            options.currentLayerName ?? this.currentLayerName;
+        this.currentLayerId = options.currentLayerId ?? this.currentLayerId;
+        this.tempLayerId = options.tempLayerId ?? this.tempLayerId;
         this.generationModelName =
             options.generationModelName ?? this.generationModelName;
         this.currentPrompt = options.currentPrompt ?? this.currentPrompt;
@@ -47,6 +51,7 @@ export default class LayerAIContext extends ContextObject {
             options.consistencyStrength ?? this.consistencyStrength;
         this.stylingStrength = options.stylingStrength ?? this.stylingStrength;
         this.negativePrompt = options.negativePrompt ?? this.negativePrompt;
+        this.model_config = options.model_config ?? this.model_config;
     }
 
     public get currentLayer(): Layer {
@@ -106,12 +111,10 @@ export default class LayerAIContext extends ContextObject {
     public async createTempImageFileOfLayer() {
         try {
             let fileName = createLayerFileName(this.currentLayer.name);
-            console.debug(`trying to save layer with file name ${fileName}`);
             let tempImgEntry = await saveLayerToPluginData(
                 fileName,
                 this.currentLayer
             );
-            console.debug('Temp File Entry Created', tempImgEntry);
             return tempImgEntry;
         } catch (e) {
             console.error(e);

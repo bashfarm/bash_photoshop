@@ -2,6 +2,7 @@ import React, { FC, useRef } from 'react';
 import {
     PublishIcon,
     SaveAltIcon,
+    SmartToyIcon,
     VisibilityOffRounded,
 } from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -45,10 +46,9 @@ export default function ContextToolBar() {
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <ToolSection>
                 <Tool
-                    icon={VisibilityOffRounded}
+                    icon={SmartToyIcon}
                     label="Regenerate layers"
                     onClick={async () => {
-                        console.debug('Regenerating layers');
                         try {
                             await regenLayers(
                                 Object.values(
@@ -66,20 +66,19 @@ export default function ContextToolBar() {
 
                 <Tool
                     icon={SaveAltIcon}
-                    label="Save Project"
+                    label="Export Bashful Template"
                     onClick={async () =>
                         await saveBashfulProject(getContextStore())
                     }
                 />
                 <Tool
                     icon={PublishIcon}
-                    label="Load Project"
+                    label="Import Bashful Template"
                     onClick={async () => {
                         await loadBashfulProject(setContextStore);
                     }}
                 />
             </ToolSection>
-            <ToolbarDivider />
         </div>
     );
 }

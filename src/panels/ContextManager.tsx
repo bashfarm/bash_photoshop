@@ -22,7 +22,7 @@ export default function ContextManager() {
     try {
         return (
             <>
-                <BashfulHeader animate={true} />
+                <BashfulHeader animate={false} />
                 <ContextToolBar />
                 <div className="mb-1">
                     <Button

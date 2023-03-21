@@ -4,6 +4,7 @@ import {
     VisibilityRounded,
     RefreshIcon,
     DeleteIcon,
+    SmartToyIcon,
 } from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import {
@@ -189,7 +190,7 @@ export default function ContextItemToolBar(props: ContexToolBarColumnProps) {
 
             <ToolSection>
                 <RegenerationTool
-                    icon={RefreshIcon}
+                    icon={SmartToyIcon}
                     label="Regenerate Layer"
                     contextId={props.contextID}
                 />

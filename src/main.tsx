@@ -16,6 +16,9 @@ import PanelController from 'controllers/PanelController';
 // 	debug: true,
 // });
 
+// console.log = function() {};
+// console.debug = function() {};
+
 entrypoints.setup({
     panels: {
         contextmanager: PanelController(<ContextManager />, {}),

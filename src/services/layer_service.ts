@@ -132,8 +132,6 @@ export async function moveLayer(
         .PLACEBEFORE
 ): Promise<void> {
     await executeInPhotoshop(moveLayer, async () => {
-        console.debug('Moving Layer');
-        console.debug('Active Document', app.activeDocument);
         layer.move(relativeLayer, placement);
     });
 }
@@ -269,7 +267,6 @@ export function getNewestLayer(layers: Layer[]) {
 export async function makeLayersInvisible(layers: Layer[]) {
     await executeInPhotoshop(makeLayersInvisible, async () => {
         layers.forEach((layer) => {
-            console.debug(`Making layer ${layer.name} visible`, layer);
             layer.visible = false;
         });
     });
@@ -717,7 +714,6 @@ export async function regenLayers(
     let isLayerSaving = false;
     newContexts.forEach(async (context) => {
         let layer = context.currentLayer;
-        console.debug('Regenerating layer', layer?.name);
         while (isLayerSaving) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
@@ -753,5 +749,4 @@ export async function cleanUpRegenLayer(
     let copyOfcontext = context.copy();
     copyOfcontext.isGenerating = false;
     saveContextToStore(copyOfcontext);
-    console.debug('Finished regenerating layer', newLayer.name);
 }

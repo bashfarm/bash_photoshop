@@ -47,13 +47,9 @@ export default function ContextItemTextarea(props: ContextItemProps) {
                     placeholder="Enter a description of the content in this layer"
                     value={getContextFromStore(props.contextID)?.currentPrompt}
                     onInput={(event) => {
-                        try {
-                            saveText(event);
-                            if (props.onChange) {
-                                props.onChange(event);
-                            }
-                        } catch (e) {
-                            console.debug(e);
+                        saveText(event);
+                        if (props.onChange) {
+                            props.onChange(event);
                         }
                     }}
                 />

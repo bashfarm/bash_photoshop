@@ -16,13 +16,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
-    useEffect(() => {
-        console.debug('RegenerationTool useEffect');
-        console.debug(
-            'RegenerationTool useEffect',
-            getContextFromStore(props.contextId).isGenerating
-        );
-    }, [getContextFromStore(props.contextId)]);
+    useEffect(() => {}, [getContextFromStore(props.contextId)]);
 
     return (
         <div
@@ -37,44 +31,43 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                 }
             }}
         >
-            {!getContextFromStore(props.contextId).isGenerating ? (
-                <div>
-                    <props.icon
-                        {...{
-                            fontSize: 'small',
-                            style: { color: 'var(--uxp-host-text-color)' },
-                        }}
-                    />
-
+            <div>
+                <props.icon
+                    {...{
+                        fontSize: 'small',
+                        style: { color: 'var(--uxp-host-text-color)' },
+                    }}
+                />
+                {!getContextFromStore(props.contextId).isGenerating ? (
                     <span
-                        className={`ml-1 mr-10 whitespace-nowrap`}
+                        className={`ml-1 whitespace-nowrap`}
                         style={{
                             color: 'var(--uxp-host-label-text-color)',
                         }}
                     >
                         {props.label}
                     </span>
-                </div>
-            ) : (
-                <div>
-                    <h1
-                        className={`inline-block font-bold text-xl `}
-                        style={{
-                            color: '#71f79f',
-                        }}
-                    >
-                        Generating
-                    </h1>
-                    <h1
-                        className={`inline-block font-bold text-xl `}
-                        style={{
-                            color: '#7e4dfb',
-                        }}
-                    >
-                        ...
-                    </h1>
-                </div>
-            )}
+                ) : (
+                    <>
+                        <h1
+                            className={`ml-1 inline-block font-bold text-xl `}
+                            style={{
+                                color: '#71f79f',
+                            }}
+                        >
+                            Generating
+                        </h1>
+                        <h1
+                            className={`ml-1 inline-block font-bold `}
+                            style={{
+                                color: '#7e4dfb',
+                            }}
+                        >
+                            ...
+                        </h1>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

@@ -14,6 +14,11 @@ export type ContextInfoColumnProps = {
     contextID: string;
 };
 
+interface DropDownOption {
+    value: string;
+    displayName: string;
+}
+
 function DefaultContextInfoColumn() {
     return (
         <div className="flex flex-col min-w-fit justify-center">
@@ -60,15 +65,29 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
             if (getContextFromStore(props.contextID).is_cloud_run == false) {
                 return value
                     .map((modelObj: ModelResponse) => {
-                        return modelObj.title;
+                        return {
+                            displayName: modelObj.title,
+                            value: modelObj.title,
+                        } as DropDownOption;
                     })
-                    .filter((name: string) => name != null);
+                    .filter(
+                        (option: DropDownOption) =>
+                            option.displayName != null &&
+                            option.displayName != ''
+                    );
             } else {
                 return value
                     .map((modelObj: ModelConfigResponse) => {
-                        return modelObj.display_name;
+                        return {
+                            displayName: modelObj.display_name,
+                            value: modelObj.name,
+                        } as DropDownOption;
                     })
-                    .filter((name: string) => name != null);
+                    .filter(
+                        (option: DropDownOption) =>
+                            option.displayName != null &&
+                            option.displayName != ''
+                    );
             }
         }
     }
@@ -104,7 +123,12 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                     <ContextDropdown
                         label="Model:"
                         contextID={props.contextID}
-                        options={['loading models...']}
+                        options={[
+                            {
+                                displayName: 'loading models...',
+                                value: 'loading models...',
+                            },
+                        ]}
                     />
                 ) : (
                     getDropDownOptions().length > 0 && (
@@ -122,7 +146,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                             onChange={(event: any) => {
                                 // swapModel(event.target.value);
                                 let selectedConfigObj = getSelectedModelConfig(
-                                    event.target.value
+                                    event.target.value.value
                                 );
                                 saveSelectedModelConfig(selectedConfigObj);
                             }}

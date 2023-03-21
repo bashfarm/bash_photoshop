@@ -169,7 +169,6 @@ export async function loadBashfulProject(contextSetter: Function) {
         let bashfulData = await getBashfulData();
         let stateData = JSON.parse(await extractStateData(bashfulData));
 
-        console.debug('stateData', stateData);
         loadPhotoshopFile(await extractPhotoshopFile(bashfulData));
         contextSetter(stateData);
     } catch (e) {

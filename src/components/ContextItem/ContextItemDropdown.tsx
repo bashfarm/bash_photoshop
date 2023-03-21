@@ -2,13 +2,20 @@ import Spectrum, { Label } from 'react-uxp-spectrum';
 import { ContextItemProps } from './ContextItemProps';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
+import _ from 'lodash';
+
+interface DropDownOption {
+    value: string;
+    displayName: string;
+}
 
 interface ContextItemDropdownProps extends ContextItemProps {
-    options: Array<string>;
+    options: Array<DropDownOption>;
 }
 
 export default function ContextDropdown(props: ContextItemDropdownProps) {
-    const [selectedValue, setSelectedValue] = React.useState<string>(null);
+    const [selectedOption, setSelectedOption] =
+        React.useState<DropDownOption>(null);
 
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
@@ -23,13 +30,13 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
             <Spectrum.Dropdown>
                 <Spectrum.Menu slot="options">
                     {props.options &&
-                        props.options.map((value: string) => {
+                        props.options.map((option: DropDownOption) => {
                             try {
                                 return (
                                     <Spectrum.MenuItem
-                                        key={value}
+                                        key={_.uniqueId()}
                                         onClick={(event: any) => {
-                                            setSelectedValue(value);
+                                            setSelectedOption(option);
                                             if (props.contextKey) {
                                                 let copyOfContext =
                                                     getContextFromStore(
@@ -37,16 +44,19 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                                     ).copy();
                                                 copyOfContext[
                                                     props.contextKey
-                                                ] = value;
+                                                ] = option.value;
                                                 saveContextToStore(
                                                     copyOfContext
                                                 );
                                             }
                                             props?.onChange?.(event);
                                         }}
-                                        selected={selectedValue == value}
+                                        selected={
+                                            getContextFromStore(props.contextID)
+                                                .model_config == option?.value
+                                        }
                                     >
-                                        {value}
+                                        {option.displayName}
                                     </Spectrum.MenuItem>
                                 );
                             } catch (e) {

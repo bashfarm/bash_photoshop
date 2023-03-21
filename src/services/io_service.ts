@@ -93,7 +93,7 @@ export async function saveB64ImageToBinaryFileToDataFolder(
             base64js.toByteArray(removeB64Header(data))
         );
     } catch (e) {
-        console.debug(e);
+        console.error(e);
     }
 }
 
@@ -232,10 +232,6 @@ export async function saveLayerToPluginData(fileName: string, layer: Layer) {
             photoshop.app.activeDocument.layers
         );
         const prevVisibility = layer.visible;
-        console.debug(
-            `Saving layer ${layer.name} to plugin data folder`,
-            layer
-        );
         await executeInPhotoshop(saveLayerToPluginData, async () => {
             // Make layers inivisible so we only export the document with the the selected layer
             await makeLayersInvisible(visibleLayers);

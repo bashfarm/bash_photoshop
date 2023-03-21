@@ -7,6 +7,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import PublishIcon from '@mui/icons-material/Publish';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 export {
     VisibilityOffRounded,
@@ -18,4 +19,5 @@ export {
     GridViewIcon,
     RefreshIcon,
     DeleteIcon,
+    SmartToyIcon,
 };

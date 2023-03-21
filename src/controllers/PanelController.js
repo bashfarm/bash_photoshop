@@ -1,11 +1,9 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 
 const PanelController = (
     component,
     { menuItems = [], invokeMenu = () => {} }
 ) => {
-    // console.debug(component)
     var root = null,
         attachment = null;
 
@@ -18,8 +16,7 @@ const PanelController = (
             ReactDOM.render(component, root);
         },
 
-        destroy() {
-        },
+        destroy() {},
 
         show(node) {
             if (!root) {

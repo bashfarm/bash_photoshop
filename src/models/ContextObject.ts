@@ -23,7 +23,7 @@ export default class ContextObject extends BashfulObject {
             consistencyStrength: 0.0,
             seed: -1,
             negativePrompt: '',
-            docType: 'illustration',
+            docType: '',
             batchSize: 1,
             imageHeight: 1024,
             imageWidth: 1024,
