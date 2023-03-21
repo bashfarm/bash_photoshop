@@ -53,7 +53,11 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                         }}
                                         selected={
                                             getContextFromStore(props.contextID)
-                                                .model_config == option?.value
+                                                .model_config ==
+                                                option?.value ||
+                                            getContextFromStore(props.contextID)
+                                                .generationModelName ==
+                                                option?.value
                                         }
                                     >
                                         {option.displayName}
