@@ -369,9 +369,11 @@ export async function generateImageLayerUsingLayer(
             // remember people will be editing this stuff and will want to go back to earlier
             // versions and bash them up.  So we want to keep working with the history like a
             // stack.
+            console.log('genb64Str', genb64Str);
             let generatedFileName = await layerContext.createTempGenFile(
                 genb64Str
             );
+            console.log('generatedFileName', generatedFileName);
 
             await createNewLayerFromFile(generatedFileName);
 
