@@ -27,6 +27,7 @@ import {
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
 import Jimp from 'jimp';
+import { createLayerFileName } from 'utils/general_utils';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -328,7 +329,7 @@ export async function generateImageLayerUsingLayer(
 
     try {
         let savedLayerFileEntry = await getDataFolderEntry(
-            `${layerContext.currentLayer.name}.png`
+            createLayerFileName(layerContext.currentLayer.name)
         );
 
         if (!savedLayerFileEntry) {
@@ -364,26 +365,33 @@ export async function generateImageLayerUsingLayer(
             throw e;
         }
 
-        if (genb64Str) {
-            // So we save the newly generated file as the next historical file
-            // remember people will be editing this stuff and will want to go back to earlier
-            // versions and bash them up.  So we want to keep working with the history like a
-            // stack.
-            console.log('genb64Str', genb64Str);
-            let generatedFileName = await layerContext.createTempGenFile(
-                genb64Str
-            );
-            console.log('generatedFileName', generatedFileName);
+        try {
+            if (genb64Str) {
+                // So we save the newly generated file as the next historical file
+                // remember people will be editing this stuff and will want to go back to earlier
+                // versions and bash them up.  So we want to keep working with the history like a
+                // stack.
+                console.debug('genb64Str', genb64Str);
+                let generatedFileName = await layerContext.createTempGenFile(
+                    genb64Str
+                );
+                console.debug('generatedFileName', generatedFileName);
 
-            await createNewLayerFromFile(generatedFileName);
+                await createNewLayerFromFile(generatedFileName);
 
-            // Retrieve the newest layer that was created in photoshop, whereever it is.
-            generatedLayer = getNewestLayer(
-                photoshop.app.activeDocument.layers
+                // Retrieve the newest layer that was created in photoshop, whereever it is.
+                generatedLayer = getNewestLayer(
+                    photoshop.app.activeDocument.layers
+                );
+            }
+
+            return generatedLayer;
+        } catch (e) {
+            console.error('Trying to create new layer from generation', e);
+            alert(
+                `Something is wrong with retrieving information from the API.  We apologize for the inconvenience.  Please check that your installation is working properly if you are using the Auto111 api.`
             );
         }
-
-        return generatedLayer;
     } catch (e) {
         console.error(e);
         alert(`Something is wrong with retrieving information from the API.`);
