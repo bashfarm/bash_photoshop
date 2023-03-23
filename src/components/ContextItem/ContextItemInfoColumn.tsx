@@ -93,9 +93,9 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
-        let copyOfContext = getContextFromStore(props.contextID).copy();
-        copyOfContext.model_config = selectedConfigObj.name;
-        saveContextToStore(copyOfContext);
+        // let copyOfContext = getContextFromStore(props.contextID).copy();
+        // copyOfContext.model_config = selectedConfigObj?.name ?? '';
+        // saveContextToStore(copyOfContext);
     }
 
     function getSelectedModelConfig(name: string) {

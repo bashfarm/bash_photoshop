@@ -171,7 +171,10 @@ export async function saveDocumentToPluginData(
 ): Promise<void> {
     try {
         let entry = await createDataFolderEntry(fileName);
-        console.log('Saving document to plugin data folder', entry);
+        console.debug(
+            'Saving document to plugin data folder',
+            entry.nativePath
+        );
         saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
