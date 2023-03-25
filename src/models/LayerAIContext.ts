@@ -63,11 +63,11 @@ export default class LayerAIContext extends ContextObject {
     }
 
     public set currentLayer(layer: Layer) {
-        this.currentLayerId = layer.id;
+        this.currentLayerId = layer?.id;
     }
 
     public set tempLayer(layer: Layer) {
-        this.tempLayerId = layer.id;
+        this.tempLayerId = layer?.id;
     }
 
     public getPhotoshopLayerFromName(layerName: string) {
@@ -110,7 +110,7 @@ export default class LayerAIContext extends ContextObject {
      */
     public async createTempImageFileOfLayer() {
         try {
-            let fileName = createLayerFileName(this.currentLayer.name);
+            let fileName = createLayerFileName(this.currentLayer?.name);
             let tempImgEntry = await saveLayerToPluginData(
                 fileName,
                 this.currentLayer
@@ -130,7 +130,7 @@ export default class LayerAIContext extends ContextObject {
         temp: boolean = false
     ) {
         try {
-            let fileName = createLayerFileName(this.currentLayer.name, true);
+            let fileName = createLayerFileName(this.currentLayer?.name, true);
             await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {
