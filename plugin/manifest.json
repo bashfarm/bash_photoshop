@@ -1,7 +1,7 @@
 
   {"id": "0d4a6a37",
   "name": "Bashful",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "main.jsx",
   "manifestVersion": 5,
   "host": [
@@ -57,26 +57,12 @@
             1,
             2
           ],
-          "theme": [
-            "dark",
-            "darkest"
-          ],
-          "species": [
-            "chrome"
-          ]
-        },
-        {
-          "width": 23,
-          "height": 23,
-          "path": "icons/bashful_23.png",
-          "scale": [
-            1,
-            2
-          ],
-          "theme": [
-            "lightest",
-            "light"
-          ],
+		  "theme": [
+			"dark",
+			"darkest",
+			"lightest",
+			"light"
+		  ],
           "species": [
             "chrome"
           ]
@@ -95,23 +81,9 @@
       ],
       "theme": [
         "dark",
-        "darkest"
-      ],
-      "species": [
-        "pluginList"
-      ]
-    },
-    {
-      "width": 46,
-      "height": 46,
-      "path": "icons/bashful_46.png",
-      "scale": [
-        1,
-        2
-      ],
-      "theme": [
-        "lightest",
-        "light"
+        "darkest",
+		"lightest",
+		"light"
       ],
       "species": [
         "pluginList"
