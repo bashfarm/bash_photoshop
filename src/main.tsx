@@ -17,7 +17,7 @@ Sentry.init({
     tracesSampleRate: 1.0,
     // attachStacktrace: true,
     release: 'Bashful.0.0.1',
-    debug: false,
+    debug: true,
 });
 
 // console.log = function() {};
