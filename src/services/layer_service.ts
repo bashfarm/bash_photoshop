@@ -739,11 +739,12 @@ export async function cleanUpRegenLayer(
 ) {
     let newLayer = await newLayerPromise;
     await moveLayerToTop(newLayer);
-    await scaleAndFitLayerToCanvas(newLayer);
+    // await scaleAndFitLayerToCanvas(newLayer);
     if (context.tempLayer) {
         await createMaskFromLayerForLayer(context.tempLayer, newLayer);
-        await applyMask(newLayer);
         await deleteLayer(context.tempLayer);
+        let newerLayer = await newLayer.duplicate();
+        await applyMask(newerLayer);
     }
 
     let copyOfcontext = context.copy();
