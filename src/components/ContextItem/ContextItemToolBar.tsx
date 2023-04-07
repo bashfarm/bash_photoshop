@@ -147,6 +147,9 @@ export default function ContextItemToolBar(props: ContexToolBarColumnProps) {
                         })}
                 </Spectrum.Menu>
             </Spectrum.Dropdown>
+            <ToolbarDivider />
+            <sp-label slot="label">Regeneration ID:</sp-label>
+            <h2 className="text-white text-lg font-bold">{props.contextID}</h2>
             <ToolSection>
                 {value?.length > 0 && (
                     <>

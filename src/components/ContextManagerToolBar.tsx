@@ -13,6 +13,7 @@ import {
     saveBashfulProject,
 } from 'services/bash_app_service';
 import { regenLayers } from 'services/layer_service';
+import photoshop from 'photoshop';
 
 interface ToolSectionProps {
     children: React.ReactNode;
@@ -34,6 +35,13 @@ export default function ContextToolBar() {
         (state: ContextStoreState) => state.saveContextToStore
     );
 
+    const setRegeneratingDocument = useContextStore(
+        (state: ContextStoreState) => state.setRegeneratingDocument
+    );
+    const unSetRegeneratingDocument = useContextStore(
+        (state: ContextStoreState) => state.unSetRegeneratingDocument
+    );
+
     const popupRef = useRef<ExtendedHTMLDialogElement>();
 
     return (
@@ -44,6 +52,9 @@ export default function ContextToolBar() {
                     label="Regenerate layers"
                     onClick={async () => {
                         try {
+                            setRegeneratingDocument(
+                                photoshop.app.activeDocument
+                            );
                             await regenLayers(
                                 Object.values(
                                     (getContextStore() as ContextStoreState)
@@ -52,6 +63,7 @@ export default function ContextToolBar() {
                                 saveContextToStore,
                                 getContextStore
                             );
+                            unSetRegeneratingDocument();
                         } catch (e) {
                             console.error('Regenerating Visible Layers', e);
                         }

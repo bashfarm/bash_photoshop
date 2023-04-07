@@ -130,7 +130,10 @@ export default class LayerAIContext extends ContextObject {
         temp: boolean = false
     ) {
         try {
-            let fileName = createLayerFileName(this.currentLayer?.name, true);
+            let fileName = createLayerFileName(
+                `${this.currentLayer?.name}_${this.id}`,
+                true
+            );
             await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {

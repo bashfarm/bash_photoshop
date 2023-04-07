@@ -51,8 +51,8 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
             // a different model on a specific layer.  We will collect the selection of models for them
             // queue them up and run them in sequence using the currently loaded model and swap only when
             // necessary.
-            return getAvailableModels();
-            // return [];
+            // return getAvailableModels();
+            return [];
         } else {
             return getAvailableModelConfigs();
         }
@@ -90,18 +90,6 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                     );
             }
         }
-    }
-
-    function saveSelectedModelConfig(selectedConfigObj: ModelConfigResponse) {
-        // let copyOfContext = getContextFromStore(props.contextID).copy();
-        // copyOfContext.model_config = selectedConfigObj?.name ?? '';
-        // saveContextToStore(copyOfContext);
-    }
-
-    function getSelectedModelConfig(name: string) {
-        return value.find((modelObj: ModelConfigResponse) => {
-            return modelObj.display_name == name;
-        });
     }
 
     function getCorrectContextKey() {
@@ -145,10 +133,9 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                             options={getDropDownOptions()}
                             onChange={(event: any) => {
                                 // swapModel(event.target.value);
-                                let selectedConfigObj = getSelectedModelConfig(
-                                    event.target.value.value
-                                );
-                                saveSelectedModelConfig(selectedConfigObj);
+                                // let selectedConfigObj = getSelectedModelConfig(
+                                //     event.target.value.value
+                                // );
                             }}
                         />
                     )
