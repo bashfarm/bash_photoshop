@@ -56,28 +56,24 @@ export function createLayerFileName(
 ) {
     let newName = inputString;
     // Check if the string has "(regenerated)"
-    if (inputString.includes('(regenerated)')) {
+    if (inputString.includes('(r)')) {
         // split the string into 2 variables by the "(regenerated)"
-        const [firstPart, secondPart] = inputString.split('(regenerated)');
+        const [firstPart, secondPart] = inputString.split('(r)');
         // Check if the second part has "x" and split the string into 2 variables by the "x" if so
         if (secondPart.includes('x')) {
             const [secondPartFirstPart, secondPartSecondPart] =
                 secondPart.split('x');
             // Increment the number by 1 and return the updated string
             const newNumber = parseInt(secondPartSecondPart, 10) + 1;
-            newName = firstPart + '(regenerated)' + 'x' + newNumber;
+            newName = firstPart + '(r' + 'x' + newNumber + ')';
         } else {
             // Append "x2" to the string and return the updated string
-            newName =
-                firstPart +
-                '(regenerated)' +
-                secondPart.replace('.png', '') +
-                'x2';
+            newName = firstPart + '(r' + secondPart.replace('.png', '') + 'x2)';
         }
     } else {
         if (regenerated) {
             // Append "(regenerated)" to the string and return the updated string
-            newName = inputString.replace('.png', '') + ' (regenerated)';
+            newName = inputString.replace('.png', '') + ' (r)';
         }
     }
     if (newName.includes('.png') === false) {

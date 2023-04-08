@@ -1,4 +1,6 @@
 import { ModelConfigResponse, ModelResponse } from 'common/types/sdapi';
+import { Automatic1111Section } from 'components/toolSections/Automatic1111Section';
+import { ToolbarDivider } from 'components/toolSections/ToolBarDivider';
 import { useAsyncEffect } from 'hooks/fetchHooks';
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useState } from 'react';
@@ -32,17 +34,11 @@ function DefaultContextInfoColumn() {
 }
 
 export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
-    // let layerContext = useContextStore((state: ContextStoreState) =>
-    //     state.getContextFromStore(props.contextID)
-    // );
-
     let getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
 
-    let saveContextToStore = useContextStore(
-        (state: ContextStoreState) => state.saveContextToStore
-    );
+    let [isCloudRun, setIsCloudRun] = useState(true);
 
     let { loading, value } = useAsyncEffect(async () => {
         if (getContextFromStore(props.contextID).is_cloud_run == false) {
@@ -51,7 +47,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
             // a different model on a specific layer.  We will collect the selection of models for them
             // queue them up and run them in sequence using the currently loaded model and swap only when
             // necessary.
-            // return getAvailableModels();
+            return getAvailableModels();
             return [];
         } else {
             return getAvailableModelConfigs();
@@ -62,7 +58,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
         if (loading) {
             return ['loading models...'];
         } else {
-            if (getContextFromStore(props.contextID).is_cloud_run == false) {
+            if (isCloudRun == false) {
                 return value
                     .map((modelObj: ModelResponse) => {
                         return {
@@ -103,10 +99,14 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     try {
         return (
             <div className="flex flex-col min-w-fit justify-center">
-                {/* <ContextLabel
-                    value={layerContext.currentLayer?.name}
-                    labelText={'Layer Name:'}
-                /> */}
+                <Automatic1111Section
+                    contextID={props.contextID}
+                    onChanged={function (value: boolean): void {
+                        setIsCloudRun(value);
+                        console.log(value);
+                    }}
+                />
+                <ToolbarDivider />
                 {loading ? (
                     <ContextDropdown
                         label="Model:"

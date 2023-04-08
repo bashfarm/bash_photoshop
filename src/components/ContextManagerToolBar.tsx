@@ -1,4 +1,4 @@
-import React, { FC, useRef } from 'react';
+import React, { FC, useRef, useState } from 'react';
 import {
     PublishIcon,
     SaveAltIcon,
@@ -42,7 +42,7 @@ export default function ContextToolBar() {
         (state: ContextStoreState) => state.unSetRegeneratingDocument
     );
 
-    const popupRef = useRef<ExtendedHTMLDialogElement>();
+    let [regneeratingLayers, setRegeneratingLayers] = useState(false);
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
@@ -50,11 +50,18 @@ export default function ContextToolBar() {
                 <Tool
                     icon={SmartToyIcon}
                     label="Regenerate layers"
+                    useAltLabel={regneeratingLayers}
+                    altLabel={
+                        regneeratingLayers
+                            ? 'Regenerating'
+                            : 'Regenerate Layers'
+                    }
                     onClick={async () => {
                         try {
                             setRegeneratingDocument(
                                 photoshop.app.activeDocument
                             );
+                            setRegeneratingLayers(true);
                             await regenLayers(
                                 Object.values(
                                     (getContextStore() as ContextStoreState)
@@ -63,6 +70,7 @@ export default function ContextToolBar() {
                                 saveContextToStore,
                                 getContextStore
                             );
+                            setRegeneratingLayers(false);
                             unSetRegeneratingDocument();
                         } catch (e) {
                             console.error('Regenerating Visible Layers', e);

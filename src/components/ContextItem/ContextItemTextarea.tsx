@@ -4,8 +4,10 @@ import { ContextItemProps } from './ContextItemProps';
 import { Textarea } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
+import { useRenderCounter } from 'utils/profiling_utils';
 
 export default function ContextItemTextarea(props: ContextItemProps) {
+    useRenderCounter('ContextItemTextarea');
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

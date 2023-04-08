@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { regenerateLayer } from 'services/layer_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
+import { useRenderCounter } from 'utils/profiling_utils';
 
 type RegenerationToolProps = {
     icon?: FC<any>;
@@ -9,25 +10,28 @@ type RegenerationToolProps = {
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
+    useRenderCounter('RegenerationTool');
+
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
     const saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-
-    useEffect(() => {}, [getContextFromStore(props.contextId)]);
+    let [isGenerating, setIsGenerating] = useState(false);
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
             onClick={async () => {
                 {
+                    setIsGenerating(true);
                     await regenerateLayer(
                         getContextFromStore(props.contextId),
                         saveContextToStore,
                         getContextFromStore
                     );
+                    setIsGenerating(false);
                 }
             }}
         >
@@ -38,7 +42,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                         style: { color: 'var(--uxp-host-text-color)' },
                     }}
                 />
-                {!getContextFromStore(props.contextId).isGenerating ? (
+                {!isGenerating ? (
                     <span
                         className={`ml-1 whitespace-nowrap`}
                         style={{

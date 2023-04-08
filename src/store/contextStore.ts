@@ -8,6 +8,7 @@ export class ContextStoreState extends BashfulObject {
     [immerable] = true;
     layerContexts: Record<string, LayerAIContext> = {};
     regenDocument: any = null;
+    layers: Record<string, any> = null;
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
@@ -16,6 +17,22 @@ export class ContextStoreState extends BashfulObject {
         this.set = set;
         this.get = get;
     }
+
+    public getLayer = (layerId: string) => {
+        return this.get().layers[layerId];
+    };
+
+    public setLayer = (layerId: string, layer: any) => {
+        this.set((state: ContextStoreState) => {
+            state.layers[layerId] = layer;
+        });
+    };
+
+    public removeLayer = (layerId: string) => {
+        this.set((state: ContextStoreState) => {
+            delete state.layers[layerId];
+        });
+    };
 
     /**
      * Save the context to the context store.

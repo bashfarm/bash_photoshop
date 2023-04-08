@@ -1,25 +1,29 @@
 import React from 'react';
 
 import ContextInfoColumn from './ContextItemInfoColumn';
-import ContextItemToolColumn from './ContextItemToolColumn';
-import ContextItemToolBar from './ContextItemToolBar';
+import { MemoizedContextItemToolColumn } from './ContextItemToolColumn';
+import ContextItemToolBar, {
+    ContextItemToolBarMemo,
+} from './ContextItemToolBar';
 import ContextItemSlider from './ContextItemSlider';
 
 import _ from 'lodash';
 import LayerAIContext from 'models/LayerAIContext';
 import ContextItemTextarea from './ContextItemTextarea';
+import { useRenderCounter, useRenderSpeed } from 'utils/profiling_utils';
 export type ContextItemProps = {
     contextID: string;
     onDelete?: (contextID: string) => void;
 };
 
 export default function ContextItem(props: ContextItemProps) {
+    useRenderCounter('ContextItem');
     return (
         <div className="flex flex-col p-1 bg-[color:var(--uxp-host-widget-hover-background-color)] border border-[color:var(--uxp-host-border-color)] rounded">
-            <ContextItemToolBar contextID={props.contextID} />
+            <ContextItemToolBarMemo contextID={props.contextID} />
             <div className="flex">
                 <ContextInfoColumn contextID={props.contextID} />
-                <ContextItemToolColumn contextID={props.contextID} />
+                <MemoizedContextItemToolColumn contextID={props.contextID} />
             </div>
             <div>
                 <ContextItemSlider
@@ -50,3 +54,5 @@ export default function ContextItem(props: ContextItemProps) {
         </div>
     );
 }
+
+export const MemoizedContextItem = React.memo(ContextItem);

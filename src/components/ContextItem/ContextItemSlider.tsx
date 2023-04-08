@@ -4,8 +4,11 @@ import { ContextItemProps } from './ContextItemProps';
 import { Slider } from 'react-uxp-spectrum';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
 import { delayStateEventsForStateValue } from 'hooks/utilHooks';
+import { useRenderCounter } from 'utils/profiling_utils';
 
 export default function ContextItemSlider(props: ContextItemProps) {
+    useRenderCounter('ContextItemSlider');
+
     let saveContextToStore = useContextStore((state: ContextStoreState) => {
         return state.saveContextToStore;
     });

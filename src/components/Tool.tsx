@@ -3,6 +3,8 @@ import React, { FC, useState } from 'react';
 type ToolProps = {
     icon?: FC<any>;
     label?: string;
+    altLabel?: string;
+    useAltLabel?: boolean;
     onClick?: Function;
 };
 
@@ -28,7 +30,18 @@ const Tool = (props: ToolProps) => {
                     }}
                 />
             )}
-            {props.label && (
+            {props.useAltLabel ? (
+                <div
+                    className="ml-1"
+                    style={{
+                        color: isHovered
+                            ? 'var(--uxp-host-text-color-secondary)'
+                            : 'var(--uxp-host-label-text-color)',
+                    }}
+                >
+                    {props.altLabel}
+                </div>
+            ) : (
                 <div
                     className="ml-1"
                     style={{

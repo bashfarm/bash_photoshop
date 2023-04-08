@@ -2,7 +2,6 @@ import Spectrum, { Label } from 'react-uxp-spectrum';
 import { ContextItemProps } from './ContextItemProps';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import _ from 'lodash';
 
 interface DropDownOption {
     value: string;
@@ -34,7 +33,7 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                             try {
                                 return (
                                     <Spectrum.MenuItem
-                                        key={_.uniqueId()}
+                                        key={option.value}
                                         onClick={(event: any) => {
                                             setSelectedOption(option);
                                             if (props.contextKey) {
@@ -52,12 +51,8 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                             props?.onChange?.(event);
                                         }}
                                         selected={
-                                            getContextFromStore(props.contextID)
-                                                .model_config ==
-                                                option?.value ||
-                                            getContextFromStore(props.contextID)
-                                                .generationModelName ==
-                                                option?.value
+                                            selectedOption?.value ==
+                                            option?.value
                                         }
                                     >
                                         {option.displayName}
