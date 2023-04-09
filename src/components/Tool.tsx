@@ -31,15 +31,23 @@ const Tool = (props: ToolProps) => {
                 />
             )}
             {props.useAltLabel ? (
-                <div
-                    className="ml-1"
-                    style={{
-                        color: isHovered
-                            ? 'var(--uxp-host-text-color-secondary)'
-                            : 'var(--uxp-host-label-text-color)',
-                    }}
-                >
-                    {props.altLabel}
+                <div>
+                    <h1
+                        className={`ml-1 inline-block font-bold text-xl `}
+                        style={{
+                            color: '#71f79f',
+                        }}
+                    >
+                        {props.altLabel.split('.')[0]}
+                    </h1>
+                    <h1
+                        className={`ml-1 inline-block font-bold `}
+                        style={{
+                            color: '#7e4dfb',
+                        }}
+                    >
+                        ...
+                    </h1>
                 </div>
             ) : (
                 <div

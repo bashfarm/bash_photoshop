@@ -48,7 +48,7 @@ export default function ContextToolBar() {
                     useAltLabel={regneeratingLayers}
                     altLabel={
                         regneeratingLayers
-                            ? 'Regenerating'
+                            ? 'Regenerating...'
                             : 'Regenerate Layers'
                     }
                     onClick={async () => {
@@ -65,7 +65,6 @@ export default function ContextToolBar() {
                                 saveContextToStore,
                                 getContextStore
                             );
-                            alert('Regeneration Complete');
                             setRegeneratingLayers(false);
                             unSetRegeneratingDocument();
                         } catch (e) {
