@@ -1,12 +1,6 @@
-import React, { FC, useRef, useState } from 'react';
-import {
-    PublishIcon,
-    SaveAltIcon,
-    SmartToyIcon,
-    VisibilityOffRounded,
-} from 'components/icons/index';
+import React, { FC, useState } from 'react';
+import { PublishIcon, SaveAltIcon, SmartToyIcon } from 'components/icons/index';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import Tool from 'components/Tool';
 import {
     loadBashfulProject,
@@ -14,6 +8,7 @@ import {
 } from 'services/bash_app_service';
 import { regenLayers } from 'services/layer_service';
 import photoshop from 'photoshop';
+import { alert } from 'services/alert_service';
 
 interface ToolSectionProps {
     children: React.ReactNode;
@@ -70,6 +65,7 @@ export default function ContextToolBar() {
                                 saveContextToStore,
                                 getContextStore
                             );
+                            alert('Regeneration Complete');
                             setRegeneratingLayers(false);
                             unSetRegeneratingDocument();
                         } catch (e) {

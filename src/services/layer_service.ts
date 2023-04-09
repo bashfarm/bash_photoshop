@@ -510,7 +510,7 @@ export async function regenLayers(
     );
     let isLayerSaving = false;
     let prevLayerName = '';
-    newContexts.forEach(async (context) => {
+    const tasks = newContexts.map(async (context) => {
         let layer = context.currentLayer;
         while (isLayerSaving) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -529,8 +529,10 @@ export async function regenLayers(
         }
 
         let newLayer = regenLayer(context);
-        cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
+        await cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
     });
+
+    await Promise.all(tasks);
 }
 
 export async function cleanUpRegenLayer(
