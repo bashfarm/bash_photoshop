@@ -1,6 +1,4 @@
-// hooks/useRenderCounter.ts
-import React from 'react';
-import { ReactNode, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useRenderCounter = (componentName: string) => {
     const renderedTimes = useRef(0);

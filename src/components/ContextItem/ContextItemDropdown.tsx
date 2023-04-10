@@ -6,6 +6,7 @@ import { ContextStoreState, useContextStore } from 'store/contextStore';
 interface DropDownOption {
     value: string;
     displayName: string;
+    thumbnail?: string;
 }
 
 interface ContextItemDropdownProps extends ContextItemProps {
@@ -27,6 +28,7 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
         <div>
             <Label>{props.label}</Label>
             <Spectrum.Dropdown>
+                <span>yolo</span>
                 <Spectrum.Menu slot="options">
                     {props.options &&
                         props.options.map((option: DropDownOption) => {
@@ -34,6 +36,7 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                 return (
                                     <Spectrum.MenuItem
                                         key={option.value}
+                                        className="m-0"
                                         onClick={(event: any) => {
                                             setSelectedOption(option);
                                             if (props.contextKey) {
@@ -55,6 +58,13 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                             option?.value
                                         }
                                     >
+                                        {option.thumbnail && (
+                                            <img
+                                                src={option.thumbnail}
+                                                alt={option.displayName}
+                                                className="inline-block w-10 h-10 mr-1"
+                                            />
+                                        )}
                                         {option.displayName}
                                     </Spectrum.MenuItem>
                                 );

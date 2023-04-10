@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import photoshop from 'photoshop';
 import Spectrum from 'react-uxp-spectrum';
 import _ from 'lodash';
 import { Layer } from 'photoshop/dom/Layer';
-import { useRenderCounter } from 'utils/profiling_utils';
-import { Automatic1111Section } from 'components/toolSections/Automatic1111Section';
 import { MaskingToolsSection } from 'components/toolSections/MaskingToolsSection';
 import { RegenerationToolsSection } from 'components/toolSections/RegenerationToolsSection';
 import { RemoveSection } from 'components/toolSections/RemoveSection';
 import { ToolbarDivider } from 'components/toolSections/ToolBarDivider';
+
+const events = [
+    'make',
+    'select',
+    'delete',
+    'selectNoLayers',
+    'move',
+    'undoEvent',
+    'undoEnum',
+    'openDocument',
+];
 
 interface DropDownOption {
     displayName: string;
@@ -18,8 +27,6 @@ interface DropDownOption {
 }
 
 function DropdownMenu(props: DropdownMenuProps) {
-    useRenderCounter('dropdownMenu');
-
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
@@ -70,18 +77,29 @@ interface ContextItemToolBarProps {
 }
 
 export default function ContextItemToolBar(props: ContextItemToolBarProps) {
-    useRenderCounter('ContextItemToolBar');
+    const [layers, setLayers] = useState(photoshop.app.activeDocument.layers);
+
+    function onChange() {
+        setLayers(photoshop.app.activeDocument.layers);
+    }
+
+    useEffect(() => {
+        photoshop.action.addNotificationListener(events, onChange);
+        return () => {
+            photoshop.action.removeNotificationListener(events, onChange);
+        };
+    }, []);
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <Spectrum.Dropdown>
                 <MemoizedDropdownMenu
                     contextID={props.contextID}
-                    layers={photoshop.app.activeDocument.layers}
+                    layers={layers}
                 />
             </Spectrum.Dropdown>
             <ToolbarDivider />
-            <sp-label slot="label">Regeneration ID:</sp-label>
+            <sp-label slot="label">RegenID: </sp-label>
             <h2 className="text-white text-lg font-bold">{props.contextID}</h2>
             <ToolbarDivider />
 
@@ -100,12 +118,3 @@ interface DropdownMenuProps {
 }
 
 export const ContextItemToolBarMemo = React.memo(ContextItemToolBar);
-
-// <>
-// <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
-
-//             <ToolbarDivider />
-
-//         </div>
-
-// </>

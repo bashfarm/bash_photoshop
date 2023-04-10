@@ -1,14 +1,11 @@
 import LayerAIContext from 'models/LayerAIContext';
 import React, { useEffect } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import ContextItem, {
-    MemoizedContextItem,
-} from '../components/ContextItem/ContextItem';
+import { MemoizedContextItem } from '../components/ContextItem/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from '../components/ContextManagerToolBar';
 import _ from 'lodash';
-import { useRenderCounter } from 'utils/profiling_utils';
 
 /**
  * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
@@ -17,7 +14,6 @@ import { useRenderCounter } from 'utils/profiling_utils';
  */
 // TODO: move to its own file or something else - needs refactoring though
 function ContextItems() {
-    useRenderCounter('ContextItems');
     let contexts = useContextStore(
         (state: ContextStoreState) => state.layerContexts
     );
@@ -47,7 +43,6 @@ function ContextItems() {
 const MemoizedContextItems = React.memo(ContextItems);
 
 export default function ContextManager() {
-    useRenderCounter('ContextManager');
     const saveContextToStore = useContextStore(
         (state) => state.saveContextToStore
     );

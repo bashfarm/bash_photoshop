@@ -8,7 +8,6 @@ import {
     toggleOffContextHidingTool,
 } from 'services/tools_service';
 import { useContextStore, ContextStoreState } from 'store/contextStore';
-import { useRenderCounter } from 'utils/profiling_utils';
 import { ToolSection } from './ToolSection';
 
 interface MaskingToolsSectionProps {
@@ -16,7 +15,6 @@ interface MaskingToolsSectionProps {
 }
 
 export function MaskingToolsSection(props: MaskingToolsSectionProps) {
-    useRenderCounter('MaskingToolsSection');
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );

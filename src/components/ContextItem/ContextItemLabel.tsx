@@ -1,6 +1,5 @@
 import React from 'react';
 import { Heading } from 'react-uxp-spectrum';
-import { useRenderCounter } from 'utils/profiling_utils';
 
 export type ContextLabelProps = {
     value: string | number;
@@ -8,7 +7,6 @@ export type ContextLabelProps = {
 };
 
 export default function ContextItemLabel(props: ContextLabelProps) {
-    useRenderCounter('ContextItemLabel');
     return (
         <div className="flex flex-row">
             <Heading

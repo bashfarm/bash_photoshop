@@ -16,8 +16,8 @@ import PanelController from 'controllers/PanelController';
 //     // integrations: [new BrowserTracing(), new CaptureConsoleIntegration({ levels: ['error', 'debug']})],
 //     tracesSampleRate: 1.0,
 //     // attachStacktrace: true,
-//     release: 'Bashful.0.0.1',
-//     debug: true,
+//     release: 'Bashful.0.1.4',
+//     debug: false,
 // });
 
 // console.log = function() {};

@@ -1,7 +1,8 @@
-import React, { FC, useEffect, useState } from 'react';
+import photoshop from 'photoshop';
+import React, { FC, useState } from 'react';
 import { regenerateLayer } from 'services/layer_service';
+import { executeInPhotoshop } from 'services/middleware/photoshop_middleware';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { useRenderCounter } from 'utils/profiling_utils';
 
 type RegenerationToolProps = {
     icon?: FC<any>;
@@ -10,8 +11,6 @@ type RegenerationToolProps = {
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
-    useRenderCounter('RegenerationTool');
-
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
@@ -26,7 +25,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
             onClick={async () => {
                 {
                     setIsGenerating(true);
-                    await regenerateLayer(
+                    let layer = await regenerateLayer(
                         getContextFromStore(props.contextId),
                         saveContextToStore,
                         getContextFromStore

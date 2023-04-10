@@ -467,11 +467,15 @@ export async function regenerateLayer(
     getContextFromStore: Function
 ) {
     try {
-        await regenLayers(
+        let layers = await regenLayers(
             [layerContext],
             saveContextToStore,
             getContextFromStore
         );
+
+        if (layers.length > 0) {
+            return layers[0];
+        }
     } catch (e) {
         console.error(e);
     }
@@ -521,7 +525,7 @@ export async function regenLayers(
         if (prevLayerName !== layer.name) {
             isLayerSaving = true;
             await saveLayerToPluginData(
-                createLayerFileName(layer.name, false),
+                createLayerFileName(layer.name, context.id, false),
                 layer
             );
             isLayerSaving = false;
@@ -529,10 +533,14 @@ export async function regenLayers(
         }
 
         let newLayer = regenLayer(context);
-        await cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
+        return await cleanUpRegenLayer(
+            newLayer,
+            copyOfcontext,
+            saveContextToStore
+        );
     });
 
-    await Promise.all(tasks);
+    return await Promise.all(tasks);
 }
 
 export async function cleanUpRegenLayer(
@@ -553,4 +561,15 @@ export async function cleanUpRegenLayer(
     let copyOfcontext = context.copy();
     copyOfcontext.isGenerating = false;
     saveContextToStore(copyOfcontext);
+    return newLayer;
+}
+
+export function createGroupWithLayer(layer: any, groupName: string) {
+    executeInPhotoshop(createGroupWithLayer, () => {
+        photoshop.app.activeDocument.createLayerGroup({
+            name: groupName,
+            fromLayers: [layer, layer],
+            typename: '',
+        });
+    });
 }

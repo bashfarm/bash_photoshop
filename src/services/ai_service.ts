@@ -329,7 +329,11 @@ export async function generateImageLayerUsingLayer(
 
     try {
         let savedLayerFileEntry = await getDataFolderEntry(
-            createLayerFileName(layerContext.currentLayer.name)
+            createLayerFileName(
+                layerContext.currentLayer.name,
+                layerContext.id,
+                false
+            )
         );
 
         if (!savedLayerFileEntry) {
@@ -371,7 +375,6 @@ export async function generateImageLayerUsingLayer(
                 // remember people will be editing this stuff and will want to go back to earlier
                 // versions and bash them up.  So we want to keep working with the history like a
                 // stack.
-                console.debug('genb64Str', genb64Str);
                 let generatedFileName = await layerContext.createTempGenFile(
                     genb64Str
                 );

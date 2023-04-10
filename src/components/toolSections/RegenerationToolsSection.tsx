@@ -1,7 +1,6 @@
 import { SmartToyIcon } from 'components/icons/index';
 import RegenerationTool from 'components/RegenerationTool';
 import React from 'react';
-import { useRenderCounter } from 'utils/profiling_utils';
 import { ToolSection } from './ToolSection';
 
 interface RegenerationToolsSectionProps {
@@ -9,7 +8,6 @@ interface RegenerationToolsSectionProps {
 }
 
 export function RegenerationToolsSection(props: RegenerationToolsSectionProps) {
-    useRenderCounter('RegenerationToolsSection');
     return (
         <ToolSection>
             <RegenerationTool

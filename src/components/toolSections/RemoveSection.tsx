@@ -2,7 +2,6 @@ import { DeleteIcon } from 'components/icons/index';
 import Tool from 'components/Tool';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import { useRenderCounter } from 'utils/profiling_utils';
 import { ToolSection } from './ToolSection';
 
 interface RemoveSectionProps {
@@ -10,8 +9,6 @@ interface RemoveSectionProps {
 }
 
 export function RemoveSection(props: RemoveSectionProps) {
-    useRenderCounter('RegenerationToolsSection');
-
     const removeContextFromStore = useContextStore(
         (state: ContextStoreState) => state.removeContextFromStore
     );

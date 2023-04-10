@@ -18,6 +18,7 @@ export type ContextInfoColumnProps = {
 interface DropDownOption {
     value: string;
     displayName: string;
+    thumbnail?: string;
 }
 
 export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
@@ -35,7 +36,6 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
             // queue them up and run them in sequence using the currently loaded model and swap only when
             // necessary.
             return getAvailableModels();
-            return [];
         } else {
             return getAvailableModelConfigs();
         }
@@ -64,6 +64,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                         return {
                             displayName: modelObj.display_name,
                             value: modelObj.name,
+                            thumbnail: modelObj.thumbnail_url,
                         } as DropDownOption;
                     })
                     .filter(
@@ -89,7 +90,6 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                 contextID={props.contextID}
                 onChanged={function (value: boolean): void {
                     setIsCloudRun(value);
-                    console.log(value);
                 }}
             />
             <ToolbarDivider />
@@ -116,12 +116,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                         contextID={props.contextID}
                         contextKey={getCorrectContextKey()}
                         options={getDropDownOptions()}
-                        onChange={(event: any) => {
-                            // swapModel(event.target.value);
-                            // let selectedConfigObj = getSelectedModelConfig(
-                            //     event.target.value.value
-                            // );
-                        }}
+                        onChange={(event: any) => {}}
                     />
                 )
             )}

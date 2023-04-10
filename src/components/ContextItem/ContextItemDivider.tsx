@@ -1,13 +1,9 @@
 import { BashfulProps } from 'common/props/BashfulProps';
-import { delayStateEventsForStateValue } from 'hooks/utilHooks';
 import React from 'react';
-import { useRef, useState, useLayoutEffect } from 'react';
-import { ContextStoreState, useContextStore } from 'store/contextStore';
+import { useRef, useLayoutEffect } from 'react';
 import { getSaveAnimationTimeline } from 'utils/animation_utils';
-import { useRenderCounter } from 'utils/profiling_utils';
 
 export function ContextItemDivider(props: BashfulProps) {
-    useRenderCounter('ContextItemDivider');
     let timelineAnimation = useRef<GSAPTimeline | null>();
 
     let someRef = useRef<HTMLDivElement>(null);

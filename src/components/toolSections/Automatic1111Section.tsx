@@ -3,7 +3,6 @@ import React from 'react';
 import { Label, Checkbox } from 'react-uxp-spectrum';
 import { getAvailableModels } from 'services/ai_service';
 import { useContextStore, ContextStoreState } from 'store/contextStore';
-import { useRenderCounter } from 'utils/profiling_utils';
 import { ToolSection } from './ToolSection';
 
 interface Automatic1111SectionProps {
@@ -12,7 +11,6 @@ interface Automatic1111SectionProps {
 }
 
 export function Automatic1111Section(props: Automatic1111SectionProps) {
-    useRenderCounter('Automatic111CheckBox');
     const getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
