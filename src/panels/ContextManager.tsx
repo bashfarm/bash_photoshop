@@ -1,11 +1,27 @@
 import LayerAIContext from 'models/LayerAIContext';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { MemoizedContextItem } from '../components/ContextItem/ContextItem';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from '../components/ContextManagerToolBar';
 import _ from 'lodash';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDiscord } from '@fortawesome/free-brands-svg-icons';
+import { shell } from 'uxp';
+
+async function openDiscordLink() {
+    try {
+        console.log('opening discord link');
+        await shell.openExternal(
+            'https://www.adobe.com/',
+            'develop message for the user consent dialog'
+        );
+        // shell.openExternal('https://discord.gg/J6JFxqqgWZ/');
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 /**
  * This creates the actual <ContextItem/>s list to be displayed.  This renders the contexts
@@ -47,26 +63,39 @@ export default function ContextManager() {
         (state) => state.saveContextToStore
     );
 
+    const nextID = useRef(1);
+
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
-        saveContextToStore(new LayerAIContext());
+        saveContextToStore(new LayerAIContext(nextID.current.toString()));
+        nextID.current++;
     }
 
-    try {
-        return (
-            <>
-                <BashfulHeader animate={false} />
-                <ContextToolBar />
-                <div className="mb-1">
-                    <Button variant="primary" onClick={createNewContext}>
-                        Create New AI Setting
-                    </Button>
+    return (
+        <>
+            <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] m-0 p-1 items-center justify-left">
+                <div>
+                    <BashfulHeader animate={false} />
                 </div>
-                <MemoizedContextItems />
-            </>
-        );
-    } catch (e) {
-        console.error(e);
-        return <div>error</div>;
-    }
+
+                <div
+                    onClick={openDiscordLink}
+                    className="text-left items-center mb-0 mt-5"
+                >
+                    <FontAwesomeIcon
+                        icon={faDiscord}
+                        className="text-purple-500 ml-1 w-6 h-6"
+                        style={{ color: '#7e4dfb' }}
+                    />
+                </div>
+            </div>
+            <ContextToolBar />
+            <div className="mb-1">
+                <Button variant="primary" onClick={createNewContext}>
+                    Create New AI Setting
+                </Button>
+            </div>
+            <MemoizedContextItems />
+        </>
+    );
 }

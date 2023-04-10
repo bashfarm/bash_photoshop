@@ -1,7 +1,9 @@
+import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import photoshop from 'photoshop';
 import React, { FC, useState } from 'react';
 import { regenerateLayer } from 'services/layer_service';
 import { executeInPhotoshop } from 'services/middleware/photoshop_middleware';
+import { errorMessage, validateContext } from 'services/validation_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 type RegenerationToolProps = {
@@ -18,12 +20,23 @@ export default function RegenerationTool(props: RegenerationToolProps) {
         (state: ContextStoreState) => state.saveContextToStore
     );
     let [isGenerating, setIsGenerating] = useState(false);
+    let modalRef = React.useRef<ExtendedHTMLDialogElement>(null);
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
             onClick={async () => {
                 {
+                    let contextValidation = validateContext(
+                        getContextFromStore(props.contextId)
+                    );
+                    console.log('contextValidation', contextValidation);
+                    console.log(getContextFromStore(props.contextId));
+                    if (!contextValidation.isValid) {
+                        errorMessage(modalRef, contextValidation);
+                        return;
+                    }
+
                     setIsGenerating(true);
                     let layer = await regenerateLayer(
                         getContextFromStore(props.contextId),
