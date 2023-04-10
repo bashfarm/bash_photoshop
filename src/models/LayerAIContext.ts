@@ -17,8 +17,10 @@ export default class LayerAIContext extends ContextObject {
     tempLayerName: string; // typically a duplicate of the current layer
     currentLayerId: number;
     tempLayerId: number;
+    id: string;
 
     constructor(
+        id: string,
         options: any = {
             currentLayerName: '',
             currentLayerId: '',
@@ -37,6 +39,7 @@ export default class LayerAIContext extends ContextObject {
         }
     ) {
         super();
+        this.id = id;
         this.name = options.name;
         this.currentLayerName =
             options.currentLayerName ?? this.currentLayerName;

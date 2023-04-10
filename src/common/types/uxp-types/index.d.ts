@@ -38,7 +38,10 @@ declare module 'uxp' {
     }
 
     namespace shell {
-        function openExternal(url: string | URL): void;
+        function openExternal(
+            url: string,
+            developerText: string
+        ): Promise<string>;
     }
 
     namespace storage {

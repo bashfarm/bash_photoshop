@@ -9,6 +9,8 @@ import {
 import { regenLayers } from 'services/layer_service';
 import photoshop from 'photoshop';
 import { alert } from 'services/alert_service';
+import { errorMessage, validateContexts } from 'services/validation_service';
+import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 
 interface ToolSectionProps {
     children: React.ReactNode;
@@ -38,6 +40,7 @@ export default function ContextToolBar() {
     );
 
     let [regneeratingLayers, setRegeneratingLayers] = useState(false);
+    let modalRef = React.useRef<ExtendedHTMLDialogElement>(null);
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
@@ -53,6 +56,15 @@ export default function ContextToolBar() {
                     }
                     onClick={async () => {
                         try {
+                            let contexts = Object.values(
+                                (getContextStore() as ContextStoreState)
+                                    .layerContexts
+                            );
+                            let contextsValidation = validateContexts(contexts);
+                            if (!contextsValidation.isValid) {
+                                errorMessage(modalRef, contextsValidation);
+                                return;
+                            }
                             setRegeneratingDocument(
                                 photoshop.app.activeDocument
                             );

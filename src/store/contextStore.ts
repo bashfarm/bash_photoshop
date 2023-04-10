@@ -141,6 +141,7 @@ export class ContextStoreState extends BashfulObject {
             state.layerContexts = {};
             for (let key of Object.keys(stateData.layerContexts)) {
                 let instantiatedLayerContext = new LayerAIContext(
+                    stateData.layerContexts[key].id,
                     stateData.layerContexts[key]
                 );
                 state.layerContexts[instantiatedLayerContext.id] =
