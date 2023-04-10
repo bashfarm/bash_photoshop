@@ -87,7 +87,7 @@ export async function errorMessage(
         resize: 'both',
         size: {
             width: 800,
-            height: 600,
+            height: 800,
         },
     });
     ref.current.remove();
