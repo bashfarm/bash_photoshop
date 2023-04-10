@@ -2,11 +2,11 @@ import Spectrum, { Label } from 'react-uxp-spectrum';
 import { ContextItemProps } from './ContextItemProps';
 import React from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
-import _ from 'lodash';
 
 interface DropDownOption {
     value: string;
     displayName: string;
+    thumbnail?: string;
 }
 
 interface ContextItemDropdownProps extends ContextItemProps {
@@ -28,13 +28,15 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
         <div>
             <Label>{props.label}</Label>
             <Spectrum.Dropdown>
+                <span>yolo</span>
                 <Spectrum.Menu slot="options">
                     {props.options &&
                         props.options.map((option: DropDownOption) => {
                             try {
                                 return (
                                     <Spectrum.MenuItem
-                                        key={_.uniqueId()}
+                                        key={option.value}
+                                        className="m-0"
                                         onClick={(event: any) => {
                                             setSelectedOption(option);
                                             if (props.contextKey) {
@@ -52,14 +54,17 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
                                             props?.onChange?.(event);
                                         }}
                                         selected={
-                                            getContextFromStore(props.contextID)
-                                                .model_config ==
-                                                option?.value ||
-                                            getContextFromStore(props.contextID)
-                                                .generationModelName ==
-                                                option?.value
+                                            selectedOption?.value ==
+                                            option?.value
                                         }
                                     >
+                                        {option.thumbnail && (
+                                            <img
+                                                src={option.thumbnail}
+                                                alt={option.displayName}
+                                                className="inline-block w-10 h-10 mr-1"
+                                            />
+                                        )}
                                         {option.displayName}
                                     </Spectrum.MenuItem>
                                 );

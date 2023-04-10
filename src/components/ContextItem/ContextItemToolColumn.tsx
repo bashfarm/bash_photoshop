@@ -11,3 +11,5 @@ export default function ContextItemToolColumn(props: ContexToolColumnProps) {
         </>
     );
 }
+
+export const MemoizedContextItemToolColumn = React.memo(ContextItemToolColumn);

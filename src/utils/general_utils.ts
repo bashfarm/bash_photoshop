@@ -51,35 +51,33 @@ export function sleep(ms: number) {
 }
 
 export function createLayerFileName(
-    inputString: string,
-    regenerated?: boolean
+    layerName: string,
+    id: string,
+    regenerated: boolean
 ) {
-    let newName = inputString;
+    let newName = layerName;
+
+    if (layerName.includes('(r)')) {
+        newName = layerName.split('(r)')[0];
+        return `${newName.trim()} (rx1_regenID_${id}).png`;
+    }
+
     // Check if the string has "(regenerated)"
-    if (inputString.includes('(regenerated)')) {
-        // split the string into 2 variables by the "(regenerated)"
-        const [firstPart, secondPart] = inputString.split('(regenerated)');
-        // Check if the second part has "x" and split the string into 2 variables by the "x" if so
-        if (secondPart.includes('x')) {
-            const [secondPartFirstPart, secondPartSecondPart] =
-                secondPart.split('x');
-            // Increment the number by 1 and return the updated string
-            const newNumber = parseInt(secondPartSecondPart, 10) + 1;
-            newName = firstPart + '(regenerated)' + 'x' + newNumber;
-        } else {
-            // Append "x2" to the string and return the updated string
-            newName =
-                firstPart +
-                '(regenerated)' +
-                secondPart.replace('.png', '') +
-                'x2';
-        }
+    if (layerName.includes('(rx')) {
+        const [lName, regenerationStats] = layerName.split('(rx');
+        let regenerationNumber = regenerationStats.split('_')[0];
+        // Increment the number by 1 and return the updated string
+        const newNumber = parseInt(regenerationNumber, 10) + 1;
+        newName = lName + '(r' + 'x' + newNumber + '_regenID_' + id + ')';
+        newName = `${lName}(rx${newNumber}_regenID_${id})`;
     } else {
         if (regenerated) {
             // Append "(regenerated)" to the string and return the updated string
-            newName = inputString.replace('.png', '') + ' (regenerated)';
+            newName =
+                layerName.replace('.png', '') + ' (rx1_regenID_' + id + ')';
         }
     }
+
     if (newName.includes('.png') === false) {
         newName = newName + '.png';
     }

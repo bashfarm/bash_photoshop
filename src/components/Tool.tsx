@@ -3,6 +3,8 @@ import React, { FC, useState } from 'react';
 type ToolProps = {
     icon?: FC<any>;
     label?: string;
+    altLabel?: string;
+    useAltLabel?: boolean;
     onClick?: Function;
 };
 
@@ -28,7 +30,26 @@ const Tool = (props: ToolProps) => {
                     }}
                 />
             )}
-            {props.label && (
+            {props.useAltLabel ? (
+                <div>
+                    <h1
+                        className={`ml-1 inline-block font-bold text-xl `}
+                        style={{
+                            color: '#71f79f',
+                        }}
+                    >
+                        {props.altLabel.split('.')[0]}
+                    </h1>
+                    <h1
+                        className={`ml-1 inline-block font-bold `}
+                        style={{
+                            color: '#7e4dfb',
+                        }}
+                    >
+                        ...
+                    </h1>
+                </div>
+            ) : (
                 <div
                     className="ml-1"
                     style={{

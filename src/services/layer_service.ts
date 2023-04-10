@@ -73,20 +73,6 @@ export async function createNewLayerFromFile(
 }
 
 /**
- * Selects all the visible layers and returns a list of the selected layers
- * @returns {Array}
- */
-async function selectAllVisibleLayers(): Promise<Layer[]> {
-    await executeInPhotoshop(selectAllVisibleLayers, async () => {
-        getVisibleLayers(app.activeDocument.layers).forEach((layer) => {
-            layer.selected = true;
-        });
-    });
-
-    return getSelectedLayers(app.activeDocument.layers);
-}
-
-/**
  * Retrieve an Array of photoshop layers that are selected in the app.
  * @returns
  */
@@ -137,57 +123,14 @@ export async function moveLayer(
 }
 
 /**
- * Create a newly merged layer given all the visible layers.
- */
-export async function createMergedLayer(): Promise<void> {
-    await executeInPhotoshop(createMergedLayer, async () => {
-        selectAllVisibleLayers();
-
-        const selectedLayers = getSelectedLayers(app.activeDocument.layers);
-        selectedLayers.forEach(async (layer) => {
-            if (layer.visible) {
-                const newLayer = await duplicateLayer(
-                    layer,
-                    layer,
-                    photoshop.constants.ElementPlacement.PLACEBEFORE
-                );
-                newLayer.selected = false;
-                newLayer.visible = true;
-                layer.visible = false;
-                layer.selected = false;
-                return newLayer;
-            }
-        });
-        const mergedLayer = await mergeVisibleLayers();
-
-        if (mergedLayer) {
-            moveLayerToTop(mergedLayer);
-            mergedLayer.name = `Merged Layered: ${randomlyPickLayerName()}`;
-            return mergedLayer;
-        }
-    });
-}
-
-/**
- * Merge the visible layers in the app and return the merged layer.
- */
-export async function mergeVisibleLayers() {
-    await executeInPhotoshop(mergeVisibleLayers, async () => {
-        // Merge all visible layers
-        await photoshop.app.activeDocument.mergeVisibleLayers();
-
-        // Get reference to layers
-    });
-    return getTopLayer(undefined, true);
-}
-
-/**
  * Deselect all layers in the app.
  */
 export async function deselectLayers() {
     await executeInPhotoshop(deselectLayers, () => {
         getSelectedLayers(app.activeDocument.layers).forEach((layer) => {
-            layer.selected = false;
+            if (layer) {
+                layer.selected = false;
+            }
         });
     });
 }
@@ -198,7 +141,9 @@ export async function deselectLayers() {
 export async function createLayerMask(layer: Layer) {
     await executeInPhotoshop(createLayerMask, async () => {
         await deselectLayers();
-        layer.selected = true;
+        if (layer) {
+            layer.selected = true;
+        }
         await app.batchPlay(
             [
                 {
@@ -293,100 +238,6 @@ export async function deleteLayer(layer: Layer) {
 }
 
 /**
- * Deletes this layer from the document.
- */
-export async function hideLayer(layer: Layer) {
-    await executeInPhotoshop(deleteLayer, async () => {
-        layer.visible = false;
-    });
-}
-
-/**
- * Flips the layer on one or both axis.
- *
- * ```javascript
- * // flip horizontally
- * await flipLayer(layer, "horizontal")
- * ```
- * @param axis Which axis (or both) to flip the layer on.
- *             - "horizontal": flip layer on horizontal axis
- *             - "vertical": flip layer on vertical axis
- *             - "both": flip layer on both axes
- */
-export async function flipLayer(
-    layer: Layer,
-    axis: 'horizontal' | 'vertical' | 'both'
-) {
-    await executeInPhotoshop(flipLayer, async () => {
-        layer.flip(axis);
-    });
-}
-
-/**
- * Clears the layer pixels and does not copy to the clipboard. If no pixel selection is found, select all pixels and clear.
- */
-export async function clearLayer(layer: Layer) {
-    await executeInPhotoshop(clearLayer, async () => {
-        layer.clear();
-    });
-}
-
-/**
- * Copies the layer to the clipboard. When the optional argument is set to true, a merged copy is performed (that is, all visible layers are copied to the clipboard).
- */
-export async function copyLayer(layer: Layer, merge: boolean = false) {
-    await executeInPhotoshop(copyLayer, async () => {
-        layer.copy(merge);
-    });
-}
-
-/**
- * Moves the layer to a position above the topmost layer or group.
- */
-export async function bringLayerToFront(layer: Layer) {
-    await executeInPhotoshop(bringLayerToFront, () => {
-        layer.bringToFront();
-    });
-}
-/**
- * Moves the layer to the bottom. If the bottom layer is the background, it will move the layer to the position above the background. If it is in a group, it will move to the bottom of the group.
- */
-export async function sendLayerToBack(layer: Layer) {
-    await executeInPhotoshop(sendLayerToBack, () => {
-        layer.sendToBack();
-    });
-}
-
-/**
- * Creates a link between this layer and the target layer if not already linked,
- * and returns a list of layers linked to this layer.
- * ```javascript
- * // link two layers together
- * const linkedLayers = await linkLayers(strokes, fillLayer)
- * linkedLayers.forEach((layer) => console.debug(layer.name))
- * > "strokes"
- * > "fillLayer"
- * ```
- */
-export async function linkLayers(
-    originalLayer: Layer,
-    targetLayer: Layer
-): Promise<Layer[]> {
-    return await executeInPhotoshop(linkLayers, async () => {
-        return originalLayer.link(targetLayer);
-    });
-}
-
-/**
- * Unlinks the layer from any existing links.
- */
-export async function unlinkLayers(layer: Layer): Promise<Layer[]> {
-    return await executeInPhotoshop(unlinkLayers, async () => {
-        return layer.unlink();
-    });
-}
-
-/**
  * Merges layers. This operates on the currently selected layers. If multiple layers are selected, they will be merged together. If one layer is selected, it is merged down with the layer beneath. In this case, the layer below must be a pixel layer. The merged layer will now be the active layer.
  */
 export async function mergeSelectedLayer(layer: Layer): Promise<Layer> {
@@ -400,32 +251,6 @@ export async function mergeSelectedLayer(layer: Layer): Promise<Layer> {
 export async function rasterizeLayer(layer: Layer, type: RasterizeType) {
     await executeInPhotoshop(rasterizeLayer, async () => {
         layer.rasterize(type);
-    });
-}
-
-/**
- * Rotates the layer.
-```javascript
-// rotate 90 deg counter clockwise
-await rotateLayer(layer, (-90))
-
-// rotate 90 deg clockwise relative to top left corner
-import { AnchorPosition } from 'photoshop/dom/Constants';
-await rotatelayer(layer, 90, AnchorPosition.TOPLEFT)
-```
- * @param layer 
- * @param angle Angle to rotate the layer by in degrees
- * @param anchor Anchor position to rotate around
- * @param options.interpolation Interpolation method to use when 
- */
-export async function rotateLayer(
-    layer: Layer,
-    angle: number | AngleValue,
-    anchor?: AnchorPosition,
-    options?: { interpolation?: ResampleMethod }
-) {
-    await executeInPhotoshop(rotateLayer, async () => {
-        layer.rotate(angle, anchor, options);
     });
 }
 
@@ -488,28 +313,6 @@ export async function scaleLayerToCanvas(layer: Layer) {
 
 export async function fitLayerPositionToCanvas(layer: Layer) {
     return await translateLayer(layer, -layer.bounds.left, -layer.bounds.top);
-}
-
-/**
- * Applies a skew to the layer.
- * ```javascript
- * // parellelogram shape
- * await skewLayer(layer, -15, 0)
- * ```
- * @param layer
- * @param angleH Horizontal angle to skew by
- * @param angleV Vertical angle to skew by
- * @param option.interpolation Interpolation method to use when resampling the image
- */
-export async function skewLayer(
-    layer: Layer,
-    angleH: number | AngleValue,
-    angleV: number | AngleValue,
-    options?: { interpolation?: ResampleMethod }
-) {
-    await executeInPhotoshop(skewLayer, async () => {
-        layer.skew(angleH, angleV, options);
-    });
 }
 
 /**
@@ -664,23 +467,21 @@ export async function regenerateLayer(
     getContextFromStore: Function
 ) {
     try {
-        await regenLayers(
+        let layers = await regenLayers(
             [layerContext],
             saveContextToStore,
             getContextFromStore
         );
+
+        if (layers.length > 0) {
+            return layers[0];
+        }
     } catch (e) {
         console.error(e);
     }
 }
 
-async function regenLayer(
-    layer: Layer,
-    layerContext: LayerAIContext,
-    maskingLayer: Layer,
-    moveToTop: boolean = false,
-    isBatchRan: boolean = false
-) {
+async function regenLayer(layerContext: LayerAIContext) {
     try {
         if (!layerContext.currentLayer?.visible) {
             console.warn(
@@ -712,24 +513,34 @@ export async function regenLayers(
         saveContextToStore
     );
     let isLayerSaving = false;
-    newContexts.forEach(async (context) => {
+    let prevLayerName = '';
+    const tasks = newContexts.map(async (context) => {
         let layer = context.currentLayer;
         while (isLayerSaving) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        isLayerSaving = true;
         let copyOfcontext = context.copy();
         copyOfcontext.isGenerating = true;
         saveContextToStore(copyOfcontext);
-        await saveLayerToPluginData(
-            createLayerFileName(layer.name, false),
-            layer
-        );
-        isLayerSaving = false;
+        if (prevLayerName !== layer.name) {
+            isLayerSaving = true;
+            await saveLayerToPluginData(
+                createLayerFileName(layer.name, context.id, false),
+                layer
+            );
+            isLayerSaving = false;
+            prevLayerName = layer.name;
+        }
 
-        let newLayer = regenLayer(layer, context, context.tempLayer);
-        cleanUpRegenLayer(newLayer, copyOfcontext, saveContextToStore);
+        let newLayer = regenLayer(context);
+        return await cleanUpRegenLayer(
+            newLayer,
+            copyOfcontext,
+            saveContextToStore
+        );
     });
+
+    return await Promise.all(tasks);
 }
 
 export async function cleanUpRegenLayer(
@@ -739,14 +550,26 @@ export async function cleanUpRegenLayer(
 ) {
     let newLayer = await newLayerPromise;
     await moveLayerToTop(newLayer);
-    await scaleAndFitLayerToCanvas(newLayer);
+    // await scaleAndFitLayerToCanvas(newLayer);
     if (context.tempLayer) {
         await createMaskFromLayerForLayer(context.tempLayer, newLayer);
-        await applyMask(newLayer);
+        // let newerLayer = await newLayer.duplicate();
+        // await applyMask(newLayer);
         await deleteLayer(context.tempLayer);
     }
 
     let copyOfcontext = context.copy();
     copyOfcontext.isGenerating = false;
     saveContextToStore(copyOfcontext);
+    return newLayer;
+}
+
+export function createGroupWithLayer(layer: any, groupName: string) {
+    executeInPhotoshop(createGroupWithLayer, () => {
+        photoshop.app.activeDocument.createLayerGroup({
+            name: groupName,
+            fromLayers: [layer, layer],
+            typename: '',
+        });
+    });
 }

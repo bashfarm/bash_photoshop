@@ -110,7 +110,11 @@ export default class LayerAIContext extends ContextObject {
      */
     public async createTempImageFileOfLayer() {
         try {
-            let fileName = createLayerFileName(this.currentLayer?.name);
+            let fileName = createLayerFileName(
+                this.currentLayer?.name ?? '',
+                this.id,
+                false
+            );
             let tempImgEntry = await saveLayerToPluginData(
                 fileName,
                 this.currentLayer
@@ -125,12 +129,13 @@ export default class LayerAIContext extends ContextObject {
      * Create the next available historical file for the LayerContext
      * @param {string | Uint8Array} imgData
      */
-    public async createTempGenFile(
-        imgData: string | Uint8Array,
-        temp: boolean = false
-    ) {
+    public async createTempGenFile(imgData: string | Uint8Array) {
         try {
-            let fileName = createLayerFileName(this.currentLayer?.name, true);
+            let fileName = createLayerFileName(
+                `${this.currentLayer?.name}`,
+                this.id,
+                true
+            );
             await saveImgDataToDataFolder(fileName, imgData);
             return fileName;
         } catch (e) {

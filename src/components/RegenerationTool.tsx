@@ -1,5 +1,7 @@
-import React, { FC, useEffect, useState } from 'react';
+import photoshop from 'photoshop';
+import React, { FC, useState } from 'react';
 import { regenerateLayer } from 'services/layer_service';
+import { executeInPhotoshop } from 'services/middleware/photoshop_middleware';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 
 type RegenerationToolProps = {
@@ -15,19 +17,20 @@ export default function RegenerationTool(props: RegenerationToolProps) {
     const saveContextToStore = useContextStore(
         (state: ContextStoreState) => state.saveContextToStore
     );
-
-    useEffect(() => {}, [getContextFromStore(props.contextId)]);
+    let [isGenerating, setIsGenerating] = useState(false);
 
     return (
         <div
             className="flex items-center mr-1 cursor-pointer"
             onClick={async () => {
                 {
-                    await regenerateLayer(
+                    setIsGenerating(true);
+                    let layer = await regenerateLayer(
                         getContextFromStore(props.contextId),
                         saveContextToStore,
                         getContextFromStore
                     );
+                    setIsGenerating(false);
                 }
             }}
         >
@@ -38,7 +41,7 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                         style: { color: 'var(--uxp-host-text-color)' },
                     }}
                 />
-                {!getContextFromStore(props.contextId).isGenerating ? (
+                {!isGenerating ? (
                     <span
                         className={`ml-1 whitespace-nowrap`}
                         style={{
