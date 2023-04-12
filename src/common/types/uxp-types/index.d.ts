@@ -40,7 +40,7 @@ declare module 'uxp' {
     namespace shell {
         function openExternal(
             url: string,
-            developerText: string
+            developerText?: string
         ): Promise<string>;
     }
 

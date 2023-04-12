@@ -1,7 +1,7 @@
 
   {"id": "0d4a6a37",
   "name": "Bashful",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "main": "main.jsx",
   "manifestVersion": 5,
   "host": [
@@ -14,16 +14,31 @@
     }
   ],
   "requiredPermissions": {
-    "clipboard": "readAndWrite",
     "network": {
       "domains": "all"
     },
-    "allowCodeGenerationFromStrings": true,
-    "ipc": {
-      "enableHostCommunication": true,
-      "enablePluginCommunication": true
+    "launchProcess": {
+      "schemes": [
+        "http",
+        "https",
+        "mailto"
+      ],
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".pdf"
+      ]
     },
-    "localFileSystem": "request"
+    "webview": {
+      "allow": "yes",
+      "domains": "all"
+    },
+    "allowCodeGenerationFromStrings": true,
+    "clipboard": "readAndWrite",
+    "localFileSystem": "request",
+    "ipc": {
+      "enablePluginCommunication": true
+    }
   },
   "entrypoints": [
     {

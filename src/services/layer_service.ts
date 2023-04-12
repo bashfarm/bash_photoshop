@@ -40,7 +40,7 @@ export function getVisibleLayers(layers: Layer[]): Layer[] {
  */
 export async function createNewLayerFromFile(
     fileName: string,
-    rasterize: boolean = true
+    rasterize: boolean = false
 ): Promise<Layer> {
     const fileEntry = await getDataFolderEntry(fileName);
     if (!fileEntry) return;
@@ -54,7 +54,7 @@ export async function createNewLayerFromFile(
                     {
                         _obj: 'placeEvent',
                         target: { _path: tkn, _kind: 'local' },
-                        linked: true,
+                        linked: false,
                     },
                 ],
                 {}
@@ -69,7 +69,9 @@ export async function createNewLayerFromFile(
         }
         // { commandName: 'open File' }
     );
-    return getNewestLayer(app.activeDocument.layers);
+    let newLayer = getNewestLayer(app.activeDocument.layers);
+    await fitLayerPositionToCanvas(newLayer);
+    return newLayer;
 }
 
 /**
@@ -351,27 +353,6 @@ export async function convertLayerToSmartObject(layer: Layer) {
 }
 
 /**
- * Creates a new layer given the new layer's name
- * @param layerName
- * @returns
- */
-export async function createNewLayer(layerName: string) {
-    try {
-        return (await executeInPhotoshop(createNewLayer, async () => {
-            if (photoshop.app.activeDocument) {
-                let newLayer: Layer =
-                    await photoshop.app.activeDocument.layers.add();
-
-                if (layerName) {
-                    newLayer.name = layerName;
-                }
-                return newLayer;
-            }
-        })) as Layer;
-    } catch (e) {}
-}
-
-/**
  * Checks if the layer has a mask.
  * @param layer
  * @returns
@@ -571,5 +552,59 @@ export function createGroupWithLayer(layer: any, groupName: string) {
             fromLayers: [layer, layer],
             typename: '',
         });
+    });
+}
+
+async function placeImageAsSmartObject(
+    imagePath: string
+): Promise<Layer | undefined> {
+    return await executeInPhotoshop(placeImageAsSmartObject, async () => {
+        try {
+            const document = app.activeDocument;
+            if (!document) {
+                throw new Error('No active document found.');
+            }
+
+            const smartObjectOptions = {
+                frameInfo: {
+                    frameCount: 1,
+                    frameDelay: 0,
+                    frameDispose: 0,
+                    frameFeather: 0,
+                    frameMerge: 0,
+                    frameOffset: 0,
+                    frameReverse: 0,
+                },
+            };
+
+            await app.batchPlay(
+                [
+                    {
+                        _obj: 'placeEvent',
+                        target: { _path: imagePath, _kind: 'local' },
+                        fileType: 'auto',
+                        as: { _obj: 'smartObject', _value: smartObjectOptions },
+                        freeTransformCenterState: {
+                            _enum: 'alignDistributeSelector',
+                            _value: 'ADSCenters',
+                        },
+                        _isCommand: true,
+                        _options: {
+                            dialogOptions: 'dontDisplay',
+                        },
+                    },
+                ],
+                {
+                    synchronousExecution: false,
+                    modalBehavior: 'fail',
+                }
+            );
+
+            const placedLayer = document.activeLayers[0];
+            return placedLayer;
+        } catch (error) {
+            console.error('Error placing image as smart object:', error);
+            return undefined;
+        }
     });
 }

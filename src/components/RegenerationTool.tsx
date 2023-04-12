@@ -30,8 +30,6 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                     let contextValidation = validateContext(
                         getContextFromStore(props.contextId)
                     );
-                    console.log('contextValidation', contextValidation);
-                    console.log(getContextFromStore(props.contextId));
                     if (!contextValidation.isValid) {
                         errorMessage(modalRef, contextValidation);
                         return;

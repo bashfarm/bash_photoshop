@@ -35,7 +35,6 @@ export function Automatic1111Section(props: Automatic1111SectionProps) {
                     <Label>Use Auto1111</Label>
                     <Checkbox
                         onChange={() => {
-                            console.log(props.contextID);
                             let copyOfContext = getContextFromStore(
                                 props.contextID
                             ).copy();

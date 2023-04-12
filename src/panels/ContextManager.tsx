@@ -12,12 +12,7 @@ import { shell } from 'uxp';
 
 async function openDiscordLink() {
     try {
-        console.log('opening discord link');
-        await shell.openExternal(
-            'https://www.adobe.com/',
-            'develop message for the user consent dialog'
-        );
-        // shell.openExternal('https://discord.gg/J6JFxqqgWZ/');
+        await shell.openExternal('https://discord.gg/UR9qU8WsFt');
     } catch (e) {
         console.error(e);
     }
