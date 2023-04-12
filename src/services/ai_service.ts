@@ -62,6 +62,8 @@ export async function BAPIImg2Img(
             calling_application: calling_application,
         };
 
+        console.log('payload', payload);
+
         const requestOptions: RequestInit = {
             method: 'POST',
             headers: myHeaders,
