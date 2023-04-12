@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import photoshop from 'photoshop';
-import Spectrum from 'react-uxp-spectrum';
+import Spectrum, { Checkbox } from 'react-uxp-spectrum';
 import _ from 'lodash';
 import { Layer } from 'photoshop/dom/Layer';
 import { MaskingToolsSection } from 'components/toolSections/MaskingToolsSection';
@@ -45,25 +45,27 @@ function DropdownMenu(props: DropdownMenuProps) {
     return (
         <Spectrum.Menu slot="options">
             {props.layers?.map((layer: Layer) => {
-                let option = {
-                    displayName: layer?.name,
-                    value: layer?.id,
-                } as DropDownOption;
-                try {
-                    return (
-                        <Spectrum.MenuItem
-                            key={_.uniqueId()}
-                            onClick={() => onDropDownSelect(option)}
-                            selected={
-                                getContextFromStore(props.contextID)
-                                    .currentLayerId == option.value
-                            }
-                        >
-                            {option.displayName}
-                        </Spectrum.MenuItem>
-                    );
-                } catch (e) {
-                    console.error(e);
+                if (layer) {
+                    try {
+                        let option = {
+                            displayName: layer?.name,
+                            value: layer?.id,
+                        } as DropDownOption;
+                        return (
+                            <Spectrum.MenuItem
+                                key={_.uniqueId()}
+                                onClick={() => onDropDownSelect(option)}
+                                selected={
+                                    getContextFromStore(props.contextID)
+                                        .currentLayerId == option.value
+                                }
+                            >
+                                {option.displayName}
+                            </Spectrum.MenuItem>
+                        );
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             })}
         </Spectrum.Menu>
@@ -78,6 +80,10 @@ interface ContextItemToolBarProps {
 
 export default function ContextItemToolBar(props: ContextItemToolBarProps) {
     const [layers, setLayers] = useState(photoshop.app.activeDocument.layers);
+
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
+    );
 
     function onChange() {
         setLayers(photoshop.app.activeDocument.layers);

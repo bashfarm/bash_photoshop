@@ -62,8 +62,6 @@ export async function BAPIImg2Img(
             calling_application: calling_application,
         };
 
-        console.log('payload', payload);
-
         const requestOptions: RequestInit = {
             method: 'POST',
             headers: myHeaders,
@@ -306,11 +304,8 @@ export async function generateImageLayerUsingOnlyContext(
                 genb64Str
             );
 
-            await createNewLayerFromFile(generatedFileName);
-
-            // Retrieve the newest layer that was created in photoshop, whereever it is.
-            let generatedLayer = getNewestLayer(
-                photoshop.app.activeDocument.layers
+            let generatedLayer = await createNewLayerFromFile(
+                generatedFileName
             );
 
             return generatedLayer;
@@ -382,15 +377,11 @@ export async function generateImageLayerUsingLayer(
                 );
                 console.debug('generatedFileName', generatedFileName);
 
-                await createNewLayerFromFile(generatedFileName);
-
-                // Retrieve the newest layer that was created in photoshop, whereever it is.
-                generatedLayer = getNewestLayer(
-                    photoshop.app.activeDocument.layers
+                generatedLayer = await createNewLayerFromFile(
+                    generatedFileName
                 );
+                return generatedLayer;
             }
-
-            return generatedLayer;
         } catch (e) {
             console.error('Trying to create new layer from generation', e);
             alert(
