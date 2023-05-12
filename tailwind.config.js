@@ -44,6 +44,7 @@ module.exports = {
                 'danger-light': '#ffd2d7',
                 danger: '#f13769',
                 'danger-dark': '#732535',
+                bash_color: '#7e4dfb',
             },
         },
     },

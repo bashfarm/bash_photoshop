@@ -14,19 +14,13 @@ export const validLayerNames = [
     'Kuwabara',
 ];
 
-export async function popUpModal(
-    ref: React.MutableRefObject<ExtendedHTMLDialogElement>,
-    modalComponent: ReactElement,
-    title: string
-) {
-    if (!ref.current) {
-        ref.current = document.createElement(
-            'dialog'
-        ) as ExtendedHTMLDialogElement;
-        ReactDOM.render(modalComponent, ref.current);
-    }
-    document.body.appendChild(ref.current);
-    await ref.current.uxpShowModal({
+export async function popUpModal(modalComponent: ReactElement, title: string) {
+    const dialog = document.createElement(
+        'dialog'
+    ) as ExtendedHTMLDialogElement;
+    ReactDOM.render(modalComponent, dialog);
+    document.body.appendChild(dialog);
+    await dialog.uxpShowModal({
         title: title,
         resize: 'both',
         size: {
@@ -34,8 +28,7 @@ export async function popUpModal(
             height: 600,
         },
     });
-    ref.current.remove();
-    ref.current = null;
+    dialog.remove();
 }
 
 /**
@@ -55,6 +48,10 @@ export function createLayerFileName(
     id: string,
     regenerated: boolean
 ) {
+    if (id == '1') {
+        return 'regenerated_document.png';
+    }
+
     let newName = layerName;
 
     if (layerName.includes('(r)')) {

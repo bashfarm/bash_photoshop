@@ -4,6 +4,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { alert } from 'services/alert_service';
 import ContextErrorsModal from '../components/modals/ContextErrorsModal';
+import { popUpModal } from 'utils/general_utils';
+import APIErrorsModal from 'components/modals/APIErrorsModal';
+import { getAvailableModels } from './ai_service';
+import { ModelResponse } from 'common/types/sdapi';
+
+export interface APIErrorMessage {
+    name: string;
+    description: string;
+}
 
 interface contextErrors {
     [key: string]: string[];
@@ -42,47 +51,88 @@ export function validateContexts(contexts: LayerAIContext[]) {
 
 export function getContextErrors(context: LayerAIContext): string[] {
     const errors: string[] = [];
-    if (context.currentLayer === null || context.currentLayer === undefined) {
+    if (
+        !(context.id == '1') &&
+        (context.currentLayer === null || context.currentLayer === undefined)
+    ) {
         errors.push(
             'The current layer selection is empty. Please select a layer and try again.'
         );
     }
 
     if (
-        context.model_config === null ||
-        context.model_config === undefined ||
-        context.model_config === ''
+        context.is_cloud_run === true &&
+        (context.model_config === null ||
+            context.model_config === undefined ||
+            context.model_config === '')
     ) {
-        let labelName = context.is_cloud_run ? 'Art Type' : 'Model';
-
         errors.push(
-            `The ${labelName} is not selected. Please select an ${labelName} and try again.`
+            `The Art Type is not selected. Please select an Art Type and try again.`
+        );
+    }
+
+    if (
+        context.is_cloud_run === false &&
+        (context.generationModelName === null ||
+            context.generationModelName === undefined ||
+            context.generationModelName === '')
+    ) {
+        errors.push(
+            `The Model is not selected. Please select an Model and try again.`
         );
     }
 
     return errors;
 }
 
-export async function errorMessage(
-    ref: React.MutableRefObject<ExtendedHTMLDialogElement>,
-    contextsValidation: ContextValidation
-) {
-    if (!ref.current) {
-        ref.current = document.createElement(
-            'dialog'
-        ) as ExtendedHTMLDialogElement;
-        ReactDOM.render(
-            <ContextErrorsModal
-                contextValidation={contextsValidation}
-                onClose={function (): void {
-                    ref.current.close();
-                }}
-            />,
-            ref.current
-        );
+export async function getAPIErrors(): Promise<APIErrorMessage[]> {
+    let errors = [];
+    try {
+        // Check if the user is online
+        if (!navigator.onLine) {
+            errors.push({
+                name: 'No internet Access',
+                description:
+                    'You will need to find a way to connect to the internet or spin up the Auto1111 api',
+            });
+            // Make the API call
+            const response: ModelResponse[] = await getAvailableModels();
+
+            // Check the response status
+            if (response.length == 0) {
+                errors.push({
+                    name: 'No Auto1111 API detected',
+                    description:
+                        'Please install the Auto1111 API for local usage https://www.youtube.com/watch?v=1BNaxL3Zm7U&t=210s&ab_channel=bad_ai_engineer.',
+                });
+            }
+        }
+    } catch (error) {
+        // Handle the error
+        errors.push({
+            name: 'Unknown error',
+            description: `Error: ${error.message}`,
+        });
     }
-    document.body.appendChild(ref.current);
-    await ref.current.uxpShowModal({
+
+    return errors;
+}
+
+export async function errorMessage(contextsValidation: ContextValidation) {
+    const dialog = document.createElement(
+        'dialog'
+    ) as ExtendedHTMLDialogElement;
+    ReactDOM.render(
+        <ContextErrorsModal
+            contextValidation={contextsValidation}
+            onClose={function (): void {
+                dialog.close();
+            }}
+        />,
+        dialog
+    );
+    document.body.appendChild(dialog);
+    await dialog.uxpShowModal({
         title: 'Context Errors',
         resize: 'both',
         size: {
@@ -90,6 +140,28 @@ export async function errorMessage(
             height: 800,
         },
     });
-    ref.current.remove();
-    ref.current = null;
+}
+
+export async function popUpAPIErrors(errors: APIErrorMessage[]) {
+    const dialog = document.createElement(
+        'dialog'
+    ) as ExtendedHTMLDialogElement;
+    ReactDOM.render(
+        <APIErrorsModal
+            errors={errors}
+            onClose={function (): void {
+                dialog.close();
+            }}
+        />,
+        dialog
+    );
+    document.body.appendChild(dialog);
+    await dialog.uxpShowModal({
+        title: 'API Errors',
+        resize: 'both',
+        size: {
+            width: 800,
+            height: 800,
+        },
+    });
 }

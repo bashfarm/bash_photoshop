@@ -135,7 +135,7 @@ export default class LayerAIContext extends ContextObject {
     public async createTempGenFile(imgData: string | Uint8Array) {
         try {
             let fileName = createLayerFileName(
-                `${this.currentLayer?.name}`,
+                `${this.currentLayer?.name.replace(' ', '_')}`,
                 this.id,
                 true
             );

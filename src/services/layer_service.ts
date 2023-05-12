@@ -2,7 +2,15 @@ import {
     createLayerFileName,
     randomlyPickLayerName,
 } from '../utils/general_utils';
-import { getDataFolderEntry, saveLayerToPluginData } from './io_service';
+import {
+    createDataFolderEntry,
+    createTempFileEntry,
+    getDataFolderEntry,
+    getTempFileEntry,
+    saveActiveDocument,
+    saveDocumentToPluginData,
+    saveLayerToPluginData,
+} from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { Layer } from 'photoshop/dom/Layer';
 import {
@@ -16,7 +24,7 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
-import { generateAILayer } from './ai_service';
+import { BAPIImg2Img, generateAILayer } from './ai_service';
 import LayerAIContext from 'models/LayerAIContext';
 
 const lfs = storage.localFileSystem;
@@ -70,6 +78,7 @@ export async function createNewLayerFromFile(
         // { commandName: 'open File' }
     );
     let newLayer = getNewestLayer(app.activeDocument.layers);
+    await scaleLayerToCanvas(newLayer);
     await fitLayerPositionToCanvas(newLayer);
     return newLayer;
 }
@@ -545,66 +554,27 @@ export async function cleanUpRegenLayer(
     return newLayer;
 }
 
-export function createGroupWithLayer(layer: any, groupName: string) {
-    executeInPhotoshop(createGroupWithLayer, () => {
-        photoshop.app.activeDocument.createLayerGroup({
-            name: groupName,
-            fromLayers: [layer, layer],
-            typename: '',
-        });
-    });
-}
-
-async function placeImageAsSmartObject(
-    imagePath: string
-): Promise<Layer | undefined> {
-    return await executeInPhotoshop(placeImageAsSmartObject, async () => {
-        try {
-            const document = app.activeDocument;
-            if (!document) {
-                throw new Error('No active document found.');
-            }
-
-            const smartObjectOptions = {
-                frameInfo: {
-                    frameCount: 1,
-                    frameDelay: 0,
-                    frameDispose: 0,
-                    frameFeather: 0,
-                    frameMerge: 0,
-                    frameOffset: 0,
-                    frameReverse: 0,
-                },
-            };
-
-            await app.batchPlay(
-                [
-                    {
-                        _obj: 'placeEvent',
-                        target: { _path: imagePath, _kind: 'local' },
-                        fileType: 'auto',
-                        as: { _obj: 'smartObject', _value: smartObjectOptions },
-                        freeTransformCenterState: {
-                            _enum: 'alignDistributeSelector',
-                            _value: 'ADSCenters',
-                        },
-                        _isCommand: true,
-                        _options: {
-                            dialogOptions: 'dontDisplay',
-                        },
-                    },
-                ],
-                {
-                    synchronousExecution: false,
-                    modalBehavior: 'fail',
-                }
-            );
-
-            const placedLayer = document.activeLayers[0];
-            return placedLayer;
-        } catch (error) {
-            console.error('Error placing image as smart object:', error);
-            return undefined;
-        }
-    });
+export async function regenerateDocument(
+    primaryContext: LayerAIContext,
+    saveContextToStore: Function,
+    getContextFromStore: Function
+) {
+    let fileEntryName = 'document.png';
+    await saveDocumentToPluginData(fileEntryName);
+    try {
+        let newLayer = await createNewLayerFromFile(fileEntryName);
+        console.log(newLayer);
+        primaryContext.currentLayer = newLayer;
+        let genLayer = await regenerateLayer(
+            primaryContext,
+            saveContextToStore,
+            getContextFromStore
+        );
+        let copyOfcontext = primaryContext.copy();
+        copyOfcontext.currentLayer = genLayer;
+        saveContextToStore(copyOfcontext);
+        deleteLayer(newLayer);
+    } catch (e) {
+        console.error(e);
+    }
 }

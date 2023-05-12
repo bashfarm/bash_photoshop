@@ -13,12 +13,16 @@ import ContextItemTextarea from './ContextItemTextarea';
 export type ContextItemProps = {
     contextID: string;
     onDelete?: (contextID: string) => void;
+    isPrimary?: boolean;
 };
 
 export default function ContextItem(props: ContextItemProps) {
     return (
         <div className="flex flex-col p-1 bg-[color:var(--uxp-host-widget-hover-background-color)] border border-[color:var(--uxp-host-border-color)] rounded">
-            <ContextItemToolBarMemo contextID={props.contextID} />
+            <ContextItemToolBarMemo
+                contextID={props.contextID}
+                isPrimary={props.isPrimary}
+            />
             <div className="flex">
                 <ContextInfoColumn contextID={props.contextID} />
                 <MemoizedContextItemToolColumn contextID={props.contextID} />

@@ -1,3 +1,5 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { addB64Header, removeB64Header } from '../utils/io_utils';
 import {
     getB64StringFromImageUrl,
@@ -11,11 +13,9 @@ import {
     Img2ImgRequest,
     ImageResponse,
     ProgressResponse,
-    ArtistType,
 } from '../common/types';
 import LayerAIContext from 'models/LayerAIContext';
 import { alert } from './alert_service';
-import photoshop from 'photoshop';
 import {
     BashfulAPIImg2ImgRequest,
     BashfulAPITxt2ImgRequest,
@@ -27,7 +27,9 @@ import {
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
 import Jimp from 'jimp';
-import { createLayerFileName } from 'utils/general_utils';
+import { createLayerFileName, popUpModal } from 'utils/general_utils';
+import APIErrorsModal from 'components/modals/APIErrorsModal';
+import { getAPIErrors, popUpAPIErrors } from './validation_service';
 
 const myHeaders = new Headers();
 myHeaders.append('Content-Type', 'application/json');
@@ -269,12 +271,18 @@ export const txt2img = async (
  * @returns
  */
 export async function generateAILayer(layerContext: LayerAIContext) {
-    // If the user doesn't want the new image to be consistent with another image than just generate a new one.
-    if (layerContext.consistencyStrength == 0) {
-        return await generateImageLayerUsingOnlyContext(layerContext);
-    }
+    try {
+        // If the user doesn't want the new image to be consistent with another image than just generate a new one.
+        if (layerContext.consistencyStrength == 0) {
+            return await generateImageLayerUsingOnlyContext(layerContext);
+        }
 
-    return await generateImageLayerUsingLayer(layerContext);
+        return await generateImageLayerUsingLayer(layerContext);
+    } catch (e) {
+        console.error('Problem regenerating layer', e);
+        popUpAPIErrors(await getAPIErrors());
+        throw e;
+    }
 }
 
 export async function generateImageLayerUsingOnlyContext(
@@ -314,9 +322,7 @@ export async function generateImageLayerUsingOnlyContext(
         }
     } catch (e) {
         console.error(e);
-        alert(
-            `Something is wrong with retrieving information from the API.  Please check that your installation is working properly https://github.com/AUTOMATIC1111/stable-diffusion-webui`
-        );
+        throw e;
     }
 }
 
@@ -386,13 +392,11 @@ export async function generateImageLayerUsingLayer(
             }
         } catch (e) {
             console.error('Trying to create new layer from generation', e);
-            alert(
-                `Something is wrong with retrieving information from the API.  We apologize for the inconvenience.  Please check that your installation is working properly if you are using the Auto111 api.`
-            );
+            throw e;
         }
     } catch (e) {
         console.error(e);
-        alert(`Something is wrong with retrieving information from the API.`);
+        throw e;
     }
 }
 
@@ -440,6 +444,7 @@ export async function getAvailableModels(): Promise<Array<ModelResponse>> {
         return data;
     } catch (e) {
         console.error(e);
+        return [];
     }
 }
 

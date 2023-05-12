@@ -8,9 +8,10 @@ import {
 } from 'services/bash_app_service';
 import { regenLayers } from 'services/layer_service';
 import photoshop from 'photoshop';
-import { alert } from 'services/alert_service';
 import { errorMessage, validateContexts } from 'services/validation_service';
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
+import { Button, Divider } from 'react-uxp-spectrum';
+import { RefreshIcon } from 'components/icons';
 
 interface ToolSectionProps {
     children: React.ReactNode;
@@ -19,7 +20,12 @@ const ToolSection: FC<ToolSectionProps> = ({ children }) => {
     return <div className="flex items-center justify-between">{children}</div>;
 };
 
-export default function ContextToolBar() {
+// create a type for the props
+type ContextToolbarProps = {
+    refresh: () => void;
+};
+
+export default function ContextToolBar(props: ContextToolbarProps) {
     const getContextStore = useContextStore(
         (state: ContextStoreState) => state.getContextStore
     );
@@ -45,7 +51,7 @@ export default function ContextToolBar() {
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
             <ToolSection>
-                <Tool
+                {/* <Tool
                     icon={SmartToyIcon}
                     label="Regenerate layers"
                     useAltLabel={regneeratingLayers}
@@ -62,7 +68,7 @@ export default function ContextToolBar() {
                             );
                             let contextsValidation = validateContexts(contexts);
                             if (!contextsValidation.isValid) {
-                                errorMessage(modalRef, contextsValidation);
+                                errorMessage(contextsValidation);
                                 return;
                             }
                             setRegeneratingDocument(
@@ -83,7 +89,7 @@ export default function ContextToolBar() {
                             console.error('Regenerating Visible Layers', e);
                         }
                     }}
-                />
+                /> */}
 
                 <Tool
                     icon={SaveAltIcon}
@@ -99,6 +105,19 @@ export default function ContextToolBar() {
                         await loadBashfulProject(setContextStore);
                     }}
                 />
+                {/* create an refresh icon to refresh the manager */}
+                <div className="flex justify-center">
+                    <Button
+                        className="text-center"
+                        variant="primary"
+                        onClick={() => {
+                            props.refresh();
+                        }}
+                    >
+                        <RefreshIcon />
+                        Sync Auto111
+                    </Button>
+                </div>
             </ToolSection>
         </div>
     );
