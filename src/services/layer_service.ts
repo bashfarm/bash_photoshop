@@ -578,3 +578,57 @@ export async function regenerateDocument(
         console.error(e);
     }
 }
+
+async function placeImageAsSmartObject(
+    imagePath: string
+): Promise<Layer | undefined> {
+    return await executeInPhotoshop(placeImageAsSmartObject, async () => {
+        try {
+            const document = app.activeDocument;
+            if (!document) {
+                throw new Error('No active document found.');
+            }
+
+            const smartObjectOptions = {
+                frameInfo: {
+                    frameCount: 1,
+                    frameDelay: 0,
+                    frameDispose: 0,
+                    frameFeather: 0,
+                    frameMerge: 0,
+                    frameOffset: 0,
+                    frameReverse: 0,
+                },
+            };
+
+            await app.batchPlay(
+                [
+                    {
+                        _obj: 'placeEvent',
+                        target: { _path: imagePath, _kind: 'local' },
+                        fileType: 'auto',
+                        as: { _obj: 'smartObject', _value: smartObjectOptions },
+                        freeTransformCenterState: {
+                            _enum: 'alignDistributeSelector',
+                            _value: 'ADSCenters',
+                        },
+                        _isCommand: true,
+                        _options: {
+                            dialogOptions: 'dontDisplay',
+                        },
+                    },
+                ],
+                {
+                    synchronousExecution: false,
+                    modalBehavior: 'fail',
+                }
+            );
+
+            const placedLayer = document.activeLayers[0];
+            return placedLayer;
+        } catch (error) {
+            console.error('Error placing image as smart object:', error);
+            return undefined;
+        }
+    });
+}
