@@ -29,7 +29,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     let [isCloudRun, setIsCloudRun] = useState(true);
 
     let { loading, value } = useAsyncEffect(async () => {
-        if (getContextFromStore(props.contextID).is_cloud_run == false) {
+        if (getContextFromStore(props.contextID)?.is_cloud_run == false) {
             // While this does work, this is for the future where we batch run the models, currently
             // we would have to make sure each local user swaps out the models when they want to use
             // a different model on a specific layer.  We will collect the selection of models for them
@@ -47,7 +47,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
         } else {
             if (isCloudRun == false) {
                 return value
-                    .map((modelObj: ModelResponse) => {
+                    ?.map((modelObj: ModelResponse) => {
                         return {
                             displayName: modelObj.title,
                             value: modelObj.title,
@@ -60,7 +60,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                     );
             } else {
                 return value
-                    .map((modelObj: ModelConfigResponse) => {
+                    ?.map((modelObj: ModelConfigResponse) => {
                         return {
                             displayName: modelObj.display_name,
                             value: modelObj.name,
@@ -77,7 +77,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     }
 
     function getCorrectContextKey() {
-        if (!getContextFromStore(props.contextID).is_cloud_run) {
+        if (!getContextFromStore(props.contextID)?.is_cloud_run) {
             return 'generationModelName' as keyof typeof LayerAIContext;
         }
 
@@ -105,7 +105,7 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
                     ]}
                 />
             ) : (
-                getDropDownOptions().length > 0 && (
+                getDropDownOptions()?.length > 0 && (
                     <ContextDropdown
                         // Not sure why, but is_cloud_run is backwards
                         label={

@@ -9,6 +9,7 @@ import { MaskingToolsSection } from 'components/toolSections/MaskingToolsSection
 import { RegenerationToolsSection } from 'components/toolSections/RegenerationToolsSection';
 import { RemoveSection } from 'components/toolSections/RemoveSection';
 import { ToolbarDivider } from 'components/toolSections/ToolBarDivider';
+import { Layers } from 'photoshop/dom/collections/Layers';
 
 const events = [
     'make',
@@ -76,17 +77,24 @@ const MemoizedDropdownMenu = React.memo(DropdownMenu);
 
 interface ContextItemToolBarProps {
     contextID: string;
+    isPrimary: boolean;
 }
 
 export default function ContextItemToolBar(props: ContextItemToolBarProps) {
-    const [layers, setLayers] = useState(photoshop.app.activeDocument.layers);
+    const [layers, setLayers] = useState(
+        photoshop?.app?.activeDocument?.layers
+    );
+
+    let getContextFromStore = useContextStore(
+        (state: ContextStoreState) => state.getContextFromStore
+    );
 
     let getContextFromStore = useContextStore(
         (state: ContextStoreState) => state.getContextFromStore
     );
 
     function onChange() {
-        setLayers(photoshop.app.activeDocument.layers);
+        setLayers(photoshop?.app?.activeDocument?.layers);
     }
 
     useEffect(() => {
@@ -98,22 +106,44 @@ export default function ContextItemToolBar(props: ContextItemToolBarProps) {
 
     return (
         <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
-            <Spectrum.Dropdown>
-                <MemoizedDropdownMenu
-                    contextID={props.contextID}
-                    layers={layers}
-                />
-            </Spectrum.Dropdown>
-            <ToolbarDivider />
-            <sp-label slot="label">RegenID: </sp-label>
-            <h2 className="text-white text-lg font-bold">{props.contextID}</h2>
+            {!props.isPrimary && (
+                <>
+                    <Spectrum.Dropdown>
+                        <MemoizedDropdownMenu
+                            contextID={props.contextID}
+                            layers={layers ?? []}
+                        />
+                    </Spectrum.Dropdown>
+                    <ToolbarDivider />
+                </>
+            )}
+            {!props.isPrimary ? (
+                <>
+                    <sp-label slot="label">RegenID: </sp-label>
+                    <h2 className="text-white text-lg font-bold">
+                        {props.contextID}
+                    </h2>
+                </>
+            ) : (
+                <>
+                    <sp-label slot="label">Document</sp-label>
+                </>
+            )}
+
             <ToolbarDivider />
 
             <MaskingToolsSection contextID={props.contextID} />
             <ToolbarDivider />
-            <RegenerationToolsSection contextID={props.contextID} />
-            <ToolbarDivider />
-            <RemoveSection contextID={props.contextID} />
+            <RegenerationToolsSection
+                contextID={props.contextID}
+                isPrimary={props.isPrimary}
+            />
+            {!props.isPrimary && (
+                <>
+                    <ToolbarDivider />
+                    <RemoveSection contextID={props.contextID} />
+                </>
+            )}
         </div>
     );
 }

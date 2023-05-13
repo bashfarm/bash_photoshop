@@ -207,7 +207,7 @@ export async function saveActiveDocument(
             fileRef = await createTempFileEntry(fileRef);
         }
 
-        await executeInPhotoshop(saveDocumentAsPNG, async () => {
+        await executeInPhotoshop(saveActiveDocument, async () => {
             await photoshop.app.activeDocument.saveAs.psd(
                 (await fileRef) as storage.File
             );

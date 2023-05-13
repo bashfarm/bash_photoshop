@@ -1,7 +1,7 @@
 import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import photoshop from 'photoshop';
 import React, { FC, useState } from 'react';
-import { regenerateLayer } from 'services/layer_service';
+import { regenerateDocument, regenerateLayer } from 'services/layer_service';
 import { executeInPhotoshop } from 'services/middleware/photoshop_middleware';
 import { errorMessage, validateContext } from 'services/validation_service';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
@@ -10,6 +10,7 @@ type RegenerationToolProps = {
     icon?: FC<any>;
     label?: string;
     contextId: string;
+    isPrimary?: boolean;
 };
 
 export default function RegenerationTool(props: RegenerationToolProps) {
@@ -31,16 +32,24 @@ export default function RegenerationTool(props: RegenerationToolProps) {
                         getContextFromStore(props.contextId)
                     );
                     if (!contextValidation.isValid) {
-                        errorMessage(modalRef, contextValidation);
+                        errorMessage(contextValidation);
                         return;
                     }
 
                     setIsGenerating(true);
-                    let layer = await regenerateLayer(
-                        getContextFromStore(props.contextId),
-                        saveContextToStore,
-                        getContextFromStore
-                    );
+                    if (!props.isPrimary) {
+                        let layer = await regenerateLayer(
+                            getContextFromStore(props.contextId),
+                            saveContextToStore,
+                            getContextFromStore
+                        );
+                    } else {
+                        let layer = await regenerateDocument(
+                            getContextFromStore(props.contextId),
+                            saveContextToStore,
+                            getContextFromStore
+                        );
+                    }
                     setIsGenerating(false);
                 }
             }}

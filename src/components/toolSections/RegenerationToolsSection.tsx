@@ -5,6 +5,7 @@ import { ToolSection } from './ToolSection';
 
 interface RegenerationToolsSectionProps {
     contextID: string;
+    isPrimary?: boolean;
 }
 
 export function RegenerationToolsSection(props: RegenerationToolsSectionProps) {
@@ -12,8 +13,11 @@ export function RegenerationToolsSection(props: RegenerationToolsSectionProps) {
         <ToolSection>
             <RegenerationTool
                 icon={SmartToyIcon}
-                label="Regenerate Layer"
+                label={
+                    props.isPrimary ? 'Regenerate Document' : 'Regenerate Layer'
+                }
                 contextId={props.contextID}
+                isPrimary={props.isPrimary}
             />
         </ToolSection>
     );

@@ -2,7 +2,15 @@ import {
     createLayerFileName,
     randomlyPickLayerName,
 } from '../utils/general_utils';
-import { getDataFolderEntry, saveLayerToPluginData } from './io_service';
+import {
+    createDataFolderEntry,
+    createTempFileEntry,
+    getDataFolderEntry,
+    getTempFileEntry,
+    saveActiveDocument,
+    saveDocumentToPluginData,
+    saveLayerToPluginData,
+} from './io_service';
 import { executeInPhotoshop } from './middleware/photoshop_middleware';
 import { Layer } from 'photoshop/dom/Layer';
 import {
@@ -16,7 +24,7 @@ import { AngleValue, PercentValue, PixelValue } from 'photoshop/util/unit';
 import { Document } from 'photoshop/dom/Document';
 import { storage } from 'uxp';
 import { getHeightScale, getWidthScale } from 'utils/layer_utils';
-import { generateAILayer } from './ai_service';
+import { BAPIImg2Img, generateAILayer } from './ai_service';
 import LayerAIContext from 'models/LayerAIContext';
 
 const lfs = storage.localFileSystem;
@@ -70,6 +78,7 @@ export async function createNewLayerFromFile(
         // { commandName: 'open File' }
     );
     let newLayer = getNewestLayer(app.activeDocument.layers);
+    await scaleLayerToCanvas(newLayer);
     await fitLayerPositionToCanvas(newLayer);
     return newLayer;
 }
@@ -545,14 +554,29 @@ export async function cleanUpRegenLayer(
     return newLayer;
 }
 
-export function createGroupWithLayer(layer: any, groupName: string) {
-    executeInPhotoshop(createGroupWithLayer, () => {
-        photoshop.app.activeDocument.createLayerGroup({
-            name: groupName,
-            fromLayers: [layer, layer],
-            typename: '',
-        });
-    });
+export async function regenerateDocument(
+    primaryContext: LayerAIContext,
+    saveContextToStore: Function,
+    getContextFromStore: Function
+) {
+    let fileEntryName = 'document.png';
+    await saveDocumentToPluginData(fileEntryName);
+    try {
+        let newLayer = await createNewLayerFromFile(fileEntryName);
+        console.log(newLayer);
+        primaryContext.currentLayer = newLayer;
+        let genLayer = await regenerateLayer(
+            primaryContext,
+            saveContextToStore,
+            getContextFromStore
+        );
+        let copyOfcontext = primaryContext.copy();
+        copyOfcontext.currentLayer = genLayer;
+        saveContextToStore(copyOfcontext);
+        deleteLayer(newLayer);
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 async function placeImageAsSmartObject(
