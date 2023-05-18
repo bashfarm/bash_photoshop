@@ -89,10 +89,6 @@ export default function ContextItemToolBar(props: ContextItemToolBarProps) {
         (state: ContextStoreState) => state.getContextFromStore
     );
 
-    let getContextFromStore = useContextStore(
-        (state: ContextStoreState) => state.getContextFromStore
-    );
-
     function onChange() {
         setLayers(photoshop?.app?.activeDocument?.layers);
     }

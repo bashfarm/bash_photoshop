@@ -5,9 +5,8 @@ import {
     getB64StringFromImageUrl,
     getBase64OfImgInPluginDataFolder,
     getDataFolderEntry,
-    getTempFileEntry,
 } from './io_service';
-import { getNewestLayer, createNewLayerFromFile } from './layer_service';
+import { createNewLayerFromFile } from './layer_service';
 import {
     Text2ImgRequest,
     Img2ImgRequest,
@@ -15,7 +14,6 @@ import {
     ProgressResponse,
 } from '../common/types';
 import LayerAIContext from 'models/LayerAIContext';
-import { alert } from './alert_service';
 import {
     BashfulAPIImg2ImgRequest,
     BashfulAPITxt2ImgRequest,
@@ -26,9 +24,7 @@ import {
     ModelResponse,
 } from 'common/types/sdapi';
 import { Layer } from 'photoshop/dom/Layer';
-import Jimp from 'jimp';
-import { createLayerFileName, popUpModal } from 'utils/general_utils';
-import APIErrorsModal from 'components/modals/APIErrorsModal';
+import { createLayerFileName } from 'utils/general_utils';
 import { getAPIErrors, popUpAPIErrors } from './validation_service';
 
 const myHeaders = new Headers();
@@ -51,6 +47,7 @@ export async function BAPIImg2Img(
     imgb64Str: string,
     layerContext: LayerAIContext
 ): Promise<BashfulImageAPIResponse> {
+    let response = null;
     try {
         const payload: BashfulAPIImg2ImgRequest = {
             init_images: [imgb64Str],
@@ -72,15 +69,14 @@ export async function BAPIImg2Img(
             body: JSON.stringify(payload),
             redirect: 'follow',
         };
-        const response = await fetch(
-            `${CLOUD_API_URL}/img2img`,
-            requestOptions
-        );
+        response = await fetch(`${CLOUD_API_URL}/img2img`, requestOptions);
 
+        console.debug('AI SERIVCE BAPIImg2Img Request:', requestOptions);
         let data = response.json();
 
         return data;
     } catch (e) {
+        // console.error('AI SERIVCE BAPIImg2Img Response:', response.text());
         console.error(e);
         throw e;
     }
@@ -118,6 +114,7 @@ export async function BAPITxt2Img(
 
         let data = response.json();
 
+        console.debug('AI SERIVCE BAPITxt2Img:', requestOptions);
         return data;
     } catch (e) {
         console.error(e);
@@ -184,6 +181,7 @@ export async function img2img(
             body: JSON.stringify(payload),
             redirect: 'follow',
         };
+        console.debug('AI SERIVCE img2img:', requestOptions);
         const response = await fetch(
             `${AUTO1111_API_URL}/sdapi/v1/img2img`,
             requestOptions
@@ -248,6 +246,7 @@ export const txt2img = async (
             requestOptions
         );
 
+        console.debug('AI SERIVCE txt2img:', requestOptions);
         return await response.json();
     } catch (error) {
         console.error(error);
@@ -494,6 +493,8 @@ export async function getAPIConfig(): Promise<ConfigAPIResponse> {
         headers: myHeaders,
         redirect: 'follow',
     };
+    console.debug('AI SERVICE getAPIConfig:', requestOptions);
+
     try {
         let response = await fetch(
             `${AUTO1111_API_URL}/sdapi/v1/options`,
