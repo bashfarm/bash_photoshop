@@ -16,7 +16,7 @@ Sentry.init({
     // integrations: [new BrowserTracing(), new CaptureConsoleIntegration({ levels: ['error', 'debug']})],
     tracesSampleRate: 1.0,
     // attachStacktrace: true,
-    release: 'Bashful.0.3.0',
+    release: 'Bashful.0.3.1',
     debug: false,
 });
 
