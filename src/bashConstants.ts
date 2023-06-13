@@ -1,6 +1,9 @@
 import resolveConfig from 'tailwindcss/resolveConfig';
 import tailwindConfig from '../tailwind.config.js';
 
+export const MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME = 10;
+export const REGENERATION_ALLOTMENT_MINUTES = 10;
+
 export const fullConfig = resolveConfig(tailwindConfig);
 
 export const B64_IMAGE_HEADER: string = 'data:image/png;base64, ';
@@ -17,7 +20,6 @@ export const enum BashfulAppProject {
     BASHFUL_PHOTOSHOP_FILE_NAME = 'photoshop.psd',
     BASHFUL_STATE_FILE_NAME = 'bashful.json',
 }
-
 
 export const enum PhotoshopTool {
     MOVETOOL = 'moveTool',

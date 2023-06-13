@@ -175,7 +175,7 @@ export async function saveDocumentToPluginData(
             'Saving document to plugin data folder',
             entry.nativePath
         );
-        saveDocumentAsPNG(entry);
+        await saveDocumentAsPNG(entry);
     } catch (e) {
         console.error(e);
     }

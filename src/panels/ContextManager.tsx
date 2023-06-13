@@ -1,8 +1,8 @@
 import LayerAIContext from 'models/LayerAIContext';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ContextStoreState, useContextStore } from 'store/contextStore';
 import { MemoizedContextItem } from '../components/ContextItem/ContextItem';
-import { Button, Divider } from 'react-uxp-spectrum';
+import { Button, Divider, Label, Progressbar } from 'react-uxp-spectrum';
 import { BashfulHeader } from 'components/BashfulHeader';
 import ContextToolBar from '../components/ContextManagerToolBar';
 import _, { set } from 'lodash';
@@ -11,11 +11,26 @@ import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 import { shell } from 'uxp';
 import { getAPIErrors, popUpAPIErrors } from 'services/validation_service';
 import { useAsyncEffect } from 'hooks/fetchHooks';
-import { RefreshIcon } from 'components/icons';
+import { RefreshIcon, MenuBookIcon } from 'components/icons';
+
+import {
+    MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME,
+    REGENERATION_ALLOTMENT_MINUTES,
+} from 'bashConstants';
 
 async function openDiscordLink() {
     try {
         await shell.openExternal('https://discord.gg/UR9qU8WsFt');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function openDocs() {
+    try {
+        await shell.openExternal(
+            'https://docs.bashful.ai/bashful-ai-powered-photoshop-plugin/'
+        );
     } catch (e) {
         console.error(e);
     }
@@ -66,10 +81,44 @@ export default function ContextManager() {
     const getContextFromStore = useContextStore(
         (state) => state.getContextFromStore
     );
+
+    let numImagesGeneratedWithinTimeFrame = useContextStore(
+        (state) => state.numImagesGeneratedWithinTimeFrame
+    );
+
+    let setNumImagesGeneratedWithinTimeFrame = useContextStore(
+        (state) => state.setNumImagesGeneratedWithinTimeFrame
+    );
     // create a refresh variable to force a rerender
     const [refresh, setRefresh] = React.useState(false);
+    const [generationSeconds, setGenerationSeconds] = React.useState(0);
+    const [generationInterval, setGenerationInterval] = React.useState(null);
 
     const nextID = useRef(1);
+
+    // Function to reduce the number of images every 2 minutes (similar to the previous example)
+    const reduceImagesByOne = () => {
+        let newNum = numImagesGeneratedWithinTimeFrame - 1;
+        newNum = newNum < 0 ? 0 : newNum;
+        setNumImagesGeneratedWithinTimeFrame(newNum);
+    };
+
+    useEffect(() => {
+        // const interval = setInterval(reduceImagesByOne, 120000); // 2 minutes in milliseconds
+
+        // 5 min
+        const interval = setInterval(
+            reduceImagesByOne,
+            REGENERATION_ALLOTMENT_MINUTES * 60 * 1000
+        ); // 5 minutes in milliseconds
+
+        // 5 seconds
+        // const interval = setInterval(reduceImagesByOne, 5000); // 5 secs in milliseconds
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
 
     // TODO: This can also be moved since it's using the store, and the store can be called from anywhere
     async function createNewContext() {
@@ -101,7 +150,7 @@ export default function ContextManager() {
         <>
             <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] m-0 p-1 items-center justify-left">
                 <div>
-                    <BashfulHeader animate={false} />
+                    <BashfulHeader animate={true} />
                 </div>
 
                 <div
@@ -114,7 +163,44 @@ export default function ContextManager() {
                         style={{ color: '#7e4dfb' }}
                     />
                 </div>
+                <div
+                    onClick={openDocs}
+                    className="text-left items-center mb-0 mt-5"
+                >
+                    <MenuBookIcon
+                        className="text-purple-500 ml-1 w-6 h-6"
+                        style={{ color: '#7e4dfb' }}
+                    />
+                </div>
             </div>
+            <div className="w-full flex justify-between">
+                <div>
+                    <Label>
+                        Generations{' '}
+                        {MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME -
+                            numImagesGeneratedWithinTimeFrame}
+                        /{MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME}
+                    </Label>
+                </div>
+
+                <Label>
+                    Every {REGENERATION_ALLOTMENT_MINUTES} min you gain 1
+                    additional generation
+                </Label>
+            </div>
+
+            <Progressbar
+                showValue={true}
+                variant="overBackground"
+                valueLabel="#generations"
+                className="w-full"
+                max={MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME}
+                value={
+                    MAX_IMAGES_GENERATED_WITHIN_TIME_FRAME -
+                    numImagesGeneratedWithinTimeFrame
+                }
+            ></Progressbar>
+
             <ContextToolBar
                 refresh={() => {
                     setRefresh(true);
@@ -158,9 +244,7 @@ export default function ContextManager() {
                             </Button>
                             <span className="ml-2 text-white">
                                 <em>
-                                    *Unlike the above where the setting
-                                    regenerates the document, the settings you
-                                    create here are to regenerate layers!
+                                    *Create settings for individual layers here!
                                 </em>
                             </span>
                         </div>

@@ -8,7 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import PublishIcon from '@mui/icons-material/Publish';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 export {
     VisibilityOffRounded,
     SaveAltIcon,
@@ -20,4 +20,5 @@ export {
     RefreshIcon,
     DeleteIcon,
     SmartToyIcon,
+    MenuBookIcon,
 };

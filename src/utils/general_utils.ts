@@ -2,18 +2,6 @@ import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { ReactElement } from 'react';
 import ReactDOM from 'react-dom';
 
-export const validLayerNames = [
-    'Banana',
-    'Kratos',
-    'Goku',
-    'Geralt',
-    'All Might',
-    'Midoriya',
-    'Vegeta',
-    'Botan',
-    'Kuwabara',
-];
-
 export async function popUpModal(modalComponent: ReactElement, title: string) {
     const dialog = document.createElement(
         'dialog'
@@ -29,14 +17,6 @@ export async function popUpModal(modalComponent: ReactElement, title: string) {
         },
     });
     dialog.remove();
-}
-
-/**
- * Retrieve a random name from a list that is in this function.
- * @returns String Array
- */
-export function randomlyPickLayerName(): string {
-    return validLayerNames[Math.floor(Math.random() * validLayerNames.length)];
 }
 
 export function sleep(ms: number) {
@@ -80,4 +60,54 @@ export function createLayerFileName(
     }
 
     return newName;
+}
+
+export function countTokens(inputString: string) {
+    // Remove leading and trailing whitespaces
+    const trimmedString = inputString.trim();
+
+    // Split the string into an array of words
+    const wordsArray = trimmedString.split(/\s+/);
+
+    // Return the length of the words array
+    return wordsArray.length;
+}
+
+function detectInstruction(inputString: string) {
+    const instructionKeywords = [
+        'do',
+        'perform',
+        'execute',
+        'follow',
+        'complete',
+    ];
+
+    const lowerCaseString = inputString.toLowerCase();
+
+    // Check if the string starts with an instruction keyword
+    for (const keyword of instructionKeywords) {
+        if (lowerCaseString.startsWith(keyword)) {
+            return true;
+        }
+    }
+
+    // Check if the string ends with a question mark
+    if (lowerCaseString.trim().endsWith('?')) {
+        return true;
+    }
+
+    // Check if the string ends with an exclamation mark
+    if (lowerCaseString.trim().endsWith('!')) {
+        return true;
+    }
+
+    // Check if the string contains imperative verbs
+    const wordsArray = lowerCaseString.split(/\s+/);
+    for (const word of wordsArray) {
+        if (/^\w+$/i.test(word) && /^[A-Z]/.test(word)) {
+            return true;
+        }
+    }
+
+    return false;
 }

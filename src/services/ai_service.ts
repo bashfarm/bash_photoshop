@@ -71,7 +71,7 @@ export async function BAPIImg2Img(
         };
         response = await fetch(`${CLOUD_API_URL}/img2img`, requestOptions);
 
-        console.debug('AI SERIVCE BAPIImg2Img Request:', requestOptions);
+        console.info('AI SERIVCE BAPIImg2Img Request:', requestOptions);
         let data = response.json();
 
         return data;
@@ -114,7 +114,7 @@ export async function BAPITxt2Img(
 
         let data = response.json();
 
-        console.debug('AI SERIVCE BAPITxt2Img:', requestOptions);
+        console.info('AI SERIVCE BAPITxt2Img:', requestOptions);
         return data;
     } catch (e) {
         console.error(e);
@@ -181,7 +181,7 @@ export async function img2img(
             body: JSON.stringify(payload),
             redirect: 'follow',
         };
-        console.debug('AI SERIVCE img2img:', requestOptions);
+        console.info('AI SERIVCE img2img:', requestOptions);
         const response = await fetch(
             `${AUTO1111_API_URL}/sdapi/v1/img2img`,
             requestOptions
@@ -246,7 +246,7 @@ export const txt2img = async (
             requestOptions
         );
 
-        console.debug('AI SERIVCE txt2img:', requestOptions);
+        console.info('AI SERIVCE txt2img:', requestOptions);
         return await response.json();
     } catch (error) {
         console.error(error);
@@ -382,7 +382,7 @@ export async function generateImageLayerUsingLayer(
                 let generatedFileName = await layerContext.createTempGenFile(
                     genb64Str
                 );
-                console.debug('generatedFileName', generatedFileName);
+                console.info('generatedFileName', generatedFileName);
 
                 generatedLayer = await createNewLayerFromFile(
                     generatedFileName
@@ -493,7 +493,7 @@ export async function getAPIConfig(): Promise<ConfigAPIResponse> {
         headers: myHeaders,
         redirect: 'follow',
     };
-    console.debug('AI SERVICE getAPIConfig:', requestOptions);
+    console.info('AI SERVICE getAPIConfig:', requestOptions);
 
     try {
         let response = await fetch(

@@ -6,16 +6,13 @@ import {
     loadBashfulProject,
     saveBashfulProject,
 } from 'services/bash_app_service';
-import { regenLayers } from 'services/layer_service';
-import photoshop from 'photoshop';
-import { errorMessage, validateContexts } from 'services/validation_service';
-import { ExtendedHTMLDialogElement } from 'common/types/htmlTypes';
 import { Button, Divider } from 'react-uxp-spectrum';
 import { RefreshIcon } from 'components/icons';
 
 interface ToolSectionProps {
     children: React.ReactNode;
 }
+
 const ToolSection: FC<ToolSectionProps> = ({ children }) => {
     return <div className="flex items-center justify-between">{children}</div>;
 };
@@ -34,63 +31,9 @@ export default function ContextToolBar(props: ContextToolbarProps) {
         (state: ContextStoreState) => state.setContextStore
     );
 
-    const saveContextToStore = useContextStore(
-        (state: ContextStoreState) => state.saveContextToStore
-    );
-
-    const setRegeneratingDocument = useContextStore(
-        (state: ContextStoreState) => state.setRegeneratingDocument
-    );
-    const unSetRegeneratingDocument = useContextStore(
-        (state: ContextStoreState) => state.unSetRegeneratingDocument
-    );
-
-    let [regneeratingLayers, setRegeneratingLayers] = useState(false);
-    let modalRef = React.useRef<ExtendedHTMLDialogElement>(null);
-
     return (
-        <div className="flex w-full border-b border-[color:var(--uxp-host-border-color)] mb-1 p-1 items-center justify-evenly">
+        <div className="flex w-full border-b border-uxp-host-border-color mb-1 p-1 items-center justify-evenly">
             <ToolSection>
-                {/* <Tool
-                    icon={SmartToyIcon}
-                    label="Regenerate layers"
-                    useAltLabel={regneeratingLayers}
-                    altLabel={
-                        regneeratingLayers
-                            ? 'Regenerating...'
-                            : 'Regenerate Layers'
-                    }
-                    onClick={async () => {
-                        try {
-                            let contexts = Object.values(
-                                (getContextStore() as ContextStoreState)
-                                    .layerContexts
-                            );
-                            let contextsValidation = validateContexts(contexts);
-                            if (!contextsValidation.isValid) {
-                                errorMessage(contextsValidation);
-                                return;
-                            }
-                            setRegeneratingDocument(
-                                photoshop.app.activeDocument
-                            );
-                            setRegeneratingLayers(true);
-                            await regenLayers(
-                                Object.values(
-                                    (getContextStore() as ContextStoreState)
-                                        .layerContexts
-                                ),
-                                saveContextToStore,
-                                getContextStore
-                            );
-                            setRegeneratingLayers(false);
-                            unSetRegeneratingDocument();
-                        } catch (e) {
-                            console.error('Regenerating Visible Layers', e);
-                        }
-                    }}
-                /> */}
-
                 <Tool
                     icon={SaveAltIcon}
                     label="Export Bashful Template"
@@ -105,10 +48,10 @@ export default function ContextToolBar(props: ContextToolbarProps) {
                         await loadBashfulProject(setContextStore);
                     }}
                 />
-                {/* create an refresh icon to refresh the manager */}
+                {/* create a refresh icon to refresh the manager */}
                 <div className="flex justify-center">
                     <Button
-                        className="text-center"
+                        className="text-center flex-shrink-0"
                         variant="primary"
                         onClick={() => {
                             props.refresh();

@@ -65,7 +65,7 @@ function DropdownMenu(props: DropdownMenuProps) {
                             </Spectrum.MenuItem>
                         );
                     } catch (e) {
-                        console.error(e);
+                        console.warn(e);
                     }
                 }
             })}
@@ -128,8 +128,12 @@ export default function ContextItemToolBar(props: ContextItemToolBarProps) {
 
             <ToolbarDivider />
 
-            <MaskingToolsSection contextID={props.contextID} />
-            <ToolbarDivider />
+            {!props.isPrimary && (
+                <>
+                    <MaskingToolsSection contextID={props.contextID} />
+                    <ToolbarDivider />
+                </>
+            )}
             <RegenerationToolsSection
                 contextID={props.contextID}
                 isPrimary={props.isPrimary}

@@ -35,7 +35,7 @@ export default function ContextItem(props: ContextItemProps) {
                         'consistencyStrength' as keyof typeof LayerAIContext
                     }
                 >
-                    Consistency Strength
+                    How much of the given visual should remain the same?
                 </ContextItemSlider>
                 <ContextItemSlider
                     animate={true}
@@ -44,7 +44,8 @@ export default function ContextItem(props: ContextItemProps) {
                         'stylingStrength' as keyof typeof LayerAIContext
                     }
                 >
-                    Styling Strength
+                    How strongly should the AI follow the prompt when generating
+                    details?
                 </ContextItemSlider>
                 <ContextItemTextarea
                     contextID={props.contextID}
