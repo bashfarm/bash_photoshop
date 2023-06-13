@@ -9,6 +9,7 @@ export class ContextStoreState extends BashfulObject {
     layerContexts: Record<string, LayerAIContext> = {};
     regenDocument: any = null;
     layers: Record<string, any> = null;
+    numImagesGeneratedWithinTimeFrame: Number = 0;
     set: any = null;
     get: any = null;
     constructor(set: any, get: any) {
@@ -17,6 +18,16 @@ export class ContextStoreState extends BashfulObject {
         this.set = set;
         this.get = get;
     }
+
+    public setNumImagesGeneratedWithinTimeFrame = (numImages: Number) => {
+        this.set((state: ContextStoreState) => {
+            state.numImagesGeneratedWithinTimeFrame = numImages;
+        });
+    };
+
+    public getNumImagesGeneratedWithinTimeFrame = () => {
+        return this.get().numImagesGeneratedWithinTimeFrame;
+    };
 
     public getLayer = (layerId: string) => {
         return this.get().layers[layerId];

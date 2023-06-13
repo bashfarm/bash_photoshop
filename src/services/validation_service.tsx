@@ -4,10 +4,25 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { alert } from 'services/alert_service';
 import ContextErrorsModal from '../components/modals/ContextErrorsModal';
-import { popUpModal } from 'utils/general_utils';
+import { countTokens, popUpModal } from 'utils/general_utils';
 import APIErrorsModal from 'components/modals/APIErrorsModal';
 import { getAvailableModels } from './ai_service';
 import { ModelResponse } from 'common/types/sdapi';
+import GenerationErrorsModal from 'components/modals/GenerationErrorsModal';
+
+const MIN_PROMPT_TOKEN_COUNT = 8;
+const INSTRUCTION_KEYWORDS = [
+    'do ',
+    'perform ',
+    'execute ',
+    'follow ',
+    'create ',
+    'make ',
+    'enhance ',
+    'replace ',
+    'change ',
+    'generate ',
+];
 
 export interface APIErrorMessage {
     name: string;
@@ -82,6 +97,18 @@ export function getContextErrors(context: LayerAIContext): string[] {
         );
     }
 
+    if (countTokens(context.currentPrompt) < MIN_PROMPT_TOKEN_COUNT) {
+        errors.push(
+            `The DESCRIPTION of the image/illustration is too short. Please enter a more detailed description and try again. You must have at least 8 words.`
+        );
+    }
+
+    if (detectInstruction(context.currentPrompt)) {
+        errors.push(
+            `It's been detected you are instructing the AI to do something. Please DESCRIBE the image/illustration instead. For example, instead of saying "make the sky blue", say "the sky is blue".`
+        );
+    }
+
     return errors;
 }
 
@@ -118,7 +145,32 @@ export async function getAPIErrors(): Promise<APIErrorMessage[]> {
     return errors;
 }
 
-export async function errorMessage(contextsValidation: ContextValidation) {
+export async function generationErrorMessage() {
+    const dialog = document.createElement(
+        'dialog'
+    ) as ExtendedHTMLDialogElement;
+    ReactDOM.render(
+        <GenerationErrorsModal
+            onClose={function (): void {
+                dialog.close();
+            }}
+        />,
+        dialog
+    );
+    document.body.appendChild(dialog);
+    await dialog.uxpShowModal({
+        title: 'Generation Errors',
+        resize: 'both',
+        size: {
+            width: 800,
+            height: 800,
+        },
+    });
+}
+
+export async function contextErrorMessage(
+    contextsValidation: ContextValidation
+) {
     const dialog = document.createElement(
         'dialog'
     ) as ExtendedHTMLDialogElement;
@@ -164,4 +216,16 @@ export async function popUpAPIErrors(errors: APIErrorMessage[]) {
             height: 800,
         },
     });
+}
+
+function detectInstruction(inputString: string) {
+    const lowerCaseString = inputString.toLowerCase();
+
+    for (const keyword of INSTRUCTION_KEYWORDS) {
+        if (lowerCaseString.includes(keyword)) {
+            return true;
+        }
+    }
+
+    return false;
 }

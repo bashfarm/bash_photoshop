@@ -1,7 +1,4 @@
-import {
-    createLayerFileName,
-    randomlyPickLayerName,
-} from '../utils/general_utils';
+import { createLayerFileName } from '../utils/general_utils';
 import {
     createDataFolderEntry,
     createTempFileEntry,
@@ -51,10 +48,11 @@ export async function createNewLayerFromFile(
     rasterize: boolean = false
 ): Promise<Layer> {
     const fileEntry = await getDataFolderEntry(fileName);
+    console.log(fileEntry);
     if (!fileEntry) return;
     const tkn = lfs.createSessionToken(fileEntry);
 
-    await executeInPhotoshop(
+    let layer = await executeInPhotoshop(
         createNewLayerFromFile,
         async () => {
             await bp(
@@ -74,13 +72,14 @@ export async function createNewLayerFromFile(
                 app.activeDocument.activeLayers[0].rasterize(
                     RasterizeType.ENTIRELAYER
                 );
+            return app.activeDocument.activeLayers[0];
         }
         // { commandName: 'open File' }
     );
-    let newLayer = getNewestLayer(app.activeDocument.layers);
-    await scaleLayerToCanvas(newLayer);
-    await fitLayerPositionToCanvas(newLayer);
-    return newLayer;
+    console.log('layer', layer);
+    await scaleLayerToCanvas(layer);
+    await fitLayerPositionToCanvas(layer);
+    return layer;
 }
 
 /**
@@ -540,7 +539,7 @@ export async function cleanUpRegenLayer(
 ) {
     let newLayer = await newLayerPromise;
     await moveLayerToTop(newLayer);
-    // await scaleAndFitLayerToCanvas(newLayer);
+
     if (context.tempLayer) {
         await createMaskFromLayerForLayer(context.tempLayer, newLayer);
         // let newerLayer = await newLayer.duplicate();
@@ -562,9 +561,13 @@ export async function regenerateDocument(
     let fileEntryName = 'document.png';
     await saveDocumentToPluginData(fileEntryName);
     try {
-        let newLayer = await createNewLayerFromFile(fileEntryName);
-        console.log(newLayer);
-        primaryContext.currentLayer = newLayer;
+        let documentLayer = await createNewLayerFromFile(fileEntryName);
+        console.log(documentLayer);
+        console.log(documentLayer.name);
+        console.log(documentLayer.id);
+        primaryContext.currentLayer = documentLayer;
+        primaryContext.currentLayerId = documentLayer.id;
+        primaryContext.currentLayerName = documentLayer.name;
         let genLayer = await regenerateLayer(
             primaryContext,
             saveContextToStore,
@@ -573,7 +576,7 @@ export async function regenerateDocument(
         let copyOfcontext = primaryContext.copy();
         copyOfcontext.currentLayer = genLayer;
         saveContextToStore(copyOfcontext);
-        deleteLayer(newLayer);
+        await scaleAndFitLayerToCanvas(genLayer);
     } catch (e) {
         console.error(e);
     }

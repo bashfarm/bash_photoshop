@@ -32,7 +32,7 @@ export default class LayerAIContext extends ContextObject {
             currentPrompt: '',
             imageHeight: 1024,
             imageWidth: 1024,
-            consistencyStrength: 0.7,
+            consistencyStrength: 0.0,
             stylingStrength: 0.7,
             negativePrompt: '',
             model_config: '',

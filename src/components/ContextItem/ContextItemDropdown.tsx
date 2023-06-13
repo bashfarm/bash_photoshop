@@ -28,7 +28,6 @@ export default function ContextDropdown(props: ContextItemDropdownProps) {
         <div>
             <Label>{props.label}</Label>
             <Spectrum.Dropdown>
-                <span>yolo</span>
                 <Spectrum.Menu slot="options">
                     {props.options &&
                         props.options.map((option: DropDownOption) => {
