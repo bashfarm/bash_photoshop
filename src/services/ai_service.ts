@@ -32,9 +32,9 @@ myHeaders.append('Content-Type', 'application/json');
 myHeaders.append('Accept', 'application/json');
 
 const AUTO1111_API_URL = 'http://127.0.0.1:7860';
-const GCP_LOCAL_TESTING_URL = 'http://127.0.0.1:8080';
-const CLOUD_API_URL =
-    'https://us-central1-bashful-photoshop.cloudfunctions.net/';
+const CLOUD_API_URL = 'http://127.0.0.1:8080';
+// const CLOUD_API_URL =
+//     'https://us-central1-bashful-photoshop.cloudfunctions.net/';
 
 const calling_application = 'Bashful: The AI Powered Photoshop Plugin';
 
