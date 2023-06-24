@@ -44,36 +44,47 @@ export default function ContextItemInfoColumn(props: ContextInfoColumnProps) {
     function getDropDownOptions() {
         if (loading) {
             return ['loading models...'];
-        } else {
-            if (isCloudRun == false) {
-                return value
-                    ?.map((modelObj: ModelResponse) => {
-                        return {
-                            displayName: modelObj.title,
-                            value: modelObj.title,
-                        } as DropDownOption;
-                    })
-                    .filter(
-                        (option: DropDownOption) =>
-                            option.displayName != null &&
-                            option.displayName != ''
-                    );
-            } else {
-                return value
-                    ?.map((modelObj: ModelConfigResponse) => {
-                        return {
-                            displayName: modelObj.display_name,
-                            value: modelObj.name,
-                            thumbnail: modelObj.thumbnail_url,
-                        } as DropDownOption;
-                    })
-                    .filter(
-                        (option: DropDownOption) =>
-                            option.displayName != null &&
-                            option.displayName != ''
-                    );
-            }
         }
+
+        const unavailableOption = {
+            displayName: isCloudRun
+                ? 'Cloud services are currently unavailable'
+                : 'No Models Available',
+            value: 'unavailable',
+            ...(isCloudRun && { thumbnail: null }),
+        };
+
+        if (
+            value == null ||
+            value == undefined ||
+            value?.detail?.toLowerCase() == 'not found'
+        ) {
+            return [unavailableOption];
+        }
+
+        const options = value
+            ?.map((modelObj: ModelResponse | ModelConfigResponse) => {
+                if (isCloudRun) {
+                    const configModel = modelObj as ModelConfigResponse;
+                    return {
+                        displayName: configModel.display_name,
+                        value: configModel.name,
+                        thumbnail: configModel.thumbnail_url,
+                    } as DropDownOption;
+                } else {
+                    const model = modelObj as ModelResponse;
+                    return {
+                        displayName: model.title,
+                        value: model.title,
+                    } as DropDownOption;
+                }
+            })
+            .filter(
+                (option: { displayName: string }) =>
+                    option.displayName != null && option.displayName != ''
+            );
+
+        return options;
     }
 
     function getCorrectContextKey() {
