@@ -248,15 +248,3 @@ Feel free to open issues for:
 ## **License**
 
 MIT License — free to use, modify, and integrate into your own workflows.
-
----
-
-If you'd like, I can also add:
-
-* A logo
-* GIF demos showing the plugin in action
-* Badges (build passing, version, MIT license)
-* A “quick start” diagram
-* A full API reference section
-
-Just tell me what vibe you’d like!
