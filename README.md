@@ -1,11 +1,6 @@
-Here’s a clean, professional, *copy-paste ready* `README.md` for your Photoshop Stable Diffusion plugin repo.
-I wrote it as if this is the official documentation for **bash_photoshop**, powered by **Stable Diffusion WebUI (Automatic1111)**.
-
-If you want badges, images, or a more stylized version, I can add those next.
-
----
-
 # **bash_photoshop — Stable Diffusion Photoshop Plugin**
+#### [Documentation](https://docs.bashful.ai/bashful-ai-powered-photoshop-plugin/bashful-free-plugin-for-photoshop/ui-overview)
+
 
 *A lightweight Photoshop extension that pipes prompts directly to Stable Diffusion (Automatic1111 WebUI) and returns generated images in-app.*
 
